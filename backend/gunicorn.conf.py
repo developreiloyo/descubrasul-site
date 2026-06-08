@@ -1,0 +1,9 @@
+bind = "0.0.0.0:8000"
+workers = 3          # 2 * CPUs + 1 — adequado para o VPS atual
+worker_class = "gthread"
+threads = 2
+timeout = 120
+keepalive = 5
+accesslog = "-"
+errorlog = "-"
+loglevel = "info"
