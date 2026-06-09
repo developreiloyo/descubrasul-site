@@ -16,7 +16,7 @@ class NegocioListView(generics.ListAPIView):
     serializer_class   = NegocioPublicoSerializer
     permission_classes = [AllowAny]
     filter_backends    = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields   = ["cidade", "verificado"]
+    filterset_fields   = ["verificado"]
     search_fields      = ["nome", "descricao", "palavras_chave"]
     ordering_fields    = ["atualizado_em", "media_nota"]
 
@@ -27,6 +27,9 @@ class NegocioListView(generics.ListAPIView):
         categoria = self.request.query_params.get("categoria")
         if categoria:
             qs = qs.filter(categoria__slug=categoria)
+        cidade = self.request.query_params.get("cidade")
+        if cidade:
+            qs = qs.filter(cidade__iexact=cidade.replace("-", " "))
         destaque = self.request.query_params.get("destaque")
         if destaque == "true":
             qs = qs.exclude(plano=Negocio.Plano.GRATUITO)

@@ -26,3 +26,23 @@ export async function getProdutosDoNegocio(slug: string): Promise<Produto[]> {
     return [];
   }
 }
+
+export async function getNegocios(params?: {
+  cidade?: string;
+  categoria?: string;
+}): Promise<Negocio[]> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.cidade) query.set("cidade", params.cidade);
+    if (params?.categoria) query.set("categoria", params.categoria);
+
+    const res = await fetch(`${API}/negocios/?${query.toString()}`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.results ?? [];
+  } catch {
+    return [];
+  }
+}
