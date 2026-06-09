@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  /* ─── Cores DescubraSul ─────────────────────────── */
+  --color-primary: #0d9488;        /* teal — sul, mar, natureza */
+  --color-primary-dark: #0f766e;
+  --color-secondary: #f59e0b;      /* âmbar — destaque, CTA */
+  --color-surface: #fafaf9;
+  --color-ink: #1c1917;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+}
