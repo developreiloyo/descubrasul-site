@@ -131,3 +131,25 @@ npm run lint
 - Nunca usar `CORS_ALLOW_ALL_ORIGINS = True` em produção
 - Nunca deixar o comerciante controlar o prompt da IA — o backend constrói tudo
 - Nunca usar nome original do arquivo de upload — sempre renomear com `uuid4()`
+
+---
+
+## ⚠️ PIEDRA ANGULAR — Proteção SEO do domínio
+
+O SEO é o ativo principal do DescubraSul. Uma penalização do Google
+afeta o domínio INTEIRO, não apenas uma página. Regras invioláveis:
+
+1. **Nunca** permitir keyword stuffing: toda descrição passa por
+   `core.validators_seo.validar_texto_seo_completo()` antes de salvar.
+2. **Nunca** imprimir `palavras_chave` como texto visível na página —
+   apenas em meta tags e busca interna.
+3. **Nunca** criar páginas sem conteúdo real (doorway pages). Toda
+   página pública deve ser o destino final útil para o visitante.
+4. **Nunca** permitir descrições duplicadas entre negócios diferentes.
+5. Todo novo campo de texto editável pelo comerciante DEVE ter
+   validação SEO no serializer correspondente.
+6. Schema JSON-LD obrigatório em toda página pública nova.
+7. `seo_title` máx 60 chars, `seo_description` máx 160 chars — sempre.
+
+Qualquer feature nova que envolva conteúdo editável pelo comerciante
+deve ser revisada contra estas regras ANTES de ir para produção.

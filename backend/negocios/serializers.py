@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Negocio, Produto, Localizacao, RedesSociais, VideoDestaque
 from categorias.serializers import CategoriaSerializer
+from core.validators_seo import validar_texto_seo_completo, validar_seo_title
 
 
 class RedesSociaisSerializer(serializers.ModelSerializer):
@@ -28,6 +29,18 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
     videos          = VideoDestaqueSerializer(many=True, read_only=True)
     seo_title       = serializers.SerializerMethodField()
     seo_description = serializers.SerializerMethodField()
+
+    def validate_descricao(self, value):
+        validar_texto_seo_completo(value, campo="descrição do negócio")
+        return value
+
+    def validate_seo_title(self, value):
+        validar_seo_title(value)
+        return value
+
+    def validate_seo_description(self, value):
+        validar_texto_seo_completo(value, campo="descrição SEO")
+        return value
 
     class Meta:
         model  = Negocio
@@ -85,6 +98,14 @@ class ProdutoPublicoSerializer(serializers.ModelSerializer):
 
 
 class ProdutoPainelSerializer(serializers.ModelSerializer):
+    def validate_descricao(self, value):
+        validar_texto_seo_completo(value, campo="descrição do produto")
+        return value
+
+    def validate_descricao_longa(self, value):
+        validar_texto_seo_completo(value, campo="descrição longa")
+        return value
+    
     class Meta:
         model  = Produto
         fields = [
