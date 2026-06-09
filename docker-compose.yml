@@ -6,6 +6,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     command: gunicorn core.wsgi:application --config gunicorn.conf.py
+    ports:
+      - "8000:8000"
     volumes:
       - ./backend:/app
       - static_files:/app/staticfiles
@@ -64,6 +66,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules
