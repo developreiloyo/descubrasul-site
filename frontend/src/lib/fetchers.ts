@@ -1,6 +1,6 @@
 import type { Negocio, Produto } from "@/types";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://backend:8000/api";
+const API = process.env.API_URL_INTERNAL || "http://backend:8000/api";
 
 export async function getNegocio(slug: string): Promise<Negocio | null> {
   try {

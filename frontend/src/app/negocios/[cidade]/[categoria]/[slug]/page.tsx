@@ -125,6 +125,7 @@ export default async function PaginaNegocio({ params }: Props) {
         <BotaoWhatsApp
           numero={negocio.whatsapp}
           mensagem={`Olá! Vi o perfil de ${negocio.nome} no DescubraSul e gostaria de mais informações.`}
+          negocioSlug={negocio.slug}
         />
       </header>
 
@@ -166,6 +167,8 @@ export default async function PaginaNegocio({ params }: Props) {
                       numero={negocio.whatsapp}
                       mensagem={`Olá! Tenho interesse no produto "${produto.nome}" que vi no DescubraSul.`}
                       texto="Pedir pelo WhatsApp"
+                      negocioSlug={negocio.slug}
+                      produtoSlug={produto.slug}
                     />
                   </div>
                 </div>

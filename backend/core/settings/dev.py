@@ -2,11 +2,15 @@ from .base import *
 
 DEBUG = True
 
-# Dev: aceitar qualquer host local
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "backend"]
 
-# CORS aberto apenas em desenvolvimento
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS explicito — sendBeacon envia credenciais e o browser
+# rejeita wildcard '*' nesse caso
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+CORS_ALLOW_CREDENTIALS = True
 
-# Emails no terminal em dev
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
