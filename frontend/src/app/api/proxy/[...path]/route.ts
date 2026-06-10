@@ -3,33 +3,99 @@ import { cookies } from "next/headers";
 
 const API = process.env.API_URL_INTERNAL || "http://backend:8000/api";
 
-async function proxy(request: NextRequest, path: string[]) {
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+};
+
+async function renovarAccessToken(): Promise<string | null> {
   const cookieStore = await cookies();
-  const access = cookieStore.get("access_token")?.value;
-  if (!access) {
-    return NextResponse.json({ detail: "Nao autenticado." }, { status: 401 });
+  const refresh = cookieStore.get("refresh_token")?.value;
+  if (!refresh) return null;
+
+  const res = await fetch(`${API}/auth/token/refresh/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+
+  const data = await res.json();
+
+  // Atualizar cookies — com ROTATE_REFRESH_TOKENS o Django devolve
+  // tambem um novo refresh token
+  cookieStore.set("access_token", data.access, {
+    ...COOKIE_OPTS,
+    maxAge: 60 * 30,
+  });
+  if (data.refresh) {
+    cookieStore.set("refresh_token", data.refresh, {
+      ...COOKIE_OPTS,
+      maxAge: 60 * 60 * 24 * 7,
+    });
   }
 
-  const url = `${API}/${path.join("/")}/${request.nextUrl.search}`;
+  return data.access;
+}
 
+async function chamarBackend(
+  request: NextRequest,
+  url: string,
+  access: string,
+  body: ArrayBuffer | undefined
+) {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${access}`,
   };
-
-  let body: ArrayBuffer | undefined = undefined;
-  if (!["GET", "HEAD"].includes(request.method)) {
-    // Ler o body COMPLETO como buffer — streaming corrompe multipart
-    body = await request.arrayBuffer();
+  if (body !== undefined) {
     const contentType = request.headers.get("content-type");
     if (contentType) headers["Content-Type"] = contentType;
   }
 
-  const res = await fetch(url, {
+  return fetch(url, {
     method: request.method,
     headers,
     body,
     cache: "no-store",
   });
+}
+
+async function proxy(request: NextRequest, path: string[]) {
+  const cookieStore = await cookies();
+  let access = cookieStore.get("access_token")?.value;
+
+  const url = `${API}/${path.join("/")}/${request.nextUrl.search}`;
+
+  let body: ArrayBuffer | undefined = undefined;
+  if (!["GET", "HEAD"].includes(request.method)) {
+    body = await request.arrayBuffer();
+  }
+
+  // Sem access token? Tentar renovar direto com o refresh
+  if (!access) {
+    access = (await renovarAccessToken()) ?? undefined;
+    if (!access) {
+      return NextResponse.json({ detail: "Nao autenticado." }, { status: 401 });
+    }
+  }
+
+  let res = await chamarBackend(request, url, access, body);
+
+  // Access expirado? Renovar UMA vez e repetir a request original
+  if (res.status === 401) {
+    const novoAccess = await renovarAccessToken();
+    if (!novoAccess) {
+      return NextResponse.json(
+        { detail: "Sessao expirada. Faca login novamente." },
+        { status: 401 }
+      );
+    }
+    res = await chamarBackend(request, url, novoAccess, body);
+  }
 
   if (res.status === 204) return new NextResponse(null, { status: 204 });
   const data = await res.json().catch(() => ({}));
