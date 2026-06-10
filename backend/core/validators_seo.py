@@ -12,12 +12,12 @@ from django.core.exceptions import ValidationError
 
 # Densidade máxima aceitável de uma única palavra no texto.
 # Acima de 4% o Google considera keyword stuffing.
-DENSIDADE_MAXIMA = 0.04
-
-# Mínimo de palavras para aplicar análise de densidade
-# (textos muito curtos geram falsos positivos)
-MINIMO_PALAVRAS_ANALISE = 20
-
+# Calibracao: stuffing = repeticao ABSOLUTA alta + densidade alta.
+# Uma palavra 4+ vezes ocupando 15%+ do texto e stuffing em qualquer tamanho.
+# (Densidade pura gera falsos positivos em textos curtos; minimo de palavras
+#  gera falsos negativos — esta combinacao cobre os dois casos.)
+REPETICAO_MINIMA = 4
+DENSIDADE_MAXIMA = 0.15
 # Palavras ignoradas na análise (stopwords PT-BR comuns)
 STOPWORDS = {
     "a", "o", "e", "de", "da", "do", "das", "dos", "em", "um", "uma",
@@ -42,26 +42,25 @@ def _tokenizar(texto: str) -> list[str]:
 
 def validar_keyword_stuffing(texto: str, campo: str = "descrição") -> None:
     """
-    Levanta ValidationError se alguma palavra exceder a densidade máxima.
-    Protege o domínio contra penalização do Google por keyword stuffing.
+    Levanta ValidationError se alguma palavra exceder repeticao + densidade.
+    Protege o dominio contra penalizacao do Google por keyword stuffing.
     """
     if not texto:
         return
 
     palavras = [p for p in _tokenizar(texto) if p not in STOPWORDS]
-
-    if len(palavras) < MINIMO_PALAVRAS_ANALISE:
+    if not palavras:
         return
 
     contagem = Counter(palavras)
     palavra_top, freq = contagem.most_common(1)[0]
     densidade = freq / len(palavras)
 
-    if densidade > DENSIDADE_MAXIMA:
+    if freq >= REPETICAO_MINIMA and densidade > DENSIDADE_MAXIMA:
         raise ValidationError(
-            f"A palavra '{palavra_top}' aparece muitas vezes na {campo} "
-            f"({freq} vezes). Textos com repetição excessiva prejudicam "
-            f"o posicionamento no Google. Reescreva de forma mais natural."
+            f"A palavra '{palavra_top}' aparece {freq} vezes na {campo}. "
+            f"Textos com repetição excessiva prejudicam o posicionamento "
+            f"no Google. Reescreva de forma mais natural."
         )
 
 
