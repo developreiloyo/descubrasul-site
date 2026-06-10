@@ -5,6 +5,7 @@ import { getNegocio, getProdutosDoNegocio } from "@/lib/fetchers";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { BotaoWhatsApp } from "@/components/negocios/BotaoWhatsApp";
 import { formatarPreco, truncar } from "@/lib/utils";
+import { TrackerView } from "@/components/negocios/TrackerView";
 
 interface Props {
   params: Promise<{ cidade: string; categoria: string; slug: string }>;
@@ -94,6 +95,7 @@ export default async function PaginaNegocio({ params }: Props) {
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
       <JsonLd data={schemaLocalBusiness(negocio, url)} />
+      <TrackerView negocioSlug={negocio.slug} />
 
       {/* ─── Cabeçalho do negócio ─────────────────────── */}
       <header className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:text-left">
