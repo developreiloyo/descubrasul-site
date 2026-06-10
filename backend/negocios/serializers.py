@@ -19,9 +19,17 @@ class LocalizacaoSerializer(serializers.ModelSerializer):
 
 class LocalizacaoPainelSerializer(serializers.ModelSerializer):
     """Edicao da localizacao pelo comerciante no painel."""
+    direccao = serializers.CharField(required=False, allow_blank=True, max_length=300)
+
     class Meta:
         model  = Localizacao
         fields = ["direccao", "cep", "bairro", "cidade", "estado"]
+        extra_kwargs = {
+            "cep":    {"required": False, "allow_blank": True},
+            "bairro": {"required": False, "allow_blank": True},
+            "cidade": {"required": False, "allow_blank": True},
+            "estado": {"required": False, "allow_blank": True},
+        }
 
 
 class VideoDestaqueSerializer(serializers.ModelSerializer):
@@ -92,7 +100,8 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
         loc_data = validated_data.pop("localizacao", None)
         instance = super().update(instance, validated_data)
 
-        if loc_data is not None:
+        # So criar/atualizar localizacao se houver algum dado preenchido
+        if loc_data and any(v for v in loc_data.values()):
             Localizacao.objects.update_or_create(
                 negocio=instance,
                 defaults=loc_data,
