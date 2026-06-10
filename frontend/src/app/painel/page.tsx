@@ -32,7 +32,20 @@ export default async function PainelPage() {
         href="/painel/produtos"
         className="mt-6 inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark"
       >
-        Gerenciar produtos
+        <div className="mt-6 flex gap-3">
+        <Link
+          href="/painel/produtos"
+          className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark"
+        >
+          Gerenciar produtos
+        </Link>
+        <Link
+          href="/painel/meu-negocio"
+          className="inline-block rounded-lg border border-primary px-6 py-3 font-semibold text-primary hover:bg-primary hover:text-white"
+        >
+          Editar meu negocio
+        </Link>
+      </div>
       </Link>
     </main>
   );

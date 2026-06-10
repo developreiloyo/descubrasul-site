@@ -16,6 +16,11 @@ class LocalizacaoSerializer(serializers.ModelSerializer):
         model  = Localizacao
         fields = ["direccao_fmt", "lat", "lng", "cidade", "bairro", "area_servico"]
 
+class LocalizacaoPainelSerializer(serializers.ModelSerializer):
+    """Edicao da localizacao pelo comerciante no painel."""
+    class Meta:
+        model  = Localizacao
+        fields = ["direccao", "cep", "bairro", "cidade", "estado"]
 
 class VideoDestaqueSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,13 +28,22 @@ class VideoDestaqueSerializer(serializers.ModelSerializer):
         fields = ["plataforma", "oembed_html", "criado_em"]
 
 
-class NegocioPublicoSerializer(serializers.ModelSerializer):
-    categoria       = CategoriaSerializer(read_only=True)
-    redes_sociais   = RedesSociaisSerializer(read_only=True)
-    localizacao     = LocalizacaoSerializer(read_only=True)
-    videos          = VideoDestaqueSerializer(many=True, read_only=True)
-    seo_title       = serializers.SerializerMethodField()
-    seo_description = serializers.SerializerMethodField()
+class NegocioPainelSerializer(serializers.ModelSerializer):
+    localizacao = LocalizacaoPainelSerializer(required=False)
+
+    class Meta:
+        model  = Negocio
+        fields = [
+            "slug", "nome", "descricao", "logo", "alt_logo",
+            "categoria", "cidade", "bairro", "whatsapp", "website",
+            "plano", "status", "verificado",
+            "seo_title", "seo_description", "og_image", "palavras_chave",
+            "horario_abertura", "horario_fechamento", "dias_funcionamento",
+            "media_nota", "total_avaliacoes", "criado_em", "atualizado_em",
+            "localizacao",
+        ]
+        read_only_fields = ["slug", "plano", "status", "verificado",
+                            "media_nota", "total_avaliacoes", "criado_em", "atualizado_em"]
 
     def validate_descricao(self, value):
         validar_texto_seo_completo(value, campo="descrição do negócio")
@@ -43,23 +57,16 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
         validar_texto_seo_completo(value, campo="descrição SEO")
         return value
 
-    class Meta:
-        model  = Negocio
-        fields = [
-            "slug", "nome", "descricao", "logo", "alt_logo",
-            "categoria", "categoria_tipo", "cidade", "bairro",
-            "whatsapp", "website", "verificado", "plano",
-            "horario_abertura", "horario_fechamento", "dias_funcionamento",
-            "media_nota", "total_avaliacoes", "atualizado_em",
-            "seo_title", "seo_description", "og_image", "palavras_chave",
-            "redes_sociais", "localizacao", "videos",
-        ]
+    def update(self, instance, validated_data):
+        loc_data = validated_data.pop("localizacao", None)
+        instance = super().update(instance, validated_data)
 
-    def get_seo_title(self, obj):
-        return obj.get_seo_title()
-
-    def get_seo_description(self, obj):
-        return obj.get_seo_description()
+        if loc_data is not None:
+            Localizacao.objects.update_or_create(
+                negocio=instance,
+                defaults=loc_data,
+            )
+        return instance
 
 
 class NegocioPainelSerializer(serializers.ModelSerializer):
