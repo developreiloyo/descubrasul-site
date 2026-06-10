@@ -18,6 +18,11 @@ interface NegocioForm {
   loc_bairro: string;
   loc_cidade: string;
   estado: string;
+  instagram_url: string;
+  tiktok_url: string;
+  facebook_url: string;
+  youtube_url: string;
+  x_url: string;
 }
 
 const VAZIO: NegocioForm = {
@@ -25,6 +30,7 @@ const VAZIO: NegocioForm = {
   seo_title: "", seo_description: "", palavras_chave: "",
   horario_abertura: "", horario_fechamento: "",
   cep: "", direccao: "", loc_bairro: "", loc_cidade: "", estado: "",
+  instagram_url: "", tiktok_url: "", facebook_url: "", youtube_url: "", x_url: "",
 };
 
 export default function MeuNegocioPage() {
@@ -54,6 +60,11 @@ export default function MeuNegocioPage() {
           loc_bairro: d.localizacao?.bairro ?? "",
           loc_cidade: d.localizacao?.cidade ?? "",
           estado: d.localizacao?.estado ?? "",
+          instagram_url: d.redes_sociais?.instagram_url ?? "",
+          tiktok_url: d.redes_sociais?.tiktok_url ?? "",
+          facebook_url: d.redes_sociais?.facebook_url ?? "",
+          youtube_url: d.redes_sociais?.youtube_url ?? "",
+          x_url: d.redes_sociais?.x_url ?? "",
         });
       })
       .finally(() => setCarregando(false));
@@ -94,10 +105,15 @@ export default function MeuNegocioPage() {
       if (!payload.horario_abertura) payload.horario_abertura = null;
       if (!payload.horario_fechamento) payload.horario_fechamento = null;
 
-      const { cep, direccao, loc_bairro, loc_cidade, estado, ...resto } = payload;
+      const {
+        cep, direccao, loc_bairro, loc_cidade, estado,
+        instagram_url, tiktok_url, facebook_url, youtube_url, x_url,
+        ...resto
+      } = payload;
       const body = {
         ...resto,
         localizacao: { cep, direccao, bairro: loc_bairro, cidade: loc_cidade, estado },
+        redes_sociais: { instagram_url, tiktok_url, facebook_url, youtube_url, x_url },
       };
 
       const res = await fetch("/api/proxy/negocios/painel/meu-negocio", {
@@ -222,6 +238,49 @@ export default function MeuNegocioPage() {
             <label className={labelCls}>Cidade</label>
             <input className={inputCls} value={form.loc_cidade}
               onChange={(e) => set("loc_cidade", e.target.value)} />
+          </div>
+        </div>
+
+        {/* ─── Redes sociais ────────────────────────── */}
+        <h2 className="mt-4 text-xl font-semibold">Redes sociais</h2>
+        <p className="-mt-3 text-sm text-ink/50">
+          Aparecem na sua pagina e ajudam o Google a conectar seus perfis.
+        </p>
+
+        <div className="flex flex-col gap-1">
+          <label className={labelCls}>Instagram</label>
+          <input className={inputCls} value={form.instagram_url}
+            placeholder="https://instagram.com/seunegocio"
+            onChange={(e) => set("instagram_url", e.target.value)} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1">
+            <label className={labelCls}>Facebook</label>
+            <input className={inputCls} value={form.facebook_url}
+              placeholder="https://facebook.com/..."
+              onChange={(e) => set("facebook_url", e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className={labelCls}>TikTok</label>
+            <input className={inputCls} value={form.tiktok_url}
+              placeholder="https://tiktok.com/@..."
+              onChange={(e) => set("tiktok_url", e.target.value)} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1">
+            <label className={labelCls}>YouTube</label>
+            <input className={inputCls} value={form.youtube_url}
+              placeholder="https://youtube.com/@..."
+              onChange={(e) => set("youtube_url", e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className={labelCls}>X (Twitter)</label>
+            <input className={inputCls} value={form.x_url}
+              placeholder="https://x.com/..."
+              onChange={(e) => set("x_url", e.target.value)} />
           </div>
         </div>
 

@@ -10,6 +10,18 @@ class RedesSociaisSerializer(serializers.ModelSerializer):
         model  = RedesSociais
         fields = ["instagram_url", "tiktok_url", "facebook_url", "youtube_url", "x_url"]
 
+class RedesSociaisPainelSerializer(serializers.ModelSerializer):
+    """Edicao das redes sociais pelo comerciante no painel."""
+    class Meta:
+        model  = RedesSociais
+        fields = ["instagram_url", "tiktok_url", "facebook_url", "youtube_url", "x_url"]
+        extra_kwargs = {
+            "instagram_url": {"required": False, "allow_blank": True},
+            "tiktok_url":    {"required": False, "allow_blank": True},
+            "facebook_url":  {"required": False, "allow_blank": True},
+            "youtube_url":   {"required": False, "allow_blank": True},
+            "x_url":         {"required": False, "allow_blank": True},
+        }
 
 class LocalizacaoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,6 +81,7 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
 # ─── Serializer do painel (comerciante) ───────────────────────────────
 class NegocioPainelSerializer(serializers.ModelSerializer):
     localizacao = LocalizacaoPainelSerializer(required=False)
+    redes_sociais = RedesSociaisPainelSerializer(required=False)
 
     class Meta:
         model  = Negocio
@@ -79,7 +92,7 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
             "seo_title", "seo_description", "og_image", "palavras_chave",
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
             "media_nota", "total_avaliacoes", "criado_em", "atualizado_em",
-            "localizacao",
+            "localizacao", "redes_sociais",
         ]
         read_only_fields = ["slug", "plano", "status", "verificado",
                             "media_nota", "total_avaliacoes", "criado_em", "atualizado_em"]
@@ -97,14 +110,20 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance, validated_data):
-        loc_data = validated_data.pop("localizacao", None)
+        loc_data   = validated_data.pop("localizacao", None)
+        redes_data = validated_data.pop("redes_sociais", None)
         instance = super().update(instance, validated_data)
 
-        # So criar/atualizar localizacao se houver algum dado preenchido
         if loc_data and any(v for v in loc_data.values()):
             Localizacao.objects.update_or_create(
                 negocio=instance,
                 defaults=loc_data,
+            )
+
+        if redes_data is not None:
+            RedesSociais.objects.update_or_create(
+                negocio=instance,
+                defaults=redes_data,
             )
         return instance
 
