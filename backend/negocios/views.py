@@ -75,7 +75,14 @@ class MeusProdutosViewSet(viewsets.ModelViewSet):
         return Produto.objects.filter(negocio__usuario=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(negocio=self.request.user.negocio)
+        from django.utils import timezone
+        # disponivel e confirmado_em definidos pelo backend:
+        # DRF interpreta boolean ausente em multipart como False
+        serializer.save(
+            negocio=self.request.user.negocio,
+            disponivel=True,
+            confirmado_em=timezone.now(),
+        )
 
     @action(detail=True, methods=["post"])
     def confirmar_disponibilidade(self, request, pk=None):

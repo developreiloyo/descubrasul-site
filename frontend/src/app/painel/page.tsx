@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 const API = process.env.API_URL_INTERNAL || "http://backend:8000/api";
 
@@ -27,6 +28,12 @@ export default async function PainelPage() {
       <p className="mt-1 text-sm text-ink/50">
         Role: {user.role} — autenticacao httpOnly funcionando ✓
       </p>
+      <Link
+        href="/painel/produtos"
+        className="mt-6 inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark"
+      >
+        Gerenciar produtos
+      </Link>
     </main>
   );
 }

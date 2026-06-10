@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Negocio, Produto, Localizacao, RedesSociais, VideoDestaque
 from categorias.serializers import CategoriaSerializer
 from core.validators_seo import validar_texto_seo_completo, validar_seo_title
+from .validators import validar_imagem
 
 
 class RedesSociaisSerializer(serializers.ModelSerializer):
@@ -78,6 +79,11 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
 
 class ProdutoPublicoSerializer(serializers.ModelSerializer):
     negocio = serializers.SerializerMethodField()
+
+    def validate_foto(self, value):
+        if value:
+            validar_imagem(value)
+        return value
 
     class Meta:
         model  = Produto
