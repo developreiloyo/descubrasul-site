@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Negocio, Produto, Localizacao, RedesSociais, VideoDestaque
+from .models import Negocio, Produto, Localizacao, RedesSociais, VideoDestaque, FotoProduto
 from .validators import validar_imagem
 from categorias.serializers import CategoriaSerializer
 from core.validators_seo import validar_texto_seo_completo, validar_seo_title
@@ -10,8 +10,8 @@ class RedesSociaisSerializer(serializers.ModelSerializer):
         model  = RedesSociais
         fields = ["instagram_url", "tiktok_url", "facebook_url", "youtube_url", "x_url"]
 
+
 class RedesSociaisPainelSerializer(serializers.ModelSerializer):
-    """Edicao das redes sociais pelo comerciante no painel."""
     class Meta:
         model  = RedesSociais
         fields = ["instagram_url", "tiktok_url", "facebook_url", "youtube_url", "x_url"]
@@ -23,14 +23,14 @@ class RedesSociaisPainelSerializer(serializers.ModelSerializer):
             "x_url":         {"required": False, "allow_blank": True},
         }
 
+
 class LocalizacaoSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Localizacao
-        fields = ["direccao_fmt", "lat", "lng", "cidade", "bairro", "area_servico"]
+        fields = ["direccao", "cep", "direccao_fmt", "lat", "lng", "cidade", "bairro", "area_servico"]
 
 
 class LocalizacaoPainelSerializer(serializers.ModelSerializer):
-    """Edicao da localizacao pelo comerciante no painel."""
     direccao = serializers.CharField(required=False, allow_blank=True, max_length=300)
 
     class Meta:
@@ -50,6 +50,12 @@ class VideoDestaqueSerializer(serializers.ModelSerializer):
         fields = ["plataforma", "oembed_html", "criado_em"]
 
 
+class FotoProdutoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = FotoProduto
+        fields = ["id", "foto", "alt_texto", "ordem"]
+
+
 # ─── Serializer publico (visitante) ───────────────────────────────────
 class NegocioPublicoSerializer(serializers.ModelSerializer):
     categoria       = CategoriaSerializer(read_only=True)
@@ -62,7 +68,7 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Negocio
         fields = [
-            "slug", "nome", "descricao", "logo", "alt_logo",
+            "slug", "nome", "descricao", "historia", "logo", "alt_logo",
             "categoria", "categoria_tipo", "cidade", "bairro",
             "whatsapp", "website", "verificado", "plano",
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
@@ -80,13 +86,13 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
 
 # ─── Serializer do painel (comerciante) ───────────────────────────────
 class NegocioPainelSerializer(serializers.ModelSerializer):
-    localizacao = LocalizacaoPainelSerializer(required=False)
+    localizacao   = LocalizacaoPainelSerializer(required=False)
     redes_sociais = RedesSociaisPainelSerializer(required=False)
 
     class Meta:
         model  = Negocio
         fields = [
-            "slug", "nome", "descricao", "logo", "alt_logo",
+            "slug", "nome", "descricao", "historia", "logo", "alt_logo",
             "categoria", "cidade", "bairro", "whatsapp", "website",
             "plano", "status", "verificado",
             "seo_title", "seo_description", "og_image", "palavras_chave",
@@ -99,6 +105,11 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
 
     def validate_descricao(self, value):
         validar_texto_seo_completo(value, campo="descricao do negocio")
+        return value
+
+    def validate_historia(self, value):
+        if value:
+            validar_texto_seo_completo(value, campo="historia do negocio")
         return value
 
     def validate_seo_title(self, value):
@@ -115,6 +126,13 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
 
         if loc_data and any(v for v in loc_data.values()):
+            if not loc_data.get("direccao_fmt") and loc_data.get("direccao"):
+                partes = [
+                    loc_data.get("direccao", ""),
+                    loc_data.get("bairro", ""),
+                    loc_data.get("cidade", ""),
+                ]
+                loc_data["direccao_fmt"] = ", ".join(p for p in partes if p)
             Localizacao.objects.update_or_create(
                 negocio=instance,
                 defaults=loc_data,
@@ -131,13 +149,14 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
 # ─── Produto publico ──────────────────────────────────────────────────
 class ProdutoPublicoSerializer(serializers.ModelSerializer):
     negocio = serializers.SerializerMethodField()
+    fotos   = FotoProdutoSerializer(many=True, read_only=True)
 
     class Meta:
         model  = Produto
         fields = [
             "slug", "nome", "foto", "alt_foto", "descricao",
             "descricao_longa", "categoria", "preco", "disponivel",
-            "atualizado_em", "negocio",
+            "atualizado_em", "negocio", "fotos",
         ]
 
     def get_negocio(self, obj):
@@ -152,12 +171,14 @@ class ProdutoPublicoSerializer(serializers.ModelSerializer):
 
 # ─── Produto painel (comerciante) ─────────────────────────────────────
 class ProdutoPainelSerializer(serializers.ModelSerializer):
+    fotos = FotoProdutoSerializer(many=True, read_only=True)
+
     class Meta:
         model  = Produto
         fields = [
             "id", "slug", "nome", "foto", "alt_foto", "descricao",
             "descricao_longa", "categoria", "preco", "disponivel",
-            "confirmado_em", "criado_em", "atualizado_em",
+            "confirmado_em", "criado_em", "atualizado_em", "fotos",
         ]
         read_only_fields = ["slug", "criado_em", "atualizado_em"]
 

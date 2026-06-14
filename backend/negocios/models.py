@@ -16,9 +16,9 @@ def gerar_caminho_seguro(instance, filename):
 LIMITES_PRODUTOS = {
     "gratuito": 5,
     "basico":   20,
-    "pro":      None,   # ilimitado
-    "producao": None,   # ilimitado
-    "fundador": None,   # ilimitado
+    "pro":      None,
+    "producao": None,
+    "fundador": None,
 }
 
 
@@ -36,16 +36,15 @@ class Negocio(models.Model):
         INATIVO  = "inativo",  "Inativo"
         PENDENTE = "pendente", "Pendente"
 
-    # ─── Relação ──────────────────────────────────────────────────────
     usuario = models.OneToOneField(
         "usuarios.User",
         on_delete=models.CASCADE,
         related_name="negocio",
     )
 
-    # ─── Dados funcionais ─────────────────────────────────────────────
     nome      = models.CharField(max_length=200)
     descricao = models.TextField(blank=True)
+    historia  = models.TextField(blank=True)
     logo      = models.ImageField(upload_to=gerar_caminho_seguro, null=True, blank=True)
     categoria = models.ForeignKey(
         "categorias.Categoria",
@@ -61,7 +60,6 @@ class Negocio(models.Model):
     verificado = models.BooleanField(default=False)
     criado_em  = models.DateTimeField(auto_now_add=True)
 
-    # ─── SEO — obrigatórios desde o MVP ───────────────────────────────
     slug            = models.SlugField(max_length=220, unique=True, blank=True)
     seo_title       = models.CharField(max_length=60, blank=True)
     seo_description = models.CharField(max_length=160, blank=True)
@@ -71,12 +69,10 @@ class Negocio(models.Model):
     palavras_chave  = models.CharField(max_length=300, blank=True)
     atualizado_em   = models.DateTimeField(auto_now=True)
 
-    # ─── Horário de funcionamento ─────────────────────────────────────
     horario_abertura   = models.TimeField(null=True, blank=True)
     horario_fechamento = models.TimeField(null=True, blank=True)
     dias_funcionamento = models.JSONField(default=list, blank=True)
 
-    # ─── Avaliações (AggregateRating schema) ──────────────────────────
     media_nota       = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     total_avaliacoes = models.IntegerField(default=0)
 
@@ -94,16 +90,12 @@ class Negocio(models.Model):
     def __str__(self):
         return f"{self.nome} — {self.cidade}"
 
-    # ─── Helpers de plano ─────────────────────────────────────────────
-
     @property
     def is_pago(self):
-        """Qualquer plano que não seja gratuito."""
         return self.plano != self.Plano.GRATUITO
 
     @property
     def is_pro(self):
-        """Planos com acesso a IA, métricas, Maps e vídeos."""
         return self.plano in [self.Plano.PRO, self.Plano.PRODUCAO, self.Plano.FUNDADOR]
 
     @property
@@ -112,12 +104,10 @@ class Negocio(models.Model):
 
     @property
     def limite_produtos(self):
-        """Retorna o limite de produtos do plano atual (None = ilimitado)."""
         return LIMITES_PRODUTOS.get(self.plano)
 
     @property
     def pode_adicionar_produto(self):
-        """Verifica se o negócio ainda pode adicionar produtos."""
         limite = self.limite_produtos
         if limite is None:
             return True
@@ -125,7 +115,6 @@ class Negocio(models.Model):
 
     @property
     def aparece_em_destaque(self):
-        """Plano gratuito não aparece em destaque na home nem em categorias."""
         return self.is_pago
 
     def get_seo_title(self):
@@ -139,7 +128,6 @@ class Produto(models.Model):
 
     negocio   = models.ForeignKey(Negocio, on_delete=models.CASCADE, related_name="produtos")
 
-    # ─── Dados funcionais ─────────────────────────────────────────────
     nome        = models.CharField(max_length=200)
     foto        = models.ImageField(upload_to=gerar_caminho_seguro, null=True, blank=True)
     descricao   = models.TextField(blank=True)
@@ -147,16 +135,12 @@ class Produto(models.Model):
     preco       = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     disponivel  = models.BooleanField(default=True)
     criado_em   = models.DateTimeField(auto_now_add=True)
-    confirmado_em = models.DateTimeField(null=True, blank=True)  # ocultar após 30 dias
+    confirmado_em = models.DateTimeField(null=True, blank=True)
 
-    # ─── SEO e IA ─────────────────────────────────────────────────────
     slug            = models.SlugField(max_length=220, blank=True)
     alt_foto        = models.CharField(max_length=125, blank=True)
-    descricao_longa = models.TextField(blank=True)  # gerado pela IA (Plano Pro)
+    descricao_longa = models.TextField(blank=True)
     atualizado_em   = models.DateTimeField(auto_now=True)
-
-    # embedding para pgvector (Fase 2)
-    # embedding = VectorField(dimensions=384, null=True)
 
     class Meta:
         verbose_name        = "Produto"
@@ -172,8 +156,24 @@ class Produto(models.Model):
         return f"{self.nome} ({self.negocio.nome})"
 
 
+class FotoProduto(models.Model):
+    """Máximo 3 fotos por produto — validado no serializer."""
+    produto   = models.ForeignKey(Produto, on_delete=models.CASCADE, related_name="fotos")
+    foto      = models.ImageField(upload_to=gerar_caminho_seguro)
+    alt_texto = models.CharField(max_length=125, blank=True)
+    ordem     = models.PositiveSmallIntegerField(default=0)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "Foto do Produto"
+        verbose_name_plural = "Fotos do Produto"
+        ordering            = ["ordem", "criado_em"]
+
+    def __str__(self):
+        return f"Foto de {self.produto.nome} ({self.ordem})"
+
 class Localizacao(models.Model):
-    """Plano Pro — geocodificada automaticamente via Google Maps."""
+    """Geocodificada automaticamente via Google Maps (Plano Pro) ou manualmente."""
 
     negocio      = models.OneToOneField(Negocio, on_delete=models.CASCADE, related_name="localizacao")
     direccao     = models.CharField(max_length=300)
@@ -192,6 +192,13 @@ class Localizacao(models.Model):
 
     def __str__(self):
         return f"Localização de {self.negocio.nome}"
+
+    def get_direccao_fmt(self):
+        """Retorna endereço formatado — usa direccao_fmt se preenchido, senão monta."""
+        if self.direccao_fmt:
+            return self.direccao_fmt
+        partes = [self.direccao, self.bairro, self.cidade]
+        return ", ".join(p for p in partes if p)
 
 
 class RedesSociais(models.Model):
@@ -253,3 +260,11 @@ def gerar_slug_produto(sender, instance, **kwargs):
             slug = f"{base}-{n}"
             n += 1
         instance.slug = slug
+
+
+@receiver(pre_save, sender=Localizacao)
+def preencher_direccao_fmt(sender, instance, **kwargs):
+    """Preenche direccao_fmt automaticamente ao salvar."""
+    if not instance.direccao_fmt and instance.direccao:
+        partes = [instance.direccao, instance.bairro, instance.cidade]
+        instance.direccao_fmt = ", ".join(p for p in partes if p)

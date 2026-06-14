@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 interface NegocioForm {
   nome: string;
   descricao: string;
+  historia: string;
   bairro: string;
   whatsapp: string;
   website: string;
@@ -26,7 +27,7 @@ interface NegocioForm {
 }
 
 const VAZIO: NegocioForm = {
-  nome: "", descricao: "", bairro: "", whatsapp: "", website: "",
+  nome: "", descricao: "", historia: "", bairro: "", whatsapp: "", website: "",
   seo_title: "", seo_description: "", palavras_chave: "",
   horario_abertura: "", horario_fechamento: "",
   cep: "", direccao: "", loc_bairro: "", loc_cidade: "", estado: "",
@@ -47,6 +48,7 @@ export default function MeuNegocioPage() {
         setForm({
           nome: d.nome ?? "",
           descricao: d.descricao ?? "",
+          historia: d.historia ?? "",
           bairro: d.bairro ?? "",
           whatsapp: d.whatsapp ?? "",
           website: d.website ?? "",
@@ -108,10 +110,12 @@ export default function MeuNegocioPage() {
       const {
         cep, direccao, loc_bairro, loc_cidade, estado,
         instagram_url, tiktok_url, facebook_url, youtube_url, x_url,
+        historia,
         ...resto
       } = payload;
       const body = {
         ...resto,
+        historia,
         localizacao: { cep, direccao, bairro: loc_bairro, cidade: loc_cidade, estado },
         redes_sociais: { instagram_url, tiktok_url, facebook_url, youtube_url, x_url },
       };
@@ -162,11 +166,21 @@ export default function MeuNegocioPage() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className={labelCls}>Descricao</label>
-          <textarea className={inputCls} rows={4} value={form.descricao}
+          <label className={labelCls}>Descricao curta</label>
+          <textarea className={inputCls} rows={3} value={form.descricao}
             onChange={(e) => set("descricao", e.target.value)}
-            placeholder="Conte o que torna seu negocio unico. Escreva natural — repetir palavras prejudica seu Google." />
+            placeholder="Frase de impacto sobre o negocio — aparece nos resultados de busca e nas listas." />
           <span className="text-xs text-ink/40">{form.descricao.length} caracteres</span>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className={labelCls}>Historia do negocio</label>
+          <textarea className={inputCls} rows={7} value={form.historia}
+            onChange={(e) => set("historia", e.target.value)}
+            placeholder={`Conte a historia do seu negocio. Quando surgiu? O que o torna especial? Quem e o fundador? Este texto aparece na sua pagina publica na secao "Sobre".`} />
+          <span className="text-xs text-ink/40">
+            {form.historia.length} caracteres · Pode usar paragrafos
+          </span>
         </div>
 
         <div className="grid grid-cols-2 gap-3">

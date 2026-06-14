@@ -108,3 +108,42 @@ class MeusProdutosViewSet(viewsets.ModelViewSet):
             "pode_adicionar":      negocio.pode_adicionar_produto,
             "aparece_em_destaque": negocio.aparece_em_destaque,
         })
+    
+    @action(detail=True, methods=["post"], url_path="fotos")
+    def adicionar_foto(self, request, pk=None):
+        """Adiciona foto ao produto — máximo 3."""
+        produto = self.get_object()
+        
+        if produto.fotos.count() >= 3:
+            return Response(
+                {"detail": "Máximo de 3 fotos por produto atingido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        foto = request.FILES.get("foto")
+        if not foto:
+            return Response({"detail": "Foto obrigatória."}, status=400)
+        
+        from .validators import validar_imagem
+        validar_imagem(foto)
+        
+        from .models import FotoProduto
+        FotoProduto.objects.create(
+            produto=produto,
+            foto=foto,
+            alt_texto=request.data.get("alt_texto", ""),
+            ordem=produto.fotos.count(),
+        )
+        return Response({"ok": True}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["delete"], url_path="fotos/(?P<foto_id>[^/.]+)")
+    def remover_foto(self, request, pk=None, foto_id=None):
+        """Remove uma foto específica do produto."""
+        from .models import FotoProduto
+        produto = self.get_object()
+        try:
+            foto = FotoProduto.objects.get(id=foto_id, produto=produto)
+            foto.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except FotoProduto.DoesNotExist:
+            return Response({"detail": "Foto não encontrada."}, status=404)

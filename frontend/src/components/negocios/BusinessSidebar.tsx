@@ -1,5 +1,7 @@
-import { Clock, MapPin, Phone } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { Clock, MapPin, Phone, Star } from "lucide-react";
+import { mediaUrl } from "@/lib/utils";
 import type { Negocio } from "@/types";
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -28,9 +30,30 @@ function TikTokIcon({ className }: { className?: string }) {
 
 interface Props {
   negocio: Negocio;
+  similares?: Negocio[];
 }
 
-export function BusinessSidebar({ negocio }: Props) {
+function mapaUrl(negocio: Negocio): string {
+  if (negocio.localizacao?.lat) {
+    return `https://maps.google.com/?q=${negocio.localizacao.lat},${negocio.localizacao.lng}`;
+  }
+  if (negocio.localizacao?.direccao_fmt) {
+    return `https://maps.google.com/?q=${encodeURIComponent(negocio.localizacao.direccao_fmt + ", " + negocio.cidade + ", SC, Brasil")}`;
+  }
+  return `https://maps.google.com/?q=${encodeURIComponent(negocio.cidade + ", SC, Brasil")}`;
+}
+
+function mapaEmbed(negocio: Negocio): string {
+  if (negocio.localizacao?.lat) {
+    return `https://www.google.com/maps?q=${negocio.localizacao.lat},${negocio.localizacao.lng}&z=15&output=embed`;
+  }
+  if (negocio.localizacao?.direccao_fmt) {
+    return `https://www.google.com/maps?q=${encodeURIComponent(negocio.localizacao.direccao_fmt + ", " + negocio.cidade + ", SC, Brasil")}&z=15&output=embed`;
+  }
+  return `https://www.google.com/maps?q=${encodeURIComponent(negocio.cidade + ", SC, Brasil")}&z=13&output=embed`;
+}
+
+export function BusinessSidebar({ negocio, similares = [] }: Props) {
   const abreAs = negocio.horario_abertura?.slice(0, 5);
   const fechaAs = negocio.horario_fechamento?.slice(0, 5);
   const cidade = negocio.cidade.charAt(0).toUpperCase() + negocio.cidade.slice(1);
@@ -43,6 +66,8 @@ export function BusinessSidebar({ negocio }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
+
+      {/* ─── Informações ───────────────────────────────────────────── */}
       <section className="rounded-xl border border-ink/10 bg-white p-5 shadow-sm">
         <h2 className="mb-4 text-lg font-bold">Informações do negócio</h2>
 
@@ -61,7 +86,7 @@ export function BusinessSidebar({ negocio }: Props) {
             <li className="flex gap-3">
               <Clock className="mt-0.5 size-4 shrink-0 text-ink/40" />
               <span className="text-ink/70">
-                Abre às {abreAs} · Fecha às {fechaAs}
+                {abreAs} – {fechaAs}
               </span>
             </li>
           )}
@@ -72,16 +97,14 @@ export function BusinessSidebar({ negocio }: Props) {
               <div>
                 <p className="text-ink/70">{negocio.localizacao.direccao_fmt}</p>
                 <p className="text-ink/50">{cidade}, SC</p>
-                {negocio.localizacao.lat && (
-                  <a
-                    href={`https://maps.google.com/?q=${negocio.localizacao.lat},${negocio.localizacao.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Ver no Google Maps →
-                  </a>
-                )}
+                <a
+                  href={mapaUrl(negocio)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:underline"
+                >
+                  Ver no Google Maps →
+                </a>
               </div>
             </li>
           )}
@@ -89,29 +112,35 @@ export function BusinessSidebar({ negocio }: Props) {
           {negocio.whatsapp && (
             <li className="flex gap-3">
               <Phone className="mt-0.5 size-4 shrink-0 text-ink/40" />
-              <span className="text-ink/70">{negocio.whatsapp}</span>
+              <a
+                href={`https://wa.me/55${negocio.whatsapp.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-ink/70 hover:text-primary"
+              >
+                {negocio.whatsapp}
+              </a>
             </li>
           )}
         </ul>
 
-        {negocio.localizacao?.lat && (
-          <a
-            href={`https://maps.google.com/?q=${negocio.localizacao.lat},${negocio.localizacao.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 block overflow-hidden rounded-lg border border-ink/10"
-          >
-            <iframe
-              title={`Mapa de ${negocio.nome}`}
-              className="pointer-events-none h-40 w-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              src={`https://www.google.com/maps?q=${negocio.localizacao.lat},${negocio.localizacao.lng}&output=embed`}
-            />
-          </a>
-        )}
+        <a
+          href={mapaUrl(negocio)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 block overflow-hidden rounded-lg border border-ink/10"
+        >
+          <iframe
+            title={`Mapa de ${negocio.nome}`}
+            className="pointer-events-none h-40 w-full"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            src={mapaEmbed(negocio)}
+          />
+        </a>
       </section>
 
+      {/* ─── Redes sociais ─────────────────────────────────────────── */}
       {redes.length > 0 && (
         <section className="rounded-xl border border-ink/10 bg-white p-5 shadow-sm">
           <h2 className="mb-4 text-lg font-bold">Redes Sociais</h2>
@@ -132,6 +161,54 @@ export function BusinessSidebar({ negocio }: Props) {
         </section>
       )}
 
+      {/* ─── Você também pode gostar ───────────────────────────────── */}
+      {similares.length > 0 && (
+        <section className="rounded-xl border border-ink/10 bg-white p-5 shadow-sm">
+          <h2 className="mb-4 text-lg font-bold">Você também pode gostar</h2>
+          <div className="flex flex-col gap-3">
+            {similares.map((n) => {
+              const foto = mediaUrl(n.logo);
+              return (
+                <Link
+                  key={n.slug}
+                  href={`/negocios/${n.cidade}/${n.categoria?.slug}/${n.slug}`}
+                  className="group flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-ink/5"
+                >
+                  <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-ink/10">
+                    {foto ? (
+                      <Image
+                        src={foto}
+                        alt={n.alt_logo || n.nome}
+                        fill
+                        sizes="56px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-2xl">
+                        {n.categoria?.icone || "🏪"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold group-hover:text-primary">
+                      {n.nome}
+                    </p>
+                    <p className="text-xs text-ink/50">{n.categoria?.nome}</p>
+                    {Number(n.media_nota) > 0 && (
+                      <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-ink/60">
+                        <Star className="size-3 fill-amber-400 text-amber-400" />
+                        {n.media_nota}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ─── Powered by ────────────────────────────────────────────── */}
       <div className="rounded-xl border border-ink/10 bg-white p-4 text-center">
         <p className="text-xs text-ink/40">Vitrina digital por</p>
         <p className="font-bold text-primary">

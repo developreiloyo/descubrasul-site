@@ -4,14 +4,16 @@ export interface Negocio {
   slug: string;
   nome: string;
   descricao: string;
+  historia: string;
   logo: string | null;
   alt_logo: string;
-  categoria: string;
+  categoria: Categoria;
   categoria_tipo: string;
   cidade: string;
+  bairro: string;
   whatsapp: string;
   website: string | null;
-  plano: "basico" | "pro" | "producao";
+  plano: "gratuito" | "basico" | "pro" | "producao" | "fundador";
   status: "ativo" | "inativo" | "pendente";
   verificado: boolean;
   seo_title: string;
@@ -19,6 +21,9 @@ export interface Negocio {
   og_image: string | null;
   media_nota: string;
   total_avaliacoes: number;
+  horario_abertura: string | null;
+  horario_fechamento: string | null;
+  dias_funcionamento: string[];
   atualizado_em: string;
   redes_sociais?: RedesSociais;
   localizacao?: Localizacao;

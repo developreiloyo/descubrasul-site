@@ -8,6 +8,7 @@ import { BusinessSidebar } from "@/components/negocios/BusinessSidebar";
 import { ServicosSection } from "@/components/negocios/ServicosSection";
 import { SimilarBusinesses } from "@/components/negocios/SimilarBusinesses";
 import { PhotoGallery } from "@/components/negocios/PhotoGallery";
+import { ProductoDestaque } from "@/components/negocios/ProductoDestaque";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { BadgeCheck, MapPin, Star } from "lucide-react";
@@ -111,10 +112,8 @@ export default async function PaginaNegocio({ params }: Props) {
       <main className="mx-auto max-w-6xl px-4 py-6 lg:py-8">
         <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
 
-          {/* Coluna principal */}
           <div className="flex flex-col gap-6">
 
-            {/* Galeria */}
             <PhotoGallery
               mainPhoto={negocio.logo}
               altText={negocio.alt_logo}
@@ -122,7 +121,6 @@ export default async function PaginaNegocio({ params }: Props) {
               nome={negocio.nome}
             />
 
-            {/* Nome e meta — abaixo da foto como na referencia */}
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold text-ink sm:text-3xl">
@@ -161,19 +159,28 @@ export default async function PaginaNegocio({ params }: Props) {
               />
             </div>
 
-            {/* Produtos / Servicos */}
-            <ServicosSection negocio={negocio} produtos={produtos} />
+            {produtos.length > 0 && (
+              <ProductoDestaque
+                produto={produtos[0]}
+                negocio={negocio}
+              />
+            )}
 
-            {/* Sidebar mobile */}
+            {produtos.length > 1 && (
+              <ServicosSection
+                negocio={negocio}
+                produtos={produtos.slice(1)}
+                titulo="Mais produtos"
+              />
+            )}
+
             <div className="lg:hidden">
               <BusinessSidebar negocio={negocio} />
             </div>
 
-            {/* Similares */}
             <SimilarBusinesses negocios={similaresFiltrados} />
           </div>
 
-          {/* Sidebar desktop */}
           <aside className="hidden lg:block">
             <div className="sticky top-20">
               <BusinessSidebar negocio={negocio} />
