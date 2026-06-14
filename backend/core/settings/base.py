@@ -166,3 +166,17 @@ ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
 MP_ACCESS_TOKEN = env("MP_ACCESS_TOKEN", default="")
 MP_WEBHOOK_SECRET = env("MP_WEBHOOK_SECRET", default="")
 GOOGLE_MAPS_API_KEY = env("GOOGLE_MAPS_API_KEY", default="")
+
+# ─── Email ────────────────────────────────────────────────────────────
+DEFAULT_FROM_EMAIL = "DescubraSul <noreply@descubrasul.com>"
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend"
+)
+# Resend usa SMTP — configurado em prod via variaveis de ambiente
+EMAIL_HOST     = env("EMAIL_HOST", default="")
+EMAIL_PORT     = env.int("EMAIL_PORT", default=587)
+EMAIL_USE_TLS  = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")

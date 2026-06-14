@@ -68,12 +68,20 @@ export default function LoginPage() {
           {carregando ? "Entrando..." : "Entrar"}
         </button>
 
-        <p className="text-center text-sm text-ink/60">
-          Ainda nao tem conta?{" "}
-          <Link href="/painel/cadastro" className="font-semibold text-primary">
-            Cadastre seu negocio
+        <div className="flex flex-col items-center gap-2 text-sm text-ink/60">
+          <Link
+            href="/painel/esqueci-senha"
+            className="font-semibold text-primary hover:underline"
+          >
+            Esqueci minha senha
           </Link>
-        </p>
+          <p>
+            Ainda nao tem conta?{" "}
+            <Link href="/painel/cadastro" className="font-semibold text-primary">
+              Cadastre seu negocio
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );

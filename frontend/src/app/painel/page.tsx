@@ -28,11 +28,13 @@ export default async function PainelPage() {
       <p className="mt-1 text-sm text-ink/50">
         Role: {user.role} — autenticacao httpOnly funcionando ✓
       </p>
-      <Link
-        href="/painel/produtos"
-        className="mt-6 inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark"
-      >
-        <div className="mt-6 flex gap-3">
+      <div className="mt-6 flex gap-3">
+        <Link
+          href="/painel/metricas"
+          className="inline-block rounded-lg border border-secondary px-6 py-3 font-semibold text-secondary hover:bg-secondary hover:text-white"
+        >
+          Ver métricas
+        </Link>
         <Link
           href="/painel/produtos"
           className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark"
@@ -46,7 +48,6 @@ export default async function PainelPage() {
           Editar meu negocio
         </Link>
       </div>
-      </Link>
     </main>
   );
 }

@@ -82,3 +82,16 @@ class CadastroCompletoSerializer(serializers.Serializer):
 class ChangePasswordSerializer(serializers.Serializer):
     password_atual = serializers.CharField(write_only=True)
     password_novo  = serializers.CharField(write_only=True, min_length=8)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        return value.lower()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid      = serializers.CharField()
+    token    = serializers.CharField()
+    password = serializers.CharField(write_only=True, min_length=8)
