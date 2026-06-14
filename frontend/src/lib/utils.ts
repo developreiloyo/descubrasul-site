@@ -22,3 +22,15 @@ export function truncar(texto: string, max: number): string {
   if (!texto || texto.length <= max) return texto;
   return texto.slice(0, texto.lastIndexOf(" ", max)) + "…";
 }
+/**
+ * Converte URL de media do backend para URL acessível pelo browser.
+ * Em dev: http://backend:8000/media/... → /media/...
+ * Em prod: usa a URL do R2 diretamente
+ */
+export function mediaUrl(url: string | null): string | null {
+  if (!url) return null;
+  if (url.includes("backend:8000")) {
+    return url.replace("http://backend:8000", "");
+  }
+  return url;
+}

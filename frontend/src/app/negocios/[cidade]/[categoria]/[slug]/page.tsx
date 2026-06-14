@@ -1,24 +1,26 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import { getNegocio, getProdutosDoNegocio } from "@/lib/fetchers";
+import { getNegocio, getProdutosDoNegocio, getNegocios } from "@/lib/fetchers";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { BotaoWhatsApp } from "@/components/negocios/BotaoWhatsApp";
-import { formatarPreco, truncar } from "@/lib/utils";
 import { TrackerView } from "@/components/negocios/TrackerView";
+import { BusinessActions } from "@/components/negocios/BusinessActions";
+import { BusinessSidebar } from "@/components/negocios/BusinessSidebar";
+import { ServicosSection } from "@/components/negocios/ServicosSection";
+import { SimilarBusinesses } from "@/components/negocios/SimilarBusinesses";
+import { PhotoGallery } from "@/components/negocios/PhotoGallery";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { BadgeCheck, MapPin, Star } from "lucide-react";
 
 interface Props {
   params: Promise<{ cidade: string; categoria: string; slug: string }>;
 }
 
-// ─── Metadata dinâmica (SEO) ──────────────────────────────────────
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, cidade, categoria } = await params;
   const negocio = await getNegocio(slug);
   if (!negocio) return { title: "Negócio não encontrado" };
-
   const url = `https://descubrasul.com/negocios/${cidade}/${categoria}/${slug}`;
-
   return {
     title: negocio.seo_title,
     description: negocio.seo_description,
@@ -28,13 +30,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: negocio.seo_description,
       url,
       images: negocio.og_image ? [negocio.og_image] : [],
-      type: "website",
     },
   };
 }
 
-// ─── Schema JSON-LD ───────────────────────────────────────────────
-function schemaLocalBusiness(negocio: NonNullable<Awaited<ReturnType<typeof getNegocio>>>, url: string) {
+function schemaLocalBusiness(
+  negocio: NonNullable<Awaited<ReturnType<typeof getNegocio>>>,
+  url: string
+) {
   return {
     "@context": "https://schema.org",
     "@type": negocio.categoria_tipo || "LocalBusiness",
@@ -78,107 +81,108 @@ function schemaLocalBusiness(negocio: NonNullable<Awaited<ReturnType<typeof getN
       negocio.redes_sociais?.instagram_url,
       negocio.redes_sociais?.facebook_url,
       negocio.redes_sociais?.tiktok_url,
-      negocio.redes_sociais?.youtube_url,
     ].filter(Boolean),
   };
 }
 
-// ─── Página ───────────────────────────────────────────────────────
 export default async function PaginaNegocio({ params }: Props) {
   const { slug, cidade, categoria } = await params;
   const negocio = await getNegocio(slug);
   if (!negocio) notFound();
 
-  const produtos = await getProdutosDoNegocio(slug);
+  const [produtos, similares] = await Promise.all([
+    getProdutosDoNegocio(slug),
+    getNegocios({ categoria, cidade }),
+  ]);
+
+  const similaresFiltrados = similares
+    .filter((n) => n.slug !== slug)
+    .slice(0, 4);
+
   const url = `https://descubrasul.com/negocios/${cidade}/${categoria}/${slug}`;
+  const cidadeFormatada = negocio.cidade.charAt(0).toUpperCase() + negocio.cidade.slice(1);
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
+    <div className="min-h-screen bg-[#fafaf9]">
       <JsonLd data={schemaLocalBusiness(negocio, url)} />
       <TrackerView negocioSlug={negocio.slug} />
+      <Navbar />
 
-      {/* ─── Cabeçalho do negócio ─────────────────────── */}
-      <header className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:text-left">
-        {negocio.logo && (
-          <Image
-            src={negocio.logo}
-            alt={negocio.alt_logo || `Logo de ${negocio.nome}`}
-            width={120}
-            height={120}
-            priority
-            className="rounded-2xl border border-ink/10 object-cover"
-          />
-        )}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">
-            {negocio.nome}
-            {negocio.verificado && (
-              <span className="ml-2 text-primary" title="Negócio verificado">✓</span>
-            )}
-          </h1>
-          <p className="mt-1 text-ink/60">
-            {negocio.categoria?.nome} · {negocio.cidade}
-            {negocio.bairro && ` · ${negocio.bairro}`}
-          </p>
-          {negocio.descricao && (
-            <p className="mt-3 max-w-2xl text-ink/80">{negocio.descricao}</p>
-          )}
-        </div>
-        <BotaoWhatsApp
-          numero={negocio.whatsapp}
-          mensagem={`Olá! Vi o perfil de ${negocio.nome} no DescubraSul e gostaria de mais informações.`}
-          negocioSlug={negocio.slug}
-        />
-      </header>
+      <main className="mx-auto max-w-6xl px-4 py-6 lg:py-8">
+        <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
 
-      {/* ─── Produtos ─────────────────────────────────── */}
-      <section className="py-8">
-        <h2 className="mb-6 text-2xl font-semibold">Produtos</h2>
-        {produtos.length === 0 ? (
-          <p className="text-ink/50">Nenhum produto cadastrado ainda.</p>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {produtos.map((produto) => (
-              <article
-                key={produto.slug}
-                className="overflow-hidden rounded-xl border border-ink/10 bg-white transition hover:shadow-md"
-              >
-                {produto.foto && (
-                  <Image
-                    src={produto.foto}
-                    alt={produto.alt_foto || produto.nome}
-                    width={400}
-                    height={300}
-                    className="h-48 w-full object-cover"
-                  />
+          {/* Coluna principal */}
+          <div className="flex flex-col gap-6">
+
+            {/* Galeria */}
+            <PhotoGallery
+              mainPhoto={negocio.logo}
+              altText={negocio.alt_logo}
+              icone={negocio.categoria?.icone}
+              nome={negocio.nome}
+            />
+
+            {/* Nome e meta — abaixo da foto como na referencia */}
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-bold text-ink sm:text-3xl">
+                  {negocio.nome}
+                </h1>
+                {negocio.verificado && (
+                  <BadgeCheck className="size-7 text-primary" fill="#0d9488" stroke="white" />
                 )}
-                <div className="p-4">
-                  <h3 className="font-semibold">{produto.nome}</h3>
-                  {produto.descricao && (
-                    <p className="mt-1 text-sm text-ink/60">
-                      {truncar(produto.descricao, 100)}
-                    </p>
-                  )}
-                  {produto.preco && (
-                    <p className="mt-2 font-bold text-primary">
-                      {formatarPreco(produto.preco)}
-                    </p>
-                  )}
-                  <div className="mt-3">
-                    <BotaoWhatsApp
-                      numero={negocio.whatsapp}
-                      mensagem={`Olá! Tenho interesse no produto "${produto.nome}" que vi no DescubraSul.`}
-                      texto="Pedir pelo WhatsApp"
-                      negocioSlug={negocio.slug}
-                      produtoSlug={produto.slug}
-                    />
-                  </div>
-                </div>
-              </article>
-            ))}
+              </div>
+
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <span className="rounded-full bg-primary/10 px-3 py-0.5 text-sm font-medium text-primary">
+                  {negocio.categoria?.nome}
+                </span>
+                <span className="inline-flex items-center gap-1 text-sm text-ink/50">
+                  <MapPin className="size-3.5" />
+                  {cidadeFormatada} · SC
+                </span>
+                {negocio.total_avaliacoes > 0 && (
+                  <span className="inline-flex items-center gap-1 text-sm">
+                    <Star className="size-3.5 fill-amber-400 text-amber-400" />
+                    <span className="font-semibold">{negocio.media_nota}</span>
+                    <span className="text-ink/50">({negocio.total_avaliacoes} avaliações)</span>
+                  </span>
+                )}
+              </div>
+
+              {negocio.descricao && (
+                <p className="mt-3 leading-relaxed text-ink/70">{negocio.descricao}</p>
+              )}
+
+              <BusinessActions
+                negocioSlug={negocio.slug}
+                whatsapp={negocio.whatsapp}
+                nome={negocio.nome}
+              />
+            </div>
+
+            {/* Produtos / Servicos */}
+            <ServicosSection negocio={negocio} produtos={produtos} />
+
+            {/* Sidebar mobile */}
+            <div className="lg:hidden">
+              <BusinessSidebar negocio={negocio} />
+            </div>
+
+            {/* Similares */}
+            <SimilarBusinesses negocios={similaresFiltrados} />
           </div>
-        )}
-      </section>
-    </main>
+
+          {/* Sidebar desktop */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-20">
+              <BusinessSidebar negocio={negocio} />
+            </div>
+          </aside>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
   );
 }

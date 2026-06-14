@@ -9,6 +9,7 @@ interface Props {
   texto?: string;
   negocioSlug: string;
   produtoSlug?: string;
+  className?: string;
 }
 
 export function BotaoWhatsApp({
@@ -17,6 +18,7 @@ export function BotaoWhatsApp({
   texto = "Falar no WhatsApp",
   negocioSlug,
   produtoSlug,
+  className = "",
 }: Props) {
   function handleClick() {
     registrarClique(negocioSlug, "whatsapp", produtoSlug);
@@ -28,7 +30,7 @@ export function BotaoWhatsApp({
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
-      className="inline-flex items-center gap-2 rounded-full bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
+      className={`inline-flex items-center gap-2 rounded-full bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700 ${className}`}
     >
       <span aria-hidden>💬</span>
       {texto}
