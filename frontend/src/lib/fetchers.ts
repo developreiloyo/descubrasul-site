@@ -1,11 +1,12 @@
-import type { Negocio, Produto } from "@/types";
+import type { Negocio, Produto, Categoria } from "@/types";
 
 const API = process.env.API_URL_INTERNAL || "http://backend:8000/api";
+const REVALIDATE = process.env.NODE_ENV === "production" ? 300 : 0;
 
 export async function getNegocio(slug: string): Promise<Negocio | null> {
   try {
     const res = await fetch(`${API}/negocios/${slug}/`, {
-      next: { revalidate: 300 },
+      next: { revalidate: REVALIDATE },
     });
     if (!res.ok) return null;
     return res.json();
@@ -17,7 +18,20 @@ export async function getNegocio(slug: string): Promise<Negocio | null> {
 export async function getProdutosDoNegocio(slug: string): Promise<Produto[]> {
   try {
     const res = await fetch(`${API}/negocios/${slug}/produtos/`, {
-      next: { revalidate: 300 },
+      next: { revalidate: REVALIDATE },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.results ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getCategorias(): Promise<Categoria[]> {
+  try {
+    const res = await fetch(`${API}/categorias/`, {
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -37,7 +51,7 @@ export async function getNegocios(params?: {
     if (params?.categoria) query.set("categoria", params.categoria);
 
     const res = await fetch(`${API}/negocios/?${query.toString()}`, {
-      next: { revalidate: 300 },
+      next: { revalidate: REVALIDATE },
     });
     if (!res.ok) return [];
     const data = await res.json();

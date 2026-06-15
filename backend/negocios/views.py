@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django.db import models
 from .models import Negocio, Produto
 from .serializers import (
     NegocioPublicoSerializer, NegocioPainelSerializer,
@@ -147,3 +148,23 @@ class MeusProdutosViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except FotoProduto.DoesNotExist:
             return Response({"detail": "Foto não encontrada."}, status=404)
+        
+    def get_queryset(self):
+        return Produto.objects.filter(
+            negocio=self.request.user.negocio
+        ).order_by("ordem", "criado_em").prefetch_related("fotos")
+
+    @action(detail=True, methods=["post"], url_path="destacar")
+    def destacar(self, request, pk=None):
+        """Move este produto para a posição 0 — aparece no carousel principal."""
+        produto = self.get_object()
+        negocio = self.request.user.negocio
+
+        # Incrementa a ordem de todos os outros
+        Produto.objects.filter(negocio=negocio).exclude(pk=produto.pk).update(
+            ordem=models.F("ordem") + 1
+        )
+        produto.ordem = 0
+        produto.save(update_fields=["ordem"])
+
+        return Response({"ok": True})

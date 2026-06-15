@@ -134,6 +134,7 @@ class Produto(models.Model):
     categoria   = models.CharField(max_length=100, blank=True)
     preco       = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     disponivel  = models.BooleanField(default=True)
+    ordem = models.PositiveIntegerField(default=0)
     criado_em   = models.DateTimeField(auto_now_add=True)
     confirmado_em = models.DateTimeField(null=True, blank=True)
 

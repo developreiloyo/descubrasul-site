@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
+import { mediaUrl } from "@/lib/utils";
 import type { Negocio } from "@/types";
 
 interface Props {
@@ -27,10 +28,11 @@ export function SimilarBusinesses({ negocios }: Props) {
             {n.logo ? (
               <div className="relative aspect-[4/3] w-full">
                 <Image
-                  src={n.logo}
+                  src={mediaUrl(n.logo)!}
                   alt={n.alt_logo || n.nome}
                   fill
                   className="object-cover"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
                 />
               </div>
             ) : (

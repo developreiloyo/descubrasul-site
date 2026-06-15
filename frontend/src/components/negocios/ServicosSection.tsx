@@ -8,6 +8,7 @@ import type { Negocio, Produto } from "@/types";
 interface Props {
   negocio: Negocio;
   produtos: Produto[];
+  titulo?: string;
 }
 
 function tituloSecao(slug: string): string {
@@ -81,7 +82,7 @@ function ProdutoDestaque({ negocio, produto }: { negocio: Negocio; produto: Prod
   );
 }
 
-export function ServicosSection({ negocio, produtos }: Props) {
+export function ServicosSection({ negocio, produtos, titulo }: Props) {
   if (produtos.length === 0) return null;
 
   const catSlug = negocio.categoria?.slug || "";
@@ -94,7 +95,7 @@ export function ServicosSection({ negocio, produtos }: Props) {
       {resto.length > 0 && (
         <div>
           <h2 className="mb-4 text-xl font-bold">
-            {tituloSecao(catSlug)} completo
+            {titulo ?? `${tituloSecao(catSlug)} completo`}
           </h2>
           <div className="grid grid-cols-2 gap-4">
             {resto.map((produto) => {
