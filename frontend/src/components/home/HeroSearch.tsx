@@ -4,21 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, MapPin } from "lucide-react";
 
-const CIDADES = [
-  "Criciúma",
-  "Içara",
-  "Araranguá",
-  "Tubarão",
-  "Forquilhinha",
-  "Morro da Fumaça",
-];
+const CIDADES = ["Criciúma","Içara","Araranguá","Tubarão","Forquilhinha","Morro da Fumaça"];
 
-function slugificar(str: string) {
-  return str
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/\s+/g, "-");
+function slugify(str: string) {
+  return str.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g,"-");
 }
 
 export function HeroSearch() {
@@ -37,44 +26,37 @@ export function HeroSearch() {
   return (
     <form
       onSubmit={handleSearch}
-      className="mt-10 bg-white rounded-2xl shadow-2xl p-3 flex flex-col lg:flex-row gap-2 max-w-3xl mx-auto"
+      className="bg-white rounded-2xl shadow-2xl shadow-black/30 p-2.5 mt-8 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto lg:mx-0"
     >
-      <div className="relative flex-grow">
-        <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-ink/40 pointer-events-none"
-          strokeWidth={1.5}
-        />
+      <label className="flex items-center gap-2.5 flex-1 px-3.5 py-3 rounded-xl hover:bg-cream transition-colors cursor-text">
+        <Search className="size-5 text-sec shrink-0" strokeWidth={1.5} />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="O que você procura?"
-          className="w-full pl-12 pr-4 py-3.5 rounded-full border border-ink/10 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none text-ink text-sm"
+          placeholder="Produto, loja ou serviço..."
+          className="w-full text-sm outline-none placeholder:text-sec bg-transparent text-ink"
         />
-      </div>
-      <div className="relative lg:w-64">
-        <MapPin
-          className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-ink/40 pointer-events-none"
-          strokeWidth={1.5}
-        />
+      </label>
+      <div className="hidden sm:block w-px bg-black/10 my-2" />
+      <label className="flex items-center gap-2.5 sm:w-52 px-3.5 py-3 rounded-xl hover:bg-cream transition-colors">
+        <MapPin className="size-5 text-sec shrink-0" strokeWidth={1.5} />
         <select
           value={cidade}
           onChange={(e) => setCidade(e.target.value)}
-          className="w-full pl-12 pr-8 py-3.5 rounded-full border border-ink/10 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none text-ink text-sm appearance-none bg-white cursor-pointer"
+          className="w-full text-sm outline-none text-ink bg-transparent cursor-pointer"
         >
-          <option value="">Qual cidade?</option>
+          <option value="">Em qual cidade?</option>
           {CIDADES.map((c) => (
-            <option key={c} value={slugificar(c)}>
-              {c}
-            </option>
+            <option key={c} value={slugify(c)}>{c}</option>
           ))}
         </select>
-      </div>
+      </label>
       <button
         type="submit"
-        className="flex items-center justify-center gap-2 bg-secondary text-white px-7 py-3.5 rounded-full font-semibold text-sm hover:bg-secondary/90 transition-colors whitespace-nowrap"
+        className="badge-gold text-white font-semibold text-sm rounded-xl px-7 py-3.5 flex items-center justify-center gap-2 hover:brightness-105 transition-all"
       >
-        <Search className="size-4" strokeWidth={2} />
+        <Search className="size-4" />
         Buscar
       </button>
     </form>

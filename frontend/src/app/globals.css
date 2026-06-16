@@ -1,38 +1,83 @@
 @import "tailwindcss";
 
 @theme {
-  /* ─── Cores DescubraSul ─────────────────────────── */
-  --color-primary:            #0d9488;
-  --color-primary-dark:       #0f766e;
+  /* ─── Paleta DescubraSul ─────────────────────────── */
+  --color-primary:            #0B3B2C;
+  --color-primary-light:      #155C45;
   --color-primary-foreground: #ffffff;
-  --color-secondary:          #f59e0b;
-  --color-secondary-foreground: #1c1917;
-  --color-surface:            #fafaf9;
-  --color-ink:                #1c1917;
-  --color-background:         #fafaf9;
-  --color-foreground:         #1c1917;
-  --color-muted:              #f4f4f5;
-  --color-muted-foreground:   #71717a;
-  --color-accent:             #f59e0b;
-  --color-accent-foreground:  #1c1917;
-  --color-border:             #e4e4e7;
-  --color-input:              #e4e4e7;
-  --color-ring:               #0d9488;
+  --color-accent:             #D4A437;
+  --color-accent-dark:        #B8902C;
+  --color-accent-foreground:  #16201B;
+  --color-cream:              #FAF8F3;
+  --color-ink:                #16201B;
+  --color-sec:                #5F6B65;
+  --color-surface:            #FAF8F3;
+  --color-background:         #FAF8F3;
+  --color-foreground:         #16201B;
+  --color-muted:              #F4F1EB;
+  --color-muted-foreground:   #5F6B65;
+  --color-border:             #E2E8E4;
   --color-card:               #ffffff;
-  --color-card-foreground:    #1c1917;
+  --color-card-foreground:    #16201B;
+  --color-input:              #E2E8E4;
+  --color-ring:               #0B3B2C;
+  --color-secondary:          #D4A437;
+  --color-secondary-foreground: #16201B;
+  --color-destructive:        #DC2626;
+  --color-destructive-foreground: #ffffff;
 }
 
-/* ─── CSS vars para shadcn (usa hsl(var(--x))) ─── */
+/* ─── CSS vars HSL p/ shadcn ─────────────────────── */
 :root {
-  --primary:            174 84% 32%;   /* #0d9488 */
+  --primary:            155 68% 14%;   /* #0B3B2C */
   --primary-foreground: 0 0% 100%;
-  --muted-foreground:   240 4% 46%;
-  --background:         60 9% 98%;
-  --foreground:         20 14% 11%;
-  --ring:               174 84% 32%;
+  --muted-foreground:   150 7% 38%;   /* #5F6B65 */
+  --background:         40 33% 97%;   /* #FAF8F3 */
+  --foreground:         155 16% 11%;  /* #16201B */
+  --ring:               155 68% 14%;
 }
 
 body {
-  background-color: var(--color-surface);
+  background-color: var(--color-cream);
   color: var(--color-ink);
+  font-family: 'Inter', sans-serif;
 }
+
+/* ─── Animações ─────────────────────────────────── */
+@keyframes pulse-ring {
+  0%   { transform: scale(.6); opacity: .9; }
+  80%  { transform: scale(2.4); opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes bar-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+.city-ring {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: pulse-ring 2.6s ease-out infinite;
+}
+.floaty { animation: floaty 5s ease-in-out infinite; }
+.bar     { transform-origin: bottom; animation: bar-grow .9s cubic-bezier(.2,.8,.2,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .city-ring, .floaty, .bar { animation: none; }
+}
+
+/* ─── Utilitários ────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+.hero-grid {
+  background-image: radial-gradient(rgba(212,164,55,.14) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+.badge-gold { background: linear-gradient(135deg,#E3BC55,#C49530); }
+.card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+.card-hover:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -12px rgba(11,59,44,.22); }
