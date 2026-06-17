@@ -84,58 +84,51 @@ const BENEFICIOS = [
   "Fotos profissionais","Gestão simples",
 ];
 
-const STATS = [
-  { valor:"+2.500", label:"Negócios cadastrados" },
-  { valor:"+18k",   label:"Produtos listados"    },
-  { valor:"6",      label:"Cidades atendidas"    },
-  { valor:"+120k",  label:"Usuários/mês"         },
-];
 
 /* ── Componente ProductCard ── */
 function ProductCard({ p }: { p: typeof MOCK_PRODUCTS[0] }) {
   return (
-    <div className="product-card bg-white rounded-2xl border border-black/[0.06] overflow-hidden group cursor-pointer card-hover">
-      {/* Imagem */}
+    <div className="bg-white rounded-2xl border border-black/[0.06] overflow-hidden group cursor-pointer card-hover">
       <div
         className="relative aspect-square overflow-hidden flex items-center justify-center"
-        style={{ background: `linear-gradient(145deg,${p.color}dd,${p.color}88)` }}
+        style={{ background: `linear-gradient(145deg,${p.color}ee,${p.color}77)` }}
       >
-        {p.off && (
-          <span className="absolute top-2.5 left-2.5 bg-red-600 text-white text-[10px] font-bold rounded-full px-2.5 py-1 z-10">
+        {/* Badge */}
+        {p.off ? (
+          <span className="absolute top-2.5 left-2.5 bg-red-600 text-white text-[10px] font-bold rounded-full px-2.5 py-1 z-10 shadow-sm">
             {p.off}
           </span>
-        )}
-        {!p.off && p.isNew && (
+        ) : p.isNew ? (
           <span className="absolute top-2.5 left-2.5 bg-primary text-white text-[10px] font-bold rounded-full px-2.5 py-1 z-10">
             Novo
           </span>
-        )}
-        {!p.off && !p.isNew && p.badge && (
-          <span className="absolute top-2.5 left-2.5 bg-black/45 backdrop-blur-sm text-white text-[10px] font-semibold rounded-full px-2.5 py-1 z-10">
+        ) : p.badge ? (
+          <span className="absolute top-2.5 left-2.5 bg-black/40 backdrop-blur-md text-white text-[10px] font-semibold rounded-full px-2.5 py-1 z-10">
             {p.badge}
           </span>
-        )}
-        {/* CTA hover */}
-        <div className="absolute bottom-0 left-0 right-0 p-2.5 opacity-0 translate-y-1.5 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-          <button className="w-full bg-white/95 backdrop-blur text-primary text-xs font-semibold rounded-xl py-2.5 flex items-center justify-center gap-1.5 shadow-lg">
+        ) : null}
+
+        {/* CTA hover — ease-out para entrar, imperceptível para sair */}
+        <div className="absolute bottom-0 left-0 right-0 p-2.5 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-250 ease-out">
+          <button className="w-full bg-white/95 backdrop-blur-md text-primary text-xs font-semibold rounded-xl py-2.5 flex items-center justify-center gap-1.5 shadow-lg cursor-pointer">
             <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
             Comprar via WhatsApp
           </button>
         </div>
       </div>
-      {/* Info */}
+
       <div className="p-3.5">
         <div className="flex items-center gap-1.5 mb-2">
           <span className="w-4 h-4 rounded-full bg-primary text-white text-[8px] font-extrabold flex items-center justify-center shrink-0">
             {p.store[0]}
           </span>
           <span className="text-[11px] text-sec font-medium truncate">{p.store}</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-          <span className="text-[10px] text-sec truncate">{p.city}</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 ml-auto shrink-0" />
+          <span className="text-[10px] text-sec">{p.city}</span>
         </div>
         <p className="font-semibold text-ink text-sm leading-snug line-clamp-2 mb-2">{p.name}</p>
         <div className="flex items-baseline gap-1.5 mb-2">
-          <span className="font-extrabold text-base text-primary">{p.price}</span>
+          <span className="font-display text-[15px] text-primary">{p.price}</span>
           {p.old && <span className="text-xs text-sec line-through">{p.old}</span>}
         </div>
         <div className="flex items-center gap-1">
@@ -207,44 +200,64 @@ export default async function Home() {
 
       {/* ── HERO ────────────────────────────────────────── */}
       <header className="bg-primary hero-grid relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary-light/70" />
-        <div className="max-w-[1200px] mx-auto px-4 py-14 lg:py-20 relative z-10 grid lg:grid-cols-[1.1fr_.9fr] gap-12 items-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary-light/60" />
+        {/* Glow accent decorativo */}
+        <div className="absolute -top-32 right-1/4 w-96 h-96 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-primary-light/20 blur-3xl pointer-events-none" />
+
+        <div className="max-w-[1200px] mx-auto px-4 py-10 lg:py-24 relative z-10 grid lg:grid-cols-[1.15fr_.85fr] gap-12 items-center">
           <div className="text-center lg:text-left">
-            <p className="inline-flex items-center gap-2 text-accent text-xs font-semibold tracking-[.18em] uppercase mb-5 border border-accent/30 rounded-full px-4 py-1.5">
+            <p className="animate-fade-up inline-flex items-center gap-2 text-accent eyebrow mb-3 lg:mb-5 border border-accent/25 rounded-full px-4 py-1.5 bg-accent/5">
               <MapPin className="size-3.5" /> A vitrine digital do Sul catarinense
             </p>
-            <h1 className="font-extrabold text-white text-4xl lg:text-[52px] leading-[1.08] tracking-tight">
-              Encontre o <span className="text-accent">melhor</span> do<br className="hidden lg:block" /> Sul de Santa Catarina
+            <h1 className="animate-fade-up delay-100 font-display text-white text-[2rem] sm:text-[2.6rem] lg:text-[3.6rem] leading-[1.08] tracking-tight">
+              Encontre o <span className="text-gradient">melhor</span> do Sul de Santa Catarina
             </h1>
-            <p className="text-white/70 text-base lg:text-lg mt-5 max-w-xl mx-auto lg:mx-0">
-              Produtos, empresas, restaurantes e serviços da sua região — em um único lugar.
+            <p className="animate-fade-up delay-200 text-white/65 text-sm lg:text-[1.1rem] mt-3 lg:mt-5 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              Produtos, empresas, restaurantes e serviços da sua região — num só lugar.
             </p>
 
-            <HeroSearch />
+            <div className="animate-fade-up delay-300">
+              <HeroSearch />
+            </div>
 
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mt-5">
-              <span className="text-white/50 text-xs">Popular:</span>
-              {["Tênis esportivo","Pizza artesanal","Mochila escolar","Hidratação capilar"].map((t) => (
-                <Link key={t} href={`/busca?q=${t}`} className="text-xs text-white/85 border border-white/20 rounded-full px-3 py-1 hover:border-accent hover:text-accent transition-colors">{t}</Link>
+            <div className="animate-fade-up delay-400 hidden sm:flex flex-wrap items-center justify-center lg:justify-start gap-2 mt-5">
+              <span className="text-white/40 text-xs font-medium">Popular:</span>
+              {["Tênis esportivo","Pizza artesanal","Mochila escolar","Skincare natural"].map((t) => (
+                <Link key={t} href={`/busca?q=${encodeURIComponent(t)}`}
+                  className="text-xs text-white/75 border border-white/15 rounded-full px-3 py-1 hover:border-accent/60 hover:text-accent transition-all duration-200">
+                  {t}
+                </Link>
               ))}
             </div>
-            <p className="text-white/60 text-sm mt-6 flex items-center justify-center lg:justify-start gap-2">
-              <BadgeCheck className="size-4 text-accent" />
-              +2.500 negócios · +18.000 produtos · 6 cidades · 100% regional
-            </p>
+
+            {/* Stats — compactos em mobile, expandidos em desktop */}
+            <div className="animate-fade-up delay-500 flex flex-wrap items-center justify-center lg:justify-start gap-4 lg:gap-5 mt-5 lg:mt-7 pt-5 lg:pt-7 border-t border-white/10">
+              {[
+                { valor: "+2.500", label: "negócios" },
+                { valor: "+18k",   label: "produtos"  },
+                { valor: "6",      label: "cidades"   },
+                { valor: "+120k",  label: "visitas/mês"},
+              ].map((s) => (
+                <div key={s.label} className="flex items-baseline gap-1">
+                  <span className="font-display text-accent text-lg lg:text-2xl">{s.valor}</span>
+                  <span className="text-white/45 text-[11px] lg:text-xs">{s.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Mapa SVG animado */}
           <div className="hidden lg:block relative">
-            <svg viewBox="0 0 420 440" className="w-full max-w-[420px] mx-auto drop-shadow-2xl">
+            <svg viewBox="0 0 420 440" className="w-full max-w-[400px] mx-auto drop-shadow-2xl">
               <defs>
                 <linearGradient id="mapfill" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="rgba(255,255,255,.07)" />
-                  <stop offset="1" stopColor="rgba(212,164,55,.06)" />
+                  <stop offset="0" stopColor="rgba(255,255,255,.06)" />
+                  <stop offset="1" stopColor="rgba(212,164,55,.08)" />
                 </linearGradient>
               </defs>
               <path d="M210 28 C280 20,332 64,348 122 C362 174,396 198,388 252 C380 308,330 336,296 376 C266 412,210 428,158 410 C104 392,66 348,54 292 C42 238,60 186,92 142 C126 96,146 36,210 28 Z"
-                fill="url(#mapfill)" stroke="rgba(212,164,55,.55)" strokeWidth="1.6" strokeDasharray="6 5" />
+                fill="url(#mapfill)" stroke="rgba(212,164,55,.5)" strokeWidth="1.5" strokeDasharray="6 5" />
               <g className="floaty">
                 <g transform="translate(258,96)">
                   <circle className="city-ring" r="9" fill="none" stroke="#D4A437" strokeWidth="1.5" />
@@ -266,11 +279,12 @@ export default async function Home() {
                   <circle r="5" fill="#D4A437" />
                   <text x="12" y="4" fill="#fff" fontSize="12" fontWeight="600">Araranguá</text>
                 </g>
-                <path d="M258 96 L214 206 L296 236 M214 206 L196 344" stroke="rgba(212,164,55,.3)" strokeWidth="1" fill="none" strokeDasharray="3 4" />
+                <path d="M258 96 L214 206 L296 236 M214 206 L196 344"
+                  stroke="rgba(212,164,55,.28)" strokeWidth="1" fill="none" strokeDasharray="3 4" />
               </g>
             </svg>
-            {/* Cards flutuantes */}
-            <div className="absolute top-8 -left-4 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 w-52 floaty">
+            {/* Cards flutuantes com glass effect */}
+            <div className="glass-card absolute top-8 -left-4 rounded-2xl px-4 py-3 flex items-center gap-3 w-56 floaty">
               <span className="w-10 h-10 rounded-xl bg-primary text-white font-extrabold flex items-center justify-center shrink-0 text-sm">CN</span>
               <div className="min-w-0">
                 <p className="text-ink font-semibold text-xs truncate">Cantina Nonna Rosa</p>
@@ -281,7 +295,8 @@ export default async function Home() {
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-12 -right-2 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 w-48" style={{animation:"floaty 7s ease-in-out 1.5s infinite"}}>
+            <div className="glass-card absolute bottom-12 -right-2 rounded-2xl px-4 py-3 flex items-center gap-3 w-48"
+              style={{animation:"floaty 7s ease-in-out 1.5s infinite"}}>
               <span className="w-10 h-10 rounded-xl badge-gold text-white font-extrabold flex items-center justify-center shrink-0 text-sm">SZ</span>
               <div className="min-w-0">
                 <p className="text-ink font-semibold text-xs truncate">Sports Zone</p>
@@ -317,14 +332,14 @@ export default async function Home() {
       </div>
 
       {/* ── PRODUTOS EM DESTAQUE ─────────────────────────── */}
-      <section className="py-12 lg:py-16 max-w-[1200px] mx-auto px-4">
-        <div className="flex items-end justify-between mb-7">
+      <section className="py-14 lg:py-20 max-w-[1200px] mx-auto px-4">
+        <div className="flex items-end justify-between mb-8">
           <div>
-            <p className="text-accent text-xs font-semibold tracking-[.16em] uppercase mb-1.5">Marketplace local</p>
-            <h2 className="font-bold text-2xl lg:text-3xl text-ink tracking-tight">Produtos em destaque</h2>
-            <p className="text-sec text-sm mt-1">Das melhores lojas do Sul catarinense, direto para você.</p>
+            <p className="eyebrow mb-2">Marketplace local</p>
+            <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Produtos em destaque</h2>
+            <p className="text-sec text-sm mt-1.5">Das melhores lojas do Sul catarinense, direto para você.</p>
           </div>
-          <Link href="/marketplace" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent-dark transition-colors">
+          <Link href="/marketplace" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors duration-200">
             Ver todos <ArrowRight className="size-4" />
           </Link>
         </div>
@@ -338,14 +353,15 @@ export default async function Home() {
 
       {/* ── LOJAS EM DESTAQUE ───────────────────────────── */}
       {destaques.length > 0 && (
-        <section className="py-12 lg:py-16 bg-white">
+        <section className="py-14 lg:py-20 bg-white">
           <div className="max-w-[1200px] mx-auto px-4">
-            <div className="flex items-end justify-between mb-7">
+            <div className="flex items-end justify-between mb-8">
               <div>
-                <h2 className="font-bold text-2xl lg:text-3xl text-ink tracking-tight">Lojas em destaque</h2>
-                <p className="text-sec text-sm mt-1">Os negócios mais visitados da semana.</p>
+                <p className="eyebrow mb-2">Negócios verificados</p>
+                <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Lojas em destaque</h2>
+                <p className="text-sec text-sm mt-1.5">Os negócios mais visitados da semana.</p>
               </div>
-              <Link href="/busca" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent-dark transition-colors">
+              <Link href="/busca" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors duration-200">
                 Ver todas <ArrowRight className="size-4" />
               </Link>
             </div>
@@ -358,11 +374,12 @@ export default async function Home() {
 
       {/* ── CATEGORIAS (do backend) ─────────────────────── */}
       {categorias.length > 0 && (
-        <section id="categorias" className="py-12 lg:py-16 max-w-[1200px] mx-auto px-4">
-          <div className="flex items-end justify-between mb-7">
+        <section id="categorias" className="py-14 lg:py-20 max-w-[1200px] mx-auto px-4">
+          <div className="flex items-end justify-between mb-8">
             <div>
-              <h2 className="font-bold text-2xl lg:text-3xl text-ink tracking-tight">Explore por categorias</h2>
-              <p className="text-sec text-sm mt-1">Tudo o que a região oferece, organizado para você.</p>
+              <p className="eyebrow mb-2">Explorar</p>
+              <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Navegue por categorias</h2>
+              <p className="text-sec text-sm mt-1.5">Tudo o que a região oferece, organizado para você.</p>
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
@@ -370,13 +387,13 @@ export default async function Home() {
               <Link
                 key={cat.slug}
                 href={`/${cat.slug}`}
-                className="card-hover bg-white rounded-2xl border border-black/5 p-5 flex flex-col gap-3 group"
+                className="card-hover bg-white rounded-2xl border border-black/[0.06] p-5 flex flex-col gap-3 group"
               >
-                <span className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors text-2xl">
+                <span className="w-12 h-12 rounded-xl bg-primary/8 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-200 text-2xl">
                   {cat.icone}
                 </span>
                 <span>
-                  <p className="font-bold text-[15px] text-ink leading-tight">{cat.nome}</p>
+                  <p className="font-semibold text-[15px] text-ink leading-tight">{cat.nome}</p>
                 </span>
               </Link>
             ))}
@@ -385,12 +402,13 @@ export default async function Home() {
       )}
 
       {/* ── PROMOÇÕES ──────────────────────────────────── */}
-      <section className="py-12 lg:py-16 bg-white">
+      <section className="py-14 lg:py-20 bg-white">
         <div className="max-w-[1200px] mx-auto px-4">
-          <div className="flex items-end justify-between mb-7">
+          <div className="flex items-end justify-between mb-8">
             <div>
-              <h2 className="font-bold text-2xl lg:text-3xl text-ink tracking-tight">Promoções especiais</h2>
-              <p className="text-sec text-sm mt-1">Ofertas por tempo limitado dos negócios da região.</p>
+              <p className="eyebrow mb-2">Por tempo limitado</p>
+              <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Promoções especiais</h2>
+              <p className="text-sec text-sm mt-1.5">Ofertas exclusivas dos negócios da região.</p>
             </div>
           </div>
           <div className="grid sm:grid-cols-3 gap-5">
@@ -413,25 +431,27 @@ export default async function Home() {
       </section>
 
       {/* ── CIDADES ────────────────────────────────────── */}
-      <section className="py-12 lg:py-16 max-w-[1200px] mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="font-bold text-2xl lg:text-3xl text-ink tracking-tight">Explorar por cidade</h2>
-          <p className="text-sec text-sm mt-1.5">O Sul de Santa Catarina inteiro, cidade por cidade.</p>
+      <section className="py-14 lg:py-20 max-w-[1200px] mx-auto px-4">
+        <div className="text-center mb-10">
+          <p className="eyebrow mb-2">Região Sul de SC</p>
+          <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Explorar por cidade</h2>
+          <p className="text-sec text-sm mt-1.5 max-w-md mx-auto">O Sul de Santa Catarina inteiro, cidade por cidade.</p>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {CIDADES.map((city, ix) => (
             <Link
               key={city.slug}
               href={`/cidades/${city.slug}`}
-              className="card-hover relative rounded-2xl overflow-hidden h-36 lg:h-44 block hero-grid"
-              style={{background:`linear-gradient(160deg,#155C45 ${ix*4}%,#0B3B2C)`}}
+              className="card-hover relative rounded-2xl overflow-hidden h-40 lg:h-48 block hero-grid group"
+              style={{background:`linear-gradient(160deg,#155C45 ${ix*3}%,#0B3B2C)`}}
             >
-              <span className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
+              <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+              <span className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors duration-300" />
               <span className="absolute bottom-4 left-4 right-4">
-                <p className="font-bold text-white text-lg leading-tight">{city.nome}</p>
-                <p className="text-white/65 text-xs mt-0.5">{city.qtd}</p>
+                <p className="font-display text-white text-xl leading-tight">{city.nome}</p>
+                <p className="text-white/60 text-xs mt-0.5 font-medium">{city.qtd}</p>
               </span>
-              <MapPin className="absolute top-4 right-4 size-5 text-accent" />
+              <MapPin className="absolute top-4 right-4 size-4.5 text-accent opacity-80 group-hover:opacity-100 transition-opacity" />
             </Link>
           ))}
         </div>
@@ -439,38 +459,51 @@ export default async function Home() {
 
       {/* ── CTA PARA EMPRESAS ──────────────────────────── */}
       <section className="py-16 lg:py-24 bg-primary hero-grid relative overflow-hidden">
-        <div className="max-w-[1200px] mx-auto px-4 relative grid lg:grid-cols-2 gap-12 items-center">
+        <div className="absolute -top-24 right-0 w-80 h-80 rounded-full bg-accent/8 blur-3xl pointer-events-none" />
+        <div className="max-w-[1200px] mx-auto px-4 relative grid lg:grid-cols-2 gap-14 items-center">
           <div>
-            <p className="text-accent text-xs font-semibold tracking-[.18em] uppercase mb-4">Para empresas</p>
-            <h2 className="font-extrabold text-white text-3xl lg:text-[38px] leading-tight tracking-tight">
-              Venda seus produtos para toda a região
+            <p className="eyebrow text-accent/80 border-accent/20 bg-accent/8 inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-5">
+              Para empresas e empreendedores
+            </p>
+            <h2 className="font-display text-white text-3xl lg:text-[2.6rem] leading-tight">
+              Venda para toda a região sem pagar comissão
             </h2>
-            <p className="text-white/65 mt-4 max-w-md">
-              Cadastre sua loja, adicione seus produtos e receba pedidos direto no WhatsApp — sem comissão e sem complicação.
+            <p className="text-white/60 mt-4 max-w-md leading-relaxed">
+              Cadastre sua loja, adicione produtos e receba pedidos direto no WhatsApp — sem burocracia, sem taxas.
             </p>
             <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3 mt-8">
               {BENEFICIOS.map((b) => (
-                <li key={b} className="flex items-center gap-2.5 text-sm text-white/85">
-                  <CheckCircle2 className="size-[18px] text-accent shrink-0" />
+                <li key={b} className="flex items-center gap-2.5 text-sm text-white/80">
+                  <CheckCircle2 className="size-4 text-accent shrink-0" />
                   {b}
                 </li>
               ))}
             </ul>
             <div className="flex flex-wrap items-center gap-4 mt-9">
-              <Link href="/painel/cadastro" className="badge-gold text-white font-semibold text-sm rounded-full px-7 py-3.5 shadow-lg hover:brightness-105 transition-all">
+              <Link href="/painel/cadastro"
+                className="btn-primary badge-gold text-white font-semibold text-sm rounded-full px-7 py-3.5 shadow-lg hover:brightness-110 transition-all duration-200">
                 Cadastre sua loja grátis
               </Link>
-              <Link href="/planos" className="text-white/80 text-sm font-medium hover:text-accent transition-colors flex items-center gap-1.5">
+              <Link href="/planos" className="text-white/70 text-sm font-medium hover:text-accent transition-colors duration-200 flex items-center gap-1.5">
                 Ver planos <ArrowRight className="size-4" />
               </Link>
             </div>
           </div>
-          {/* Stats */}
+          {/* Benefícios visuais — planos */}
           <div className="grid grid-cols-2 gap-4">
-            {STATS.map((s) => (
-              <div key={s.label} className="bg-white/10 rounded-2xl p-6 border border-white/10 backdrop-blur-sm">
-                <p className="font-extrabold text-3xl text-accent">{s.valor}</p>
-                <p className="text-xs text-white/70 mt-1">{s.label}</p>
+            {[
+              { titulo: "Plano Básico", preco: "R$ 79", periodo: "/mês", desc: "Até 20 produtos · Vitrine digital" },
+              { titulo: "Plano Pro",    preco: "R$ 197", periodo: "/mês", desc: "Ilimitado · Métricas · IA" },
+              { titulo: "Produção",     preco: "R$ 397", periodo: "/mês", desc: "Fotos · Vídeos · Destaque" },
+              { titulo: "Fundador",     preco: "R$ 599", periodo: "/ano", desc: "50 vagas · Acesso total" },
+            ].map((p) => (
+              <div key={p.titulo} className="bg-white/8 hover:bg-white/12 transition-colors duration-200 rounded-2xl p-5 border border-white/10 backdrop-blur-sm cursor-pointer">
+                <p className="text-white/60 text-[11px] font-medium uppercase tracking-wide">{p.titulo}</p>
+                <p className="mt-1">
+                  <span className="font-display text-accent text-2xl">{p.preco}</span>
+                  <span className="text-white/40 text-xs ml-1">{p.periodo}</span>
+                </p>
+                <p className="text-white/50 text-xs mt-2 leading-snug">{p.desc}</p>
               </div>
             ))}
           </div>
@@ -478,22 +511,27 @@ export default async function Home() {
       </section>
 
       {/* ── DEPOIMENTO ─────────────────────────────────── */}
-      <section className="py-12 lg:py-16 bg-white">
-        <div className="max-w-[1200px] mx-auto px-4 max-w-2xl">
-          <div className="bg-cream rounded-2xl p-7 border border-black/5">
-            <div className="flex items-center gap-1 mb-3">
+      <section className="py-14 lg:py-20 bg-white">
+        <div className="max-w-[720px] mx-auto px-4">
+          <div className="bg-cream rounded-3xl p-8 lg:p-10 border border-black/5 relative overflow-hidden">
+            <span className="absolute -top-4 -right-4 font-display text-[8rem] text-primary/5 leading-none select-none">"</span>
+            <div className="flex items-center gap-1 mb-4">
               {[...Array(5)].map((_, i) => <Star key={i} className="size-4 text-accent fill-accent" />)}
-              <span className="font-bold text-ink ml-2">4,9</span>
+              <span className="font-semibold text-ink ml-2 text-sm">4,9</span>
             </div>
-            <p className="text-ink/85 text-[15px] leading-relaxed">
-              "Cadastrei minha loja e em duas semanas já tinha clientes novos chegando pelo DescubraSul. Muito mais fácil do que ter meu próprio site."
+            <p className="font-display text-ink text-xl lg:text-2xl leading-snug relative z-10">
+              "Cadastrei minha loja e em duas semanas já tinha clientes novos chegando pelo DescubraSul."
             </p>
-            <div className="flex items-center gap-3 mt-5">
-              <span className="w-10 h-10 rounded-full bg-primary text-white font-bold flex items-center justify-center">MR</span>
+            <p className="text-sec text-sm mt-3 leading-relaxed">
+              Muito mais fácil do que ter meu próprio site — e sem pagar comissão em cada venda.
+            </p>
+            <div className="flex items-center gap-3 mt-7 pt-6 border-t border-black/6">
+              <span className="w-11 h-11 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm shrink-0">MR</span>
               <div>
                 <p className="text-sm font-semibold text-ink">Marcos Rocha</p>
-                <p className="text-xs text-sec">Sports Zone · Içara</p>
+                <p className="text-xs text-sec">Sports Zone · Içara · Plano Pro</p>
               </div>
+              <BadgeCheck className="size-5 text-primary ml-auto shrink-0" />
             </div>
           </div>
         </div>

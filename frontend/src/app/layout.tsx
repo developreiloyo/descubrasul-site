@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Calistoga } from "next/font/google";
 import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const calistoga = Calistoga({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-calistoga",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -27,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${calistoga.variable} font-sans`}>
         <GoogleAnalytics />
         {children}
       </body>

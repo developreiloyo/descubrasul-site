@@ -26,7 +26,7 @@ export function HeroSearch() {
   return (
     <form
       onSubmit={handleSearch}
-      className="bg-white rounded-2xl shadow-2xl shadow-black/30 p-2.5 mt-8 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto lg:mx-0"
+      className="bg-white rounded-2xl shadow-2xl shadow-black/30 p-2 mt-5 lg:mt-8 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto lg:mx-0"
     >
       <label className="flex items-center gap-2.5 flex-1 px-3.5 py-3 rounded-xl hover:bg-cream transition-colors cursor-text">
         <Search className="size-5 text-sec shrink-0" strokeWidth={1.5} />
