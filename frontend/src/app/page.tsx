@@ -5,6 +5,8 @@ import {
   MapPin, Star, BadgeCheck, ArrowRight, CheckCircle2,
   Shirt, Smartphone, Utensils, Sparkles, Home as HomeIcon,
   Dumbbell, Baby, Car,
+  UtensilsCrossed, ShoppingBag, Scissors, Heart, GraduationCap,
+  Wrench, PawPrint, Apple, type LucideIcon,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -73,6 +75,19 @@ const BENEFICIOS = [
   "Fotos profissionais","Gestão simples",
 ];
 
+
+const CAT_ICONS: Record<string, LucideIcon> = {
+  restaurantes: UtensilsCrossed,
+  moda:         Shirt,
+  estetica:     Scissors,
+  academias:    Dumbbell,
+  "pet-shop":   PawPrint,
+  clinicas:     Heart,
+  educacao:     GraduationCap,
+  "lojas-gerais": ShoppingBag,
+  servicos:     Wrench,
+  alimentacao:  Apple,
+};
 
 /* ── Componente ProductCard ── */
 function ProductCard({ produto }: { produto: Produto }) {
@@ -307,20 +322,23 @@ export default async function Home() {
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-            {categorias.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/${cat.slug}`}
-                className="card-hover bg-white rounded-2xl border border-black/[0.06] p-5 flex flex-col gap-3 group"
-              >
-                <span className="w-12 h-12 rounded-xl bg-primary/8 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-200 text-2xl">
-                  {cat.icone}
-                </span>
-                <span>
-                  <p className="font-semibold text-[15px] text-ink leading-tight">{cat.nome}</p>
-                </span>
-              </Link>
-            ))}
+            {categorias.map((cat) => {
+              const Icon = CAT_ICONS[cat.slug] ?? ShoppingBag;
+              return (
+                <Link
+                  key={cat.slug}
+                  href={`/${cat.slug}`}
+                  className="card-hover bg-white rounded-2xl border border-black/[0.06] p-5 flex flex-col gap-4 group"
+                >
+                  <span className="w-16 h-16 rounded-2xl bg-primary/8 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-200">
+                    <Icon className="size-8" />
+                  </span>
+                  <p className="font-semibold text-base text-ink leading-tight group-hover:text-primary transition-colors">
+                    {cat.nome}
+                  </p>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
