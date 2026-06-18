@@ -29,7 +29,6 @@ export function Navbar() {
           <Link href="/"            className="hover:text-ink transition-colors">Início</Link>
           <Link href="/#categorias" className="hover:text-ink transition-colors">Categorias</Link>
           <Link href="/marketplace" className="hover:text-ink transition-colors">Marketplace</Link>
-          <Link href="/food"        className="hover:text-ink transition-colors">Food</Link>
           <Link href="/para-empresas" className="hover:text-ink transition-colors">Para Empresas</Link>
         </div>
 
@@ -65,7 +64,6 @@ export function Navbar() {
           <Link href="/"              onClick={() => setOpen(false)} className="py-3 text-sm font-medium text-sec hover:text-ink border-b border-black/5">Início</Link>
           <Link href="/#categorias"  onClick={() => setOpen(false)} className="py-3 text-sm font-medium text-sec hover:text-ink border-b border-black/5">Categorias</Link>
           <Link href="/marketplace"  onClick={() => setOpen(false)} className="py-3 text-sm font-medium text-sec hover:text-ink border-b border-black/5">Marketplace</Link>
-          <Link href="/food"         onClick={() => setOpen(false)} className="py-3 text-sm font-medium text-sec hover:text-ink border-b border-black/5">Food</Link>
           <Link href="/para-empresas" onClick={() => setOpen(false)} className="py-3 text-sm font-medium text-sec hover:text-ink border-b border-black/5">Para Empresas</Link>
           <Link href="/painel/login" onClick={() => setOpen(false)} className="mt-3 block text-center py-3 text-sm font-semibold text-primary">Entrar</Link>
           <Link href="/painel/cadastro" onClick={() => setOpen(false)} className="block text-center py-3 badge-gold text-white text-sm font-semibold rounded-full">Cadastre seu negócio</Link>

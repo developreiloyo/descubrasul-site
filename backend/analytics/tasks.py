@@ -1,5 +1,6 @@
 from celery import shared_task
 from django.db.models import Count, Q
+from django.utils import timezone
 from datetime import date, timedelta
 
 
@@ -64,5 +65,21 @@ def agregar_metricas_diarias(self, dia=None):
 
         return f"{alvo}: {processados} negocio(s) processado(s)"
 
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=60)
+
+
+@shared_task(bind=True, max_retries=3)
+def purgar_cliques_antigos(self, dias=90):
+    """
+    Remove cliques crus com mais de 90 dias — ja foram agregados em MetricaDiaria.
+    Roda toda semana (domingo) as 03:00h via Celery Beat.
+    """
+    from analytics.models import Clique
+
+    try:
+        limite = timezone.now() - timedelta(days=dias)
+        total, _ = Clique.objects.filter(criado_em__lt=limite).delete()
+        return f"{total} clique(s) removido(s)"
     except Exception as exc:
         raise self.retry(exc=exc, countdown=60)

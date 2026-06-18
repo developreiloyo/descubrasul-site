@@ -41,6 +41,34 @@ export async function getCategorias(): Promise<Categoria[]> {
   }
 }
 
+export async function getNegociosDestaque(limit = 8): Promise<Negocio[]> {
+  try {
+    const res = await fetch(
+      `${API}/negocios/?destaque=true&ordering=plan_order`,
+      { next: { revalidate: REVALIDATE } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const results: Negocio[] = data.results ?? [];
+    return results.slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
+export async function getProdutosDestaque(limit = 10): Promise<Produto[]> {
+  try {
+    const res = await fetch(`${API}/negocios/produtos/destaque/?limit=${limit}`, {
+      next: { revalidate: REVALIDATE },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.results ?? []);
+  } catch {
+    return [];
+  }
+}
+
 export async function getNegocios(params?: {
   cidade?: string;
   categoria?: string;

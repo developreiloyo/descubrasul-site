@@ -74,7 +74,7 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
             "media_nota", "total_avaliacoes", "atualizado_em",
             "seo_title", "seo_description", "og_image", "palavras_chave",
-            "redes_sociais", "localizacao", "videos",
+            "redes_sociais", "localizacao", "videos", "espaco_especial",
         ]
 
     def get_seo_title(self, obj):
@@ -98,7 +98,7 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
             "seo_title", "seo_description", "og_image", "palavras_chave",
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
             "media_nota", "total_avaliacoes", "criado_em", "atualizado_em",
-            "localizacao", "redes_sociais",
+            "localizacao", "redes_sociais", "espaco_especial",
         ]
         read_only_fields = ["slug", "plano", "status", "verificado",
                             "media_nota", "total_avaliacoes", "criado_em", "atualizado_em"]
@@ -161,11 +161,12 @@ class ProdutoPublicoSerializer(serializers.ModelSerializer):
 
     def get_negocio(self, obj):
         return {
-            "slug":      obj.negocio.slug,
-            "nome":      obj.negocio.nome,
-            "cidade":    obj.negocio.cidade,
-            "categoria": str(obj.negocio.categoria),
-            "whatsapp":  obj.negocio.whatsapp,
+            "slug":           obj.negocio.slug,
+            "nome":           obj.negocio.nome,
+            "cidade":         obj.negocio.cidade,
+            "categoria":      str(obj.negocio.categoria),
+            "categoria_slug": obj.negocio.categoria.slug,
+            "whatsapp":       obj.negocio.whatsapp,
         }
 
 

@@ -1,8 +1,15 @@
 import uuid
+import unicodedata
 from django.db import models
 from django.utils.text import slugify
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+
+
+def normalizar_cidade(cidade: str) -> str:
+    """Remove acentos e normaliza capitalização: 'criciúma' → 'Criciuma'."""
+    sem_acento = unicodedata.normalize("NFKD", cidade).encode("ASCII", "ignore").decode()
+    return sem_acento.strip().title()
 
 
 def gerar_caminho_seguro(instance, filename):
@@ -68,6 +75,10 @@ class Negocio(models.Model):
     categoria_tipo  = models.CharField(max_length=50, blank=True)
     palavras_chave  = models.CharField(max_length=300, blank=True)
     atualizado_em   = models.DateTimeField(auto_now=True)
+
+    # Espaço especial (plano Pro+): tipo + conteúdo configurável pelo comerciante
+    # Tipos válidos: "texto" | "oferta" | "cupom" | "banner" | "video"
+    espaco_especial = models.JSONField(null=True, blank=True)
 
     horario_abertura   = models.TimeField(null=True, blank=True)
     horario_fechamento = models.TimeField(null=True, blank=True)
@@ -238,6 +249,12 @@ class VideoDestaque(models.Model):
 
 
 # ─── Signals ──────────────────────────────────────────────────────────
+
+@receiver(pre_save, sender=Negocio)
+def normalizar_cidade_negocio(sender, instance, **kwargs):
+    if instance.cidade:
+        instance.cidade = normalizar_cidade(instance.cidade)
+
 
 @receiver(pre_save, sender=Negocio)
 def gerar_slug_negocio(sender, instance, **kwargs):

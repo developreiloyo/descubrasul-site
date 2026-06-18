@@ -1,16 +1,29 @@
 from rest_framework import generics, viewsets, status
+from rest_framework.decorators import api_view, permission_classes as deco_permissions
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import models
+from django.db.models import Case, When, Value, IntegerField, Prefetch
+from django.contrib.postgres.search import SearchQuery
+import unicodedata
 from .models import Negocio, Produto
 from .serializers import (
     NegocioPublicoSerializer, NegocioPainelSerializer,
     ProdutoPublicoSerializer, ProdutoPainelSerializer,
 )
 from .permissions import IsDonoDoNegocio, IsPlanoPro, PodicionarProduto
+
+PLAN_PRIORITY = Case(
+    When(plano="fundador",  then=Value(1)),
+    When(plano="producao",  then=Value(2)),
+    When(plano="pro",       then=Value(3)),
+    When(plano="basico",    then=Value(4)),
+    default=Value(5),
+    output_field=IntegerField(),
+)
 
 
 class NegocioListView(generics.ListAPIView):
@@ -30,11 +43,17 @@ class NegocioListView(generics.ListAPIView):
             qs = qs.filter(categoria__slug=categoria)
         cidade = self.request.query_params.get("cidade")
         if cidade:
-            qs = qs.filter(cidade__iexact=cidade.replace("-", " "))
+            cidade_norm = (
+                unicodedata.normalize("NFKD", cidade.replace("-", " "))
+                .encode("ASCII", "ignore")
+                .decode()
+                .strip()
+            )
+            qs = qs.filter(cidade__unaccent__iexact=cidade_norm)
         destaque = self.request.query_params.get("destaque")
         if destaque == "true":
             qs = qs.exclude(plano=Negocio.Plano.GRATUITO)
-        return qs.order_by("-verificado", "plano", "-atualizado_em")
+        return qs.annotate(plan_order=PLAN_PRIORITY).order_by("plan_order", "-verificado", "-atualizado_em")
 
 
 class NegocioDetailView(generics.RetrieveAPIView):
@@ -48,16 +67,71 @@ class NegocioDetailView(generics.RetrieveAPIView):
         ).prefetch_related("videos")
 
 
+LIMITE_PRODUTOS_PUBLICO = {
+    "gratuito": 10,
+    "basico":   10,
+}
+
 class ProdutoListView(generics.ListAPIView):
     serializer_class   = ProdutoPublicoSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Produto.objects.filter(
-            negocio__slug=self.kwargs["negocio_slug"],
+        slug = self.kwargs["negocio_slug"]
+        qs = Produto.objects.filter(
+            negocio__slug=slug,
             negocio__status=Negocio.Status.ATIVO,
             disponivel=True,
-        ).select_related("negocio")
+        ).select_related("negocio").prefetch_related("fotos").order_by("ordem", "criado_em")
+
+        plano = Negocio.objects.filter(slug=slug).values_list("plano", flat=True).first()
+        limite = LIMITE_PRODUTOS_PUBLICO.get(plano)
+        if limite is not None:
+            return qs[:limite]
+        return qs
+
+
+@api_view(["GET"])
+@deco_permissions([AllowAny])
+def produtos_destaque(request):
+    """
+    Retorna um produto por negócio, priorizando planos pagos (fundador > producao > pro > basico).
+    Apenas produtos com foto e negócios ativos de plano pago.
+    """
+    limit = min(int(request.query_params.get("limit", 10)), 20)
+
+    PLANOS_PAGOS = [Negocio.Plano.FUNDADOR, Negocio.Plano.PRODUCAO, Negocio.Plano.PRO, Negocio.Plano.BASICO]
+
+    negocios = (
+        Negocio.objects.filter(status=Negocio.Status.ATIVO, plano__in=PLANOS_PAGOS)
+        .annotate(plan_order=PLAN_PRIORITY)
+        .order_by("plan_order", "-verificado", "-atualizado_em")
+        .prefetch_related(
+            Prefetch(
+                "produtos",
+                queryset=Produto.objects.filter(disponivel=True)
+                    .prefetch_related("fotos")
+                    .order_by(
+                        # produtos com foto primeiro, depois por ordem definida pelo comerciante
+                        Case(When(foto__isnull=False, then=Value(0)), default=Value(1), output_field=IntegerField()),
+                        Case(When(foto="", then=Value(1)), default=Value(0), output_field=IntegerField()),
+                        "ordem",
+                        "criado_em",
+                    ),
+                to_attr="produtos_priorizados",
+            )
+        )
+    )
+
+    result = []
+    for negocio in negocios:
+        if negocio.produtos_priorizados:
+            result.append(negocio.produtos_priorizados[0])
+        if len(result) >= limit:
+            break
+
+    serializer = ProdutoPublicoSerializer(result, many=True)
+    return Response(serializer.data)
 
 
 class MeuNegocioView(generics.RetrieveUpdateAPIView):

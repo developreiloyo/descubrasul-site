@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     NegocioListView, NegocioDetailView, ProdutoListView,
-    MeuNegocioView, MeusProdutosViewSet,
+    MeuNegocioView, MeusProdutosViewSet, produtos_destaque,
 )
 
 router = DefaultRouter()
@@ -11,6 +11,7 @@ router.register(r"painel/produtos", MeusProdutosViewSet, basename="meus-produtos
 urlpatterns = [
     # Exatas primeiro
     path("", NegocioListView.as_view(), name="negocio-list"),
+    path("produtos/destaque/", produtos_destaque, name="produtos-destaque"),
     path("painel/meu-negocio/", MeuNegocioView.as_view(), name="meu-negocio"),
 
     # Router do painel ANTES dos slugs genericos

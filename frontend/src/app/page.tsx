@@ -4,16 +4,16 @@ import Image from "next/image";
 import {
   MapPin, Star, BadgeCheck, ArrowRight, CheckCircle2,
   Shirt, Smartphone, Utensils, Sparkles, Home as HomeIcon,
-  Dumbbell, Baby, Car, Search,
+  Dumbbell, Baby, Car,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { HeroSearch } from "@/components/home/HeroSearch";
-import { Gallery4 } from "@/components/blocks/gallery4";
-import { getCategorias, getNegocios } from "@/lib/fetchers";
-import { mediaUrl } from "@/lib/utils";
-import type { Negocio } from "@/types";
+import { NegociosDestaque } from "@/components/home/NegociosDestaque";
+import { getCategorias, getProdutosDestaque, getNegociosDestaque } from "@/lib/fetchers";
+import { mediaUrl, linkWhatsApp } from "@/lib/utils";
+import type { Produto } from "@/types";
 
 export const metadata: Metadata = {
   title: "DescubraSul — O melhor do Sul de Santa Catarina",
@@ -39,12 +39,13 @@ const schemaWebSite = {
 };
 
 const CIDADES = [
-  { nome: "Criciúma",        slug: "criciuma",       qtd: "512 negócios" },
-  { nome: "Içara",           slug: "icara",           qtd: "324 negócios" },
-  { nome: "Araranguá",       slug: "ararangua",       qtd: "198 negócios" },
-  { nome: "Tubarão",         slug: "tubarao",         qtd: "288 negócios" },
-  { nome: "Forquilhinha",    slug: "forquilhinha",    qtd: "156 negócios" },
-  { nome: "Morro da Fumaça", slug: "morro-da-fumaca", qtd: "98 negócios"  },
+  { nome: "Criciúma",           slug: "criciuma",          qtd: "512 negócios" },
+  { nome: "Içara",              slug: "icara",              qtd: "324 negócios" },
+  { nome: "Araranguá",          slug: "ararangua",          qtd: "198 negócios" },
+  { nome: "Tubarão",            slug: "tubarao",            qtd: "288 negócios" },
+  { nome: "Forquilhinha",       slug: "forquilhinha",       qtd: "156 negócios" },
+  { nome: "Morro da Fumaça",    slug: "morro-da-fumaca",    qtd: "98 negócios"  },
+  { nome: "Balneário Rincão",   slug: "balneario-rincao",   qtd: "74 negócios"  },
 ];
 
 const CAT_PILLS = [
@@ -59,18 +60,6 @@ const CAT_PILLS = [
   { label: "Automotivo",  icon: Car,           active: false },
 ];
 
-const MOCK_PRODUCTS = [
-  { name:"Tênis Running Pro X",        store:"Sports Zone",      city:"Içara",      cat:"Esporte",    price:"R$ 189,90", old:"R$ 249,90", off:"-24%", rating:"4,8", reviews:"64",  color:"#1E3A5F", badge:"Mais vendido", isNew:false },
-  { name:"Mochila Adventure 30L",      store:"Papelaria Central",city:"Criciúma",   cat:"Infantil",   price:"R$ 119,90", old:"",          off:"",     rating:"4,9", reviews:"128", color:"#2E6B4F", badge:"",             isNew:true  },
-  { name:"Creme Hidratante 500ml",     store:"Studio Bella Vita",city:"Tubarão",    cat:"Beleza",     price:"R$ 49,90",  old:"R$ 69,90",  off:"-29%", rating:"4,7", reviews:"95",  color:"#6B3A6B", badge:"Promoção",      isNew:false },
-  { name:"Smartphone Case Magsafe",    store:"TechStore SC",     city:"Criciúma",   cat:"Tecnologia", price:"R$ 79,90",  old:"",          off:"",     rating:"4,6", reviews:"42",  color:"#1A3A5C", badge:"",             isNew:true  },
-  { name:"Vestido Floral Verão",       store:"Boutique Liz",     city:"Araranguá",  cat:"Moda",       price:"R$ 134,90", old:"R$ 179,90", off:"-25%", rating:"4,9", reviews:"83",  color:"#7A2E5E", badge:"Em alta",       isNew:false },
-  { name:"Conjunto de Panelas Antiaderente", store:"Casa & Lar", city:"Forquilhinha",cat:"Casa",      price:"R$ 249,90", old:"R$ 320,00", off:"-22%", rating:"4,8", reviews:"57",  color:"#4A3E2E", badge:"",             isNew:false },
-  { name:"Whey Protein 900g",          store:"Nutri Sul",        city:"Criciúma",   cat:"Esporte",    price:"R$ 139,90", old:"",          off:"",     rating:"4,7", reviews:"210", color:"#2E5A3A", badge:"Mais vendido",  isNew:false },
-  { name:"Fone Bluetooth Pro",         store:"TechStore SC",     city:"Criciúma",   cat:"Tecnologia", price:"R$ 219,90", old:"R$ 299,90", off:"-27%", rating:"4,8", reviews:"76",  color:"#1A1A2E", badge:"Promoção",      isNew:false },
-  { name:"Sandália Conforto Feminina", store:"Passos Certos",    city:"Tubarão",    cat:"Moda",       price:"R$ 89,90",  old:"",          off:"",     rating:"4,6", reviews:"39",  color:"#6B4A2E", badge:"",             isNew:true  },
-  { name:"Kit Skincare Natural 3 Pcs", store:"Studio Bella Vita",city:"Tubarão",    cat:"Beleza",     price:"R$ 109,90", old:"R$ 149,90", off:"-27%", rating:"4,9", reviews:"147", color:"#3A5E4A", badge:"Kit especial",  isNew:false },
-];
 
 const MOCK_PROMOS = [
   { off:"-25%", title:"Combo Família",      sub:"2 pizzas grandes + refri 1,5L",      price:"R$ 79,90",  store:"Pizzaria Sabores · Criciúma", prazo:"válido até domingo" },
@@ -86,112 +75,64 @@ const BENEFICIOS = [
 
 
 /* ── Componente ProductCard ── */
-function ProductCard({ p }: { p: typeof MOCK_PRODUCTS[0] }) {
-  return (
-    <div className="bg-white rounded-2xl border border-black/[0.06] overflow-hidden group cursor-pointer card-hover">
-      <div
-        className="relative aspect-square overflow-hidden flex items-center justify-center"
-        style={{ background: `linear-gradient(145deg,${p.color}ee,${p.color}77)` }}
-      >
-        {/* Badge */}
-        {p.off ? (
-          <span className="absolute top-2.5 left-2.5 bg-red-600 text-white text-[10px] font-bold rounded-full px-2.5 py-1 z-10 shadow-sm">
-            {p.off}
-          </span>
-        ) : p.isNew ? (
-          <span className="absolute top-2.5 left-2.5 bg-primary text-white text-[10px] font-bold rounded-full px-2.5 py-1 z-10">
-            Novo
-          </span>
-        ) : p.badge ? (
-          <span className="absolute top-2.5 left-2.5 bg-black/40 backdrop-blur-md text-white text-[10px] font-semibold rounded-full px-2.5 py-1 z-10">
-            {p.badge}
-          </span>
-        ) : null}
+function ProductCard({ produto }: { produto: Produto }) {
+  const fotoUrl  = produto.foto ? mediaUrl(produto.foto) : (produto.fotos[0]?.foto ? mediaUrl(produto.fotos[0].foto) : null);
+  const cidSlug  = produto.negocio.cidade.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "-");
+  const negLink  = `/negocios/${cidSlug}/${produto.negocio.categoria_slug}/${produto.negocio.slug}`;
+  const waLink   = linkWhatsApp(produto.negocio.whatsapp, `Olá! Vi o produto *${produto.nome}* no DescubraSul e tenho interesse.`);
+  const preco    = produto.preco ? `R$ ${parseFloat(produto.preco).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : null;
 
-        {/* CTA hover — ease-out para entrar, imperceptível para sair */}
-        <div className="absolute bottom-0 left-0 right-0 p-2.5 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-250 ease-out">
-          <button className="w-full bg-white/95 backdrop-blur-md text-primary text-xs font-semibold rounded-xl py-2.5 flex items-center justify-center gap-1.5 shadow-lg cursor-pointer">
-            <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
-            Comprar via WhatsApp
-          </button>
+  return (
+    <div className="bg-white rounded-2xl border border-black/[0.06] overflow-hidden group card-hover">
+      <Link href={negLink} className="block">
+        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+          {fotoUrl ? (
+            <Image src={fotoUrl} alt={produto.alt_foto || produto.nome} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width:640px)50vw,20vw" />
+          ) : (
+            <span className="text-4xl opacity-30">{produto.negocio.categoria[0]}</span>
+          )}
+          {preco && (
+            <span className="absolute top-2.5 left-2.5 bg-primary text-white text-[10px] font-bold rounded-full px-2.5 py-1 z-10 shadow-sm">
+              {preco}
+            </span>
+          )}
         </div>
-      </div>
+      </Link>
 
       <div className="p-3.5">
         <div className="flex items-center gap-1.5 mb-2">
           <span className="w-4 h-4 rounded-full bg-primary text-white text-[8px] font-extrabold flex items-center justify-center shrink-0">
-            {p.store[0]}
+            {produto.negocio.nome[0]}
           </span>
-          <span className="text-[11px] text-sec font-medium truncate">{p.store}</span>
+          <span className="text-[11px] text-sec font-medium truncate">{produto.negocio.nome}</span>
           <span className="w-1.5 h-1.5 rounded-full bg-green-500 ml-auto shrink-0" />
-          <span className="text-[10px] text-sec">{p.city}</span>
+          <span className="text-[10px] text-sec">{produto.negocio.cidade}</span>
         </div>
-        <p className="font-semibold text-ink text-sm leading-snug line-clamp-2 mb-2">{p.name}</p>
-        <div className="flex items-baseline gap-1.5 mb-2">
-          <span className="font-display text-[15px] text-primary">{p.price}</span>
-          {p.old && <span className="text-xs text-sec line-through">{p.old}</span>}
-        </div>
-        <div className="flex items-center gap-1">
-          <Star className="size-3.5 text-accent fill-accent shrink-0" />
-          <span className="text-xs font-semibold text-ink">{p.rating}</span>
-          <span className="text-[11px] text-sec">({p.reviews})</span>
-          <span className="ml-auto text-[10px] font-medium text-primary bg-primary/8 rounded-full px-2 py-0.5">{p.cat}</span>
-        </div>
+        <Link href={negLink}>
+          <p className="font-semibold text-ink text-sm leading-snug line-clamp-2 mb-3 hover:text-primary transition-colors">{produto.nome}</p>
+        </Link>
+        <a
+          href={waLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full bg-primary/8 hover:bg-primary hover:text-white text-primary text-xs font-semibold rounded-xl py-2 flex items-center justify-center gap-1.5 transition-all duration-200"
+        >
+          <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+          Pedir via WhatsApp
+        </a>
       </div>
     </div>
   );
 }
 
-/* ── Componente StoreCard ── */
-function StoreCard({ negocio }: { negocio: Negocio }) {
-  const logoUrl = negocio.logo ? mediaUrl(negocio.logo) : null;
-  const catSlug = negocio.categoria?.slug || "";
-  const cidade  = negocio.cidade;
-
-  return (
-    <Link
-      href={`/negocios/${cidade}/${catSlug}/${negocio.slug}`}
-      className="card-hover bg-white rounded-2xl border border-black/5 overflow-hidden block"
-    >
-      <div className="relative h-32 bg-gradient-to-br from-primary-light to-primary flex items-center justify-center overflow-hidden">
-        {logoUrl && (
-          <Image src={logoUrl} alt={negocio.nome} fill className="object-cover" sizes="(max-width:640px)100vw,25vw" />
-        )}
-        {negocio.plano !== "gratuito" && (
-          <span className="absolute top-3 left-3 badge-gold text-white text-[10px] font-bold rounded-full px-2.5 py-1">Destaque</span>
-        )}
-        <span className="absolute -bottom-5 left-4 w-10 h-10 rounded-xl bg-white shadow-md font-extrabold text-primary flex items-center justify-center">
-          {negocio.nome.charAt(0)}
-        </span>
-      </div>
-      <div className="p-4 pt-7">
-        <div className="flex items-center gap-1.5">
-          <p className="font-bold text-ink leading-tight truncate">{negocio.nome}</p>
-          {negocio.verificado && <BadgeCheck className="size-4 text-primary shrink-0" />}
-        </div>
-        <p className="text-xs text-sec mt-1">{negocio.categoria?.nome}</p>
-        <div className="flex items-center justify-between mt-3 text-xs text-sec">
-          <span className="flex items-center gap-1"><MapPin className="size-3.5" />{cidade}</span>
-          {negocio.total_avaliacoes > 0 && (
-            <span className="flex items-center gap-1 font-semibold text-ink">
-              <Star className="size-3.5 text-accent fill-accent" />
-              {negocio.media_nota}
-              <span className="text-sec font-normal">({negocio.total_avaliacoes})</span>
-            </span>
-          )}
-        </div>
-        <span className="mt-4 block text-center text-sm font-semibold text-primary border border-primary/25 rounded-full py-2 hover:bg-primary hover:text-white transition-colors">
-          Ver produtos
-        </span>
-      </div>
-    </Link>
-  );
-}
 
 /* ── PAGE ── */
 export default async function Home() {
-  const [categorias, negocios] = await Promise.all([getCategorias(), getNegocios()]);
-  const destaques = negocios.slice(0, 4);
+  const [categorias, produtosDestaque, negociosDestaque] = await Promise.all([
+    getCategorias(),
+    getProdutosDestaque(10),
+    getNegociosDestaque(12),
+  ]);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -332,45 +273,28 @@ export default async function Home() {
       </div>
 
       {/* ── PRODUTOS EM DESTAQUE ─────────────────────────── */}
-      <section className="py-14 lg:py-20 max-w-[1200px] mx-auto px-4">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <p className="eyebrow mb-2">Marketplace local</p>
-            <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Produtos em destaque</h2>
-            <p className="text-sec text-sm mt-1.5">Das melhores lojas do Sul catarinense, direto para você.</p>
+      {produtosDestaque.length > 0 && (
+        <section className="py-14 lg:py-20 max-w-[1200px] mx-auto px-4">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <p className="eyebrow mb-2">Marketplace local</p>
+              <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Produtos em destaque</h2>
+              <p className="text-sec text-sm mt-1.5">Das melhores lojas do Sul catarinense, direto para você.</p>
+            </div>
+            <Link href="/marketplace" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors duration-200">
+              Ver todos <ArrowRight className="size-4" />
+            </Link>
           </div>
-          <Link href="/marketplace" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors duration-200">
-            Ver todos <ArrowRight className="size-4" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {MOCK_PRODUCTS.map((p) => <ProductCard key={p.name} p={p} />)}
-        </div>
-      </section>
-
-      {/* ── CARROSSEL Gallery4 ───────────────────────────── */}
-      <Gallery4 />
-
-      {/* ── LOJAS EM DESTAQUE ───────────────────────────── */}
-      {destaques.length > 0 && (
-        <section className="py-14 lg:py-20 bg-white">
-          <div className="max-w-[1200px] mx-auto px-4">
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <p className="eyebrow mb-2">Negócios verificados</p>
-                <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Lojas em destaque</h2>
-                <p className="text-sec text-sm mt-1.5">Os negócios mais visitados da semana.</p>
-              </div>
-              <Link href="/busca" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors duration-200">
-                Ver todas <ArrowRight className="size-4" />
-              </Link>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {destaques.map((n) => <StoreCard key={n.slug} negocio={n} />)}
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {produtosDestaque.map((p) => <ProductCard key={p.slug} produto={p} />)}
           </div>
         </section>
       )}
+
+
+
+      {/* ── NEGÓCIOS EM DESTAQUE ────────────────────────── */}
+      <NegociosDestaque negocios={negociosDestaque} />
 
       {/* ── CATEGORIAS (do backend) ─────────────────────── */}
       {categorias.length > 0 && (

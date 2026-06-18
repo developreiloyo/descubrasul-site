@@ -27,9 +27,18 @@ export interface Negocio {
   atualizado_em: string;
   redes_sociais?: RedesSociais;
   localizacao?: Localizacao;
+  videos?: VideoDestaque[];
+  espaco_especial?: EspacoEspecial | null;
 }
 
 // ─── Produto ────────────────────────────────────────────────────────
+export interface FotoProduto {
+  id: number;
+  foto: string;
+  alt_texto: string;
+  ordem: number;
+}
+
 export interface Produto {
   id: number;
   slug: string;
@@ -42,7 +51,15 @@ export interface Produto {
   preco: string | null;
   disponivel: boolean;
   atualizado_em: string;
-  negocio: Pick<Negocio, "slug" | "nome" | "cidade" | "categoria" | "whatsapp">;
+  fotos: FotoProduto[];
+  negocio: {
+    slug: string;
+    nome: string;
+    cidade: string;
+    categoria: string;
+    categoria_slug: string;
+    whatsapp: string;
+  };
 }
 
 // ─── Redes Sociais ──────────────────────────────────────────────────
@@ -57,10 +74,11 @@ export interface RedesSociais {
 // ─── Localização ────────────────────────────────────────────────────
 export interface Localizacao {
   direccao_fmt: string;
-  lat: string;
-  lng: string;
+  lat: string | null;
+  lng: string | null;
   cidade: string;
   bairro: string;
+  area_servico?: string;
 }
 
 // ─── Categoria ──────────────────────────────────────────────────────
@@ -68,6 +86,27 @@ export interface Categoria {
   slug: string;
   nome: string;
   icone: string;
+}
+
+// ─── VideoDestaque ──────────────────────────────────────────────────
+export interface VideoDestaque {
+  plataforma: string;
+  oembed_html: string;
+  criado_em: string;
+}
+
+// ─── Espaço Especial (plano Pro+) ───────────────────────────────────
+export interface EspacoEspecial {
+  tipo: "texto" | "oferta" | "cupom" | "banner" | "video";
+  titulo?: string;
+  conteudo?: string;
+  badge?: string;
+  cta_texto?: string;
+  cta_link?: string;
+  desconto?: string;
+  codigo?: string;
+  imagem_url?: string;
+  imagem_alt?: string;
 }
 
 // ─── Analytics AARRR ────────────────────────────────────────────────
