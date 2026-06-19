@@ -109,13 +109,21 @@ DELETE         /api/negocios/painel/produtos/{id}/fotos/{foto_id}/ # Remover fot
 # Analytics
 POST  /api/analytics/cliques/       # Registrar evento (rate limit 60/min por IP)
 GET   /api/analytics/metricas/      # Métricas 30 dias (requer IsPlanoPro)
+GET   /api/analytics/dashboard/     # Dashboard completo 30 dias (gratuito recebe preview bloqueado)
 
-# Outros (stubs ativos mas vazios)
-/api/usuarios/
+# Usuarios
+POST  /api/usuarios/cadastro/               # Cadastro comerciante (User + Negocio em transação)
+GET   /api/usuarios/me/                     # Dados do usuário autenticado
+POST  /api/usuarios/password-reset/         # Solicitar reset de senha (rate limit 5/h por IP)
+POST  /api/usuarios/password-reset/confirm/ # Confirmar reset com uid + token
+
+# Stubs vazios
 /api/planos/
 /api/ia/
 /api/categorias/
 ```
+
+> `NegocioPainelSerializer` retorna `categoria` como objeto aninhado `{slug, nome, icone}` — necessário para o QR Code no painel.
 
 ### Frontend — Rotas implementadas
 
@@ -139,6 +147,8 @@ GET   /api/analytics/metricas/      # Métricas 30 dias (requer IsPlanoPro)
 /painel/meu-negocio                        # Editar negócio + EspacoEspecial (Pro+)
 /painel/produtos                           # Gerenciar produtos
 /painel/metricas                           # Métricas AARRR (Pro+)
+/privacidade                               # Política de Privacidade (LGPD)
+/termos                                    # Termos de Uso
 
 # API Routes (Next.js proxy/BFF)
 /api/auth/login
@@ -161,7 +171,7 @@ components/
 │                   PhotoGallery, ProductoDestaque, SimilarBusinesses
 │                   BotaoWhatsApp, TrackerView (analytics)
 ├── seo/            JsonLd (Schema.org), GoogleAnalytics
-├── ui/             button, carousel, AdSlot
+├── ui/             button, carousel, AdSlot, CookieBanner, QRCodeCard
 └── blocks/         gallery4
 ```
 
@@ -169,7 +179,7 @@ components/
 
 - `lib/api.ts` — Axios com interceptor JWT (401 → redirect /painel/login)
 - `lib/fetchers.ts` — Fetchers SSR: `getNegocio`, `getProdutosDoNegocio`, `getCategorias`, `getNegociosDestaque`, `getProdutosDestaque`, `getNegocios`
-- `lib/utils.ts` — Utilitários gerais
+- `lib/utils.ts` — Utilitários gerais; inclui `isAberto(abertura, fechamento, dias[])` — verifica horário de funcionamento em timezone America/Sao_Paulo, normaliza dias pt-BR (remove acentos e ponto)
 - `hooks/useTracking.ts` — Hook para registrar cliques nos endpoints de analytics
 - `types/index.ts` — Interfaces TypeScript: `Negocio`, `Produto`, `FotoProduto`, `RedesSociais`, `Localizacao`, `Categoria`, `VideoDestaque`, `EspacoEspecial`, `MetricaDiaria`
 
@@ -179,13 +189,14 @@ components/
 
 | Feature                            | App responsável | Observação                                         |
 |------------------------------------|-----------------|---------------------------------------------------|
-| Assinaturas + cobrança recorrente  | `planos/`       | Mercado Pago Subscriptions                        |
-| Promoções especiais + pagamento MP | `negocios/` ou novo app `promocoes/` | Compra única via MP Preference      |
+| Assinaturas + cobrança recorrente  | `planos/`       | Mercado Pago Subscriptions — previsto 2026-06-22  |
+| Promoções especiais + pagamento MP | `promocoes/` (novo) | Compra única via MP Preference               |
 | Geração de texto com IA            | `ia/`           | Claude Haiku 4.5 — só plano Pro+                  |
-| Reset de senha por e-mail          | `usuarios/`     | Backend sem envio de e-mail implementado          |
-| Celery task agregar_metricas_diarias | `analytics/`  | Task mencionada no model mas não criada           |
+| CTAs upgrade de plano              | `planos/`       | Botões em /planos e /painel/ apontam para /cadastro em vez de fluxo de upgrade |
 | pgvector busca semântica           | `core/`         | MiniLM-L12-v2 pendente de setup                  |
 | Geocodificação automática Maps     | `negocios/`     | Campo lat/lng existe, geocoding não implementado  |
+| Razão social + CNPJ legais         | —               | `[PENDENTE]` em /privacidade e /termos — aguarda confirmação do dono |
+| SMTP produção                      | `.env`          | `EMAIL_BACKEND=console` em dev; vars SMTP comentadas para prod |
 
 ---
 
