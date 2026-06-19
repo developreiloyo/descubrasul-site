@@ -34,7 +34,9 @@ export default function CadastroPage() {
     setForm((f) => ({ ...f, [campo]: valor }));
   }
 
-  const completo = Object.values(form).every((v) => v.trim() !== "");
+  const [aceitouTermos, setAceitouTermos] = useState(false);
+
+  const completo = Object.values(form).every((v) => v.trim() !== "") && aceitouTermos;
 
   async function handleSubmit() {
     setErro("");
@@ -105,6 +107,26 @@ export default function CadastroPage() {
           value={form.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} />
 
         {erro && <p className="text-sm text-red-600">{erro}</p>}
+
+        <label className="flex items-start gap-3 text-sm text-ink/70">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 accent-primary"
+            checked={aceitouTermos}
+            onChange={(e) => setAceitouTermos(e.target.checked)}
+          />
+          <span>
+            Li e aceito os{" "}
+            <Link href="/termos" className="font-semibold text-primary underline">
+              Termos de Uso
+            </Link>{" "}
+            e a{" "}
+            <Link href="/privacidade" className="font-semibold text-primary underline">
+              Política de Privacidade
+            </Link>
+            . Concordo com o tratamento dos meus dados conforme a LGPD.
+          </span>
+        </label>
 
         <button
           onClick={handleSubmit}

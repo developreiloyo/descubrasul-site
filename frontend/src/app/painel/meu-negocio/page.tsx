@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
+import { QRCodeCard } from "@/components/ui/QRCodeCard";
 
 // ─── Tipos ───────────────────────────────────────────────────────────
 interface NegocioForm {
@@ -86,6 +87,7 @@ export default function MeuNegocioPage() {
   const [form, setForm]           = useState<NegocioForm>(VAZIO_FORM);
   const [espaco, setEspaco]       = useState<EspacoEspecialForm>(VAZIO_ESPACO);
   const [plano, setPlano]         = useState<string>("gratuito");
+  const [negocioMeta, setNegocioMeta] = useState<{ slug: string; cidade: string; categoriaSlug: string } | null>(null);
   const [erro, setErro]           = useState("");
   const [sucesso, setSucesso]     = useState(false);
   const [carregando, setCarregando] = useState(true);
@@ -99,6 +101,9 @@ export default function MeuNegocioPage() {
       .then((r) => r.json())
       .then((d) => {
         setPlano(d.plano ?? "gratuito");
+        if (d.slug && d.cidade && d.categoria?.slug) {
+          setNegocioMeta({ slug: d.slug, cidade: d.cidade, categoriaSlug: d.categoria.slug });
+        }
         setForm({
           nome: d.nome ?? "",
           descricao: d.descricao ?? "",
@@ -418,6 +423,15 @@ export default function MeuNegocioPage() {
         >
           {salvando ? "Salvando..." : "Salvar alteracoes"}
         </button>
+
+        {negocioMeta && (
+          <QRCodeCard
+            slug={negocioMeta.slug}
+            cidade={negocioMeta.cidade}
+            categoriaSlug={negocioMeta.categoriaSlug}
+            nomeNegocio={form.nome}
+          />
+        )}
       </div>
     </main>
   );

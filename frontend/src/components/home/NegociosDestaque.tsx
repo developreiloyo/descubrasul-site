@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, BadgeCheck, MapPin, Star } from "lucide-react";
-import { mediaUrl } from "@/lib/utils";
+import { mediaUrl, isAberto } from "@/lib/utils";
 import type { Negocio } from "@/types";
 
 function slugify(str: string) {
@@ -90,6 +90,8 @@ export function NegociosDestaque({ negocios }: { negocios: Negocio[] }) {
           const catSlug   = negocio.categoria?.slug ?? "";
           const href      = `/negocios/${cidSlug}/${catSlug}/${negocio.slug}`;
           const badge     = PLAN_BADGE[negocio.plano];
+          const aberto    = isAberto(negocio.horario_abertura, negocio.horario_fechamento, negocio.dias_funcionamento);
+          const temHorario = negocio.horario_abertura && negocio.horario_fechamento;
 
           return (
             <Link
@@ -152,15 +154,31 @@ export function NegociosDestaque({ negocios }: { negocios: Negocio[] }) {
                 )}
 
                 <div className="flex items-center justify-between pt-1 border-t border-black/5">
-                  {negocio.total_avaliacoes > 0 ? (
-                    <span className="flex items-center gap-1 text-xs">
-                      <Star className="size-3.5 fill-accent text-accent" />
-                      <span className="font-semibold text-ink">{negocio.media_nota}</span>
-                      <span className="text-sec">({negocio.total_avaliacoes})</span>
-                    </span>
-                  ) : (
-                    <span />
-                  )}
+                  <div className="flex items-center gap-2">
+                    {negocio.total_avaliacoes > 0 && (
+                      <span className="flex items-center gap-1 text-xs">
+                        <Star className="size-3.5 fill-accent text-accent" />
+                        <span className="font-semibold text-ink">{negocio.media_nota}</span>
+                        <span className="text-sec">({negocio.total_avaliacoes})</span>
+                      </span>
+                    )}
+                    {temHorario && (
+                      aberto ? (
+                        <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
+                          <span className="relative flex size-1.5">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" />
+                          </span>
+                          Aberto
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-[10px] text-ink/30">
+                          <span className="size-1.5 rounded-full bg-ink/20" />
+                          Fechado
+                        </span>
+                      )
+                    )}
+                  </div>
                   <span className="text-xs font-semibold text-primary group-hover:text-accent transition-colors flex items-center gap-1">
                     Ver vitrine <ArrowRight className="size-3" />
                   </span>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Clock, MapPin, Phone, ExternalLink } from "lucide-react";
 import type { Negocio } from "@/types";
+import { isAberto } from "@/lib/utils";
 
 function InstagramIcon() {
   return (
@@ -26,22 +27,6 @@ function TikTokIcon() {
   );
 }
 
-function isAberto(abertura: string | null, fechamento: string | null): boolean {
-  if (!abertura || !fechamento) return false;
-  const agora = new Date();
-  const partes = new Intl.DateTimeFormat("pt-BR", {
-    hour: "numeric",
-    minute: "numeric",
-    hour12: false,
-    timeZone: "America/Sao_Paulo",
-  }).formatToParts(agora);
-  const h = Number(partes.find((p) => p.type === "hour")?.value ?? 0);
-  const m = Number(partes.find((p) => p.type === "minute")?.value ?? 0);
-  const [hA, mA] = abertura.split(":").map(Number);
-  const [hF, mF] = fechamento.split(":").map(Number);
-  const atual = h * 60 + m;
-  return atual >= hA * 60 + mA && atual < hF * 60 + mF;
-}
 
 interface Props {
   negocio: Negocio;
@@ -67,7 +52,7 @@ function mapaEmbed(negocio: Negocio): string {
 export function BusinessSidebar({ negocio }: Props) {
   const abreAs = negocio.horario_abertura?.slice(0, 5);
   const fechaAs = negocio.horario_fechamento?.slice(0, 5);
-  const aberto = isAberto(negocio.horario_abertura, negocio.horario_fechamento);
+  const aberto = isAberto(negocio.horario_abertura, negocio.horario_fechamento, negocio.dias_funcionamento);
   const cidade = negocio.cidade.charAt(0).toUpperCase() + negocio.cidade.slice(1);
 
   const redes = [

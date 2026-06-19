@@ -88,6 +88,7 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
 class NegocioPainelSerializer(serializers.ModelSerializer):
     localizacao   = LocalizacaoPainelSerializer(required=False)
     redes_sociais = RedesSociaisPainelSerializer(required=False)
+    categoria     = CategoriaSerializer(read_only=True)
 
     class Meta:
         model  = Negocio

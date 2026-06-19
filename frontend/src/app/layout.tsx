@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Calistoga } from "next/font/google";
 import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
+import { CookieBanner } from "@/components/ui/CookieBanner";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${calistoga.variable} font-sans`}>
         <GoogleAnalytics />
         {children}
+        <CookieBanner />
       </body>
     </html>
   );

@@ -3,13 +3,20 @@
 import Image from "next/image";
 import { BadgeCheck, MapPin, Star } from "lucide-react";
 import type { Negocio } from "@/types";
-import { mediaUrl } from "@/lib/utils";
+import { mediaUrl, isAberto } from "@/lib/utils";
 
 interface Props {
   negocio: Negocio;
 }
 
 export function BusinessHero({ negocio }: Props) {
+  const aberto = isAberto(
+    negocio.horario_abertura,
+    negocio.horario_fechamento,
+    negocio.dias_funcionamento
+  );
+  const temHorario = negocio.horario_abertura && negocio.horario_fechamento;
+
   return (
     <section className="relative">
       <div className="relative h-64 w-full overflow-hidden sm:h-80 lg:h-96 lg:rounded-2xl">
@@ -59,6 +66,22 @@ export function BusinessHero({ negocio }: Props) {
               ({negocio.total_avaliacoes} avaliações)
             </span>
           </span>
+        )}
+        {temHorario && (
+          aberto ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+              <span className="relative flex size-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" />
+              </span>
+              Aberto agora
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-ink/5 px-2.5 py-0.5 text-xs font-medium text-ink/40">
+              <span className="size-1.5 rounded-full bg-ink/20" />
+              Fechado
+            </span>
+          )
         )}
       </div>
     </section>
