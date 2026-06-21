@@ -3,10 +3,15 @@ import { notFound } from "next/navigation";
 import { getNegocio, getProdutosDoNegocio, getNegocios } from "@/lib/fetchers";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { TrackerView } from "@/components/negocios/TrackerView";
-import { BusinessSidebar } from "@/components/negocios/BusinessSidebar";
-import { PaginaNegocioClient } from "@/components/negocios/PaginaNegocioClient";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { BusinessHero } from "@/components/negocios/BusinessHero";
+import { StickyActionBar } from "@/components/negocios/StickyActionBar";
+import { QuickActionsBar } from "@/components/negocios/QuickActionsBar";
+import { BusinessMobileBottomNav } from "@/components/negocios/BusinessMobileBottomNav";
+import { PaginaNegocioClient } from "@/components/negocios/PaginaNegocioClient";
+import { BusinessSidebar } from "@/components/negocios/BusinessSidebar";
+import { SimilarBusinesses } from "@/components/negocios/SimilarBusinesses";
 
 interface Props {
   params: Promise<{ cidade: string; categoria: string; slug: string }>;
@@ -83,31 +88,50 @@ export default async function PaginaNegocio({ params }: Props) {
   const url = `https://descubrasul.com/negocios/${cidade}/${categoria}/${slug}`;
 
   return (
-    <div className="min-h-screen bg-[#fafaf9]">
+    <div className="min-h-screen pb-20 md:pb-0" style={{ backgroundColor: "#f8f9ff" }}>
       <JsonLd data={schemaLocalBusiness(negocio, url)} />
       <TrackerView negocioSlug={negocio.slug} />
       <Navbar />
 
-      <main className="mx-auto max-w-6xl px-4 py-6 lg:py-8">
-        <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+      {/* Hero full-width */}
+      <BusinessHero negocio={negocio} />
 
-          {/* Coluna principal — client component com estado do carousel */}
+      {/* Mobile: quick action icon buttons floating below hero */}
+      <div className="md:hidden">
+        <QuickActionsBar negocio={negocio} />
+      </div>
+
+      {/* Desktop: sticky action bar */}
+      <div className="hidden md:block">
+        <StickyActionBar negocio={negocio} />
+      </div>
+
+      {/* Main content */}
+      <main className="max-w-[1280px] mx-auto px-4 md:px-8 py-6 md:py-12 flex flex-col md:flex-row gap-6 md:gap-10">
+        {/* Content column */}
+        <div className="w-full md:w-[65%] space-y-8 md:space-y-12">
           <PaginaNegocioClient
             negocio={negocio}
             produtos={produtos}
             similares={similaresFiltrados}
           />
-
-          {/* Sidebar desktop */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-20">
-              <BusinessSidebar negocio={negocio} />
-            </div>
-          </aside>
         </div>
+
+        {/* Sidebar */}
+        <aside className="w-full md:w-[35%]">
+          <div className="md:sticky md:top-24">
+            <BusinessSidebar negocio={negocio} />
+          </div>
+        </aside>
       </main>
 
+      {/* Similar businesses — full width */}
+      <SimilarBusinesses negocios={similaresFiltrados} />
+
       <Footer />
+
+      {/* Mobile bottom nav */}
+      <BusinessMobileBottomNav negocio={negocio} />
     </div>
   );
 }

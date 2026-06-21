@@ -29,6 +29,7 @@ export interface Negocio {
   localizacao?: Localizacao;
   videos?: VideoDestaque[];
   espaco_especial?: EspacoEspecial | null;
+  palavras_chave?: string | null;
 }
 
 // ─── Produto ────────────────────────────────────────────────────────

@@ -121,6 +121,19 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
         validar_texto_seo_completo(value, campo="descricao SEO")
         return value
 
+    def validate_espaco_especial(self, value):
+        if value is None:
+            return value
+        TIPOS_VALIDOS = {"texto", "oferta", "cupom", "banner", "video"}
+        if value.get("tipo") not in TIPOS_VALIDOS:
+            raise serializers.ValidationError("Tipo de espaço especial inválido.")
+        cta_link = value.get("cta_link", "")
+        if cta_link and not cta_link.startswith(("https://", "http://")):
+            raise serializers.ValidationError(
+                "cta_link deve ser uma URL http ou https válida."
+            )
+        return value
+
     def update(self, instance, validated_data):
         loc_data   = validated_data.pop("localizacao", None)
         redes_data = validated_data.pop("redes_sociais", None)

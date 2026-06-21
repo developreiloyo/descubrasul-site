@@ -98,7 +98,10 @@ def produtos_destaque(request):
     Retorna um produto por negócio, priorizando planos pagos (fundador > producao > pro > basico).
     Apenas produtos com foto e negócios ativos de plano pago.
     """
-    limit = min(int(request.query_params.get("limit", 10)), 20)
+    try:
+        limit = min(int(request.query_params.get("limit", 10)), 20)
+    except (ValueError, TypeError):
+        limit = 10
 
     PLANOS_PAGOS = [Negocio.Plano.FUNDADOR, Negocio.Plano.PRODUCAO, Negocio.Plano.PRO, Negocio.Plano.BASICO]
 
@@ -145,9 +148,6 @@ class MeuNegocioView(generics.RetrieveUpdateAPIView):
 class MeusProdutosViewSet(viewsets.ModelViewSet):
     serializer_class   = ProdutoPainelSerializer
     permission_classes = [IsAuthenticated, IsDonoDoNegocio, PodicionarProduto]
-
-    def get_queryset(self):
-        return Produto.objects.filter(negocio__usuario=self.request.user)
 
     def perform_create(self, serializer):
         from django.utils import timezone
@@ -220,7 +220,7 @@ class MeusProdutosViewSet(viewsets.ModelViewSet):
             foto = FotoProduto.objects.get(id=foto_id, produto=produto)
             foto.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except FotoProduto.DoesNotExist:
+        except (FotoProduto.DoesNotExist, ValueError, TypeError):
             return Response({"detail": "Foto não encontrada."}, status=404)
         
     def get_queryset(self):

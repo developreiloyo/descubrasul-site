@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Categoria } from "@/types";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
 export default function CadastroPage() {
   const router = useRouter();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -24,9 +22,9 @@ export default function CadastroPage() {
   });
 
   useEffect(() => {
-    fetch(`${API}/categorias/`)
+    fetch("/api/proxy/categorias/?ordering=ordem&limit=100")
       .then((r) => r.json())
-      .then((d) => setCategorias(d.results ?? []))
+      .then((d) => setCategorias(d.results ?? d ?? []))
       .catch(() => {});
   }, []);
 
@@ -42,7 +40,7 @@ export default function CadastroPage() {
     setErro("");
     setCarregando(true);
     try {
-      const res = await fetch(`${API}/usuarios/cadastro/`, {
+      const res = await fetch("/api/proxy/usuarios/cadastro/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

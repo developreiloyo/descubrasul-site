@@ -1,88 +1,114 @@
-"use client";
-
 import Image from "next/image";
-import { BadgeCheck, MapPin, Star } from "lucide-react";
-import type { Negocio } from "@/types";
+import { BadgeCheck } from "lucide-react";
 import { mediaUrl, isAberto } from "@/lib/utils";
+import type { Negocio } from "@/types";
 
 interface Props {
   negocio: Negocio;
 }
 
 export function BusinessHero({ negocio }: Props) {
+  const logoUrl = mediaUrl(negocio.logo);
   const aberto = isAberto(
     negocio.horario_abertura,
     negocio.horario_fechamento,
     negocio.dias_funcionamento
   );
-  const temHorario = negocio.horario_abertura && negocio.horario_fechamento;
 
   return (
-    <section className="relative">
-      <div className="relative h-64 w-full overflow-hidden sm:h-80 lg:h-96 lg:rounded-2xl">
-        {negocio.logo ? (
+    <section
+      className="relative w-full h-80 md:h-[480px]"
+      style={{ borderTop: "3px solid #DC2626" }}
+    >
+      {/* Background image */}
+      <div className="absolute inset-0">
+        {logoUrl ? (
           <Image
-            src={mediaUrl(negocio.logo)!}
-            alt={negocio.alt_logo || `Foto de ${negocio.nome}`}
+            src={logoUrl}
+            alt={negocio.alt_logo || negocio.nome}
             fill
             className="object-cover"
             priority
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-ink/10 text-8xl">
-            {negocio.categoria?.icone || "🏪"}
+          <div
+            className="w-full h-full flex items-center justify-center text-9xl"
+            style={{ backgroundColor: "#e5eeff" }}
+          >
+            {negocio.categoria?.icone ?? "🏪"}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-          <div className="flex items-center gap-2">
-            <h1 className="text-balance text-2xl font-bold text-white drop-shadow-sm sm:text-3xl lg:text-4xl">
+      </div>
+
+      {/* Gradient overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%)",
+        }}
+      />
+
+      <div className="max-w-[1280px] mx-auto px-4 md:px-8 h-full relative flex flex-col justify-between py-6 md:py-10">
+        {/* Top badges */}
+        <div className="flex justify-between items-start">
+          {negocio.verificado ? (
+            <span
+              className="bg-white/90 backdrop-blur-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs font-bold flex items-center gap-2"
+              style={{ color: "#0b1c30" }}
+            >
+              <BadgeCheck className="w-4 h-4" style={{ color: "#00602a" }} />
+              <span className="hidden sm:inline">Verificado DescubraSul</span>
+              <span className="sm:hidden">Verificado</span>
+            </span>
+          ) : (
+            <span />
+          )}
+          <span
+            className="ml-auto bg-white/90 backdrop-blur-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs font-bold flex items-center gap-2"
+            style={{ color: "#0b1c30" }}
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${aberto ? "animate-pulse" : ""}`}
+              style={{ backgroundColor: aberto ? "#22c55e" : "#9ca3af" }}
+            />
+            {aberto ? "ABERTO AGORA" : "FECHADO"}
+          </span>
+        </div>
+
+        {/* Bottom: logo circle + nome */}
+        <div className="flex items-end gap-4 md:gap-6">
+          {/* Logo circle */}
+          <div className="w-20 h-20 md:w-32 md:h-32 rounded-full border-2 md:border-4 border-white bg-white overflow-hidden shadow-xl flex-shrink-0">
+            {logoUrl ? (
+              <Image
+                src={logoUrl}
+                alt={negocio.nome}
+                width={128}
+                height={128}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center text-4xl md:text-5xl"
+                style={{ backgroundColor: "#eff4ff" }}
+              >
+                {negocio.categoria?.icone ?? "🏪"}
+              </div>
+            )}
+          </div>
+
+          <div className="pb-1 md:pb-2 text-white">
+            <h1 className="text-2xl md:text-4xl font-extrabold mb-1 drop-shadow leading-tight">
               {negocio.nome}
             </h1>
-            {negocio.verificado && (
-              <BadgeCheck
-                aria-label="Negócio verificado"
-                className="size-6 shrink-0 text-primary fill-white"
-              />
+            {negocio.descricao && (
+              <p className="text-sm md:text-lg opacity-90 line-clamp-2 md:line-clamp-none">
+                {negocio.descricao}
+              </p>
             )}
           </div>
         </div>
-      </div>
-
-      {/* Meta row */}
-      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 px-1">
-        <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-          {negocio.categoria?.nome}
-        </span>
-        <span className="inline-flex items-center gap-1 text-sm text-ink/50">
-          <MapPin className="size-4" />
-          {negocio.cidade.charAt(0).toUpperCase() + negocio.cidade.slice(1)} · SC
-        </span>
-        {negocio.total_avaliacoes > 0 && (
-          <span className="inline-flex items-center gap-1.5 text-sm font-medium">
-            <Star className="size-4 fill-amber-400 text-amber-400" />
-            {negocio.media_nota}
-            <span className="font-normal text-ink/50">
-              ({negocio.total_avaliacoes} avaliações)
-            </span>
-          </span>
-        )}
-        {temHorario && (
-          aberto ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-              <span className="relative flex size-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" />
-              </span>
-              Aberto agora
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-ink/5 px-2.5 py-0.5 text-xs font-medium text-ink/40">
-              <span className="size-1.5 rounded-full bg-ink/20" />
-              Fechado
-            </span>
-          )
-        )}
       </div>
     </section>
   );

@@ -7,7 +7,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model  = User
         fields = ["id", "email", "nome", "role", "criado_em"]
-        read_only_fields = ["role", "criado_em"]
+        # email é read_only: alteração requer endpoint dedicado com verificação de senha
+        # e confirmação no novo endereço — ver POST /api/usuarios/me/change-email/ (a implementar)
+        read_only_fields = ["id", "email", "role", "criado_em"]
 
 
 class RegisterSerializer(serializers.ModelSerializer):

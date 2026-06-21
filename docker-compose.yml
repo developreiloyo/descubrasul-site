@@ -6,8 +6,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     command: gunicorn core.wsgi:application --config gunicorn.conf.py
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"   # visível apenas internamente (Traefik/frontend) — não expõe no host
     volumes:
       - ./backend:/app
       - static_files:/app/staticfiles

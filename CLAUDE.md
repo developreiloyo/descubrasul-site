@@ -82,6 +82,24 @@ backend/
 #### planos/ e ia/
 - Apps criados mas **completamente vazios** — apenas arquivos stub gerados pelo Django
 
+### Frontend — Painel do comerciante
+
+#### Route group `src/app/painel/(panel)/`
+- `layout.tsx` — injeta `MerchantNavbar` + `MobileBottomNav`, bg `#f8f9ff`, max-w 1280px
+- `meu-negocio/page.tsx` — grid 8+4 col; fetch GET + PATCH `/api/proxy/negocios/painel/meu-negocio/`
+  - Payload PATCH: `{ ...campos, historia, localizacao: {cep, direccao, bairro, cidade, estado}, redes_sociais: {instagram_url, tiktok_url, facebook_url, youtube_url, x_url}, espaco_especial: null | {tipo, ...} }`
+- `produtos/page.tsx` — CRUD de produtos com upload de foto (max 3/produto)
+- `metricas/page.tsx` — Dashboard AARRR (bloqueado para não-Pro)
+
+#### `MerchantNavbar`
+- Logo: `<Image src="/logo.png">` — mesmo logo do Navbar público
+- Links: `/painel/meu-negocio`, `/painel/produtos`, `/painel/metricas`
+
+#### `QRCodeCard` (`components/ui/QRCodeCard.tsx`)
+- Lib: `react-qr-code` (NÃO `qrcode.react`)
+- Gera URL: `/negocios/{cidade}/{categoriaSlug}/{slug}`
+- Download disponível em PNG e SVG
+
 ### Backend — Endpoints da API
 
 ```
@@ -129,7 +147,7 @@ POST  /api/usuarios/password-reset/confirm/ # Confirmar reset com uid + token
 
 ```
 /                                           # Home: HeroSearch + NegociosDestaque
-/negocios/{cidade}/{categoria}/{slug}       # Página do negócio (SSR + JSON-LD + SEO)
+/negocios/{cidade}/{categoria}/{slug}       # Minisite do negócio (SSR + JSON-LD + SEO + mobile-first)
 /cidades/{slug}                             # Página de cidade
 /{categoria}                               # Listagem por categoria
 /{categoria}/{cidade}                      # Categoria + cidade
@@ -139,14 +157,14 @@ POST  /api/usuarios/password-reset/confirm/ # Confirmar reset com uid + token
 /p/{slug}                                  # URL curta (redirect)
 /planos                                    # Página de planos
 /para-empresas                             # Landing para comerciantes
-/painel/login                              # Login comerciante
-/painel/cadastro                           # Cadastro
-/painel/esqueci-senha                      # Recuperação de senha
-/painel/nova-senha                         # Redefinir senha
-/painel/                                   # Dashboard do comerciante
-/painel/meu-negocio                        # Editar negócio + EspacoEspecial (Pro+)
-/painel/produtos                           # Gerenciar produtos
-/painel/metricas                           # Métricas AARRR (Pro+)
+/painel/login                              # Login comerciante (fora do route group)
+/painel/cadastro                           # Cadastro (fora do route group)
+/painel/esqueci-senha                      # Recuperação de senha (fora do route group)
+/painel/nova-senha                         # Redefinir senha (fora do route group)
+/painel/                                   # Dashboard do comerciante ← route group (panel)
+/painel/meu-negocio                        # Editar negócio + EspacoEspecial (Pro+) ← route group (panel)
+/painel/produtos                           # Gerenciar produtos ← route group (panel)
+/painel/metricas                           # Métricas AARRR (Pro+) ← route group (panel)
 /privacidade                               # Política de Privacidade (LGPD)
 /termos                                    # Termos de Uso
 
@@ -159,19 +177,47 @@ POST  /api/usuarios/password-reset/confirm/ # Confirmar reset com uid + token
 /api/proxy/[...path]                       # Proxy transparente para o Django
 ```
 
+> **Route group `painel/(panel)/`**: as páginas autenticadas do painel (dashboard, meu-negocio, produtos, metricas) ficam dentro do grupo `(panel)` que injeta `MerchantNavbar` + `MobileBottomNav` via `layout.tsx`. As páginas de auth (login, cadastro, esqueci-senha, nova-senha) ficam **fora** do grupo e não recebem esse layout.
+
 ### Frontend — Componentes principais
 
 ```
 components/
 ├── layout/         Navbar, Footer
 ├── home/           HeroSearch, NegociosDestaque
-├── negocios/       BusinessHero, BusinessSidebar, BusinessActions, PaginaNegocioClient
-│                   EspacoEspecial (Pro+), HistoriaSection, OfrecemosSection
-│                   ProdutosSection, ServicosSection, UbicacaoSection
-│                   PhotoGallery, ProductoDestaque, SimilarBusinesses
-│                   BotaoWhatsApp, TrackerView (analytics)
+├── negocios/       # Minisite público (/negocios/{cidade}/{categoria}/{slug})
+│   ├── BusinessHero           # Hero full-width responsivo (h-80 mobile / 480px desktop)
+│   │                          # Logo 80px mobile / 128px desktop, badge ABERTO/FECHADO animado
+│   ├── StickyActionBar        # Barra sticky desktop: categoria | localização | avaliação + CTAs
+│   ├── QuickActionsBar        # 4 ícones flutuantes mobile (-mt-6 abaixo do hero)
+│   ├── BusinessMobileBottomNav # Nav fixo mobile: Início (verde pill) + Contato (WhatsApp)
+│   ├── PaginaNegocioClient    # Container client: Sobre+tags, Historia, Produtos, AdSlot, EspacoEspecial
+│   ├── ProdutosSection        # Grid 2×2 (max 4) — título dinâmico por categoria:
+│   │                          #   restaurantes/alimentacao → "Cardápio em destaque"
+│   │                          #   servicos/estetica/clinicas → "Serviços em destaque"
+│   │                          #   academias → "Planos e serviços em destaque"
+│   │                          #   (outros) → "Produtos em destaque"
+│   ├── BusinessSidebar        # Cards sticky desktop: Horários, Contato, Endereço+Mapa, Trust
+│   ├── SimilarBusinesses      # Seção full-width (#eff4ff): grid 2 mobile / 4 desktop
+│   ├── HistoriaSection        # Card Nossa história (se preenchida)
+│   ├── EspacoEspecial         # Pro+: texto/oferta/cupom/banner/video. Lock UI para não-Pro
+│   └── TrackerView            # Registra evento "view" no analytics ao montar
+├── merchant/       # Painel do comerciante — route group (panel)
+│   ├── Navbar                 # MerchantNavbar: logo /logo.png + links (meu-negocio, produtos, metricas)
+│   ├── MobileBottomNav        # Nav inferior mobile do painel
+│   └── meu-negocio/
+│       ├── InformacoesBasicasCard
+│       ├── EnderecoCard
+│       ├── HorarioCard
+│       ├── RedesSociaisCard
+│       ├── EspacoEspecialCard # Pro+ com lock UI para planos inferiores
+│       ├── SeoCard
+│       ├── StatusCard         # "Visualizar página pública" (botão azul #2b3fd4)
+│       ├── LogoCapaCard       # Upload logo (128×128) + capa (16:9) com bg slate-100
+│       ├── DicasCard
+│       └── (QRCodeCard via @/components/ui/QRCodeCard)
 ├── seo/            JsonLd (Schema.org), GoogleAnalytics
-├── ui/             button, carousel, AdSlot, CookieBanner, QRCodeCard
+├── ui/             button, carousel, AdSlot, CookieBanner, QRCodeCard (react-qr-code, PNG+SVG download)
 └── blocks/         gallery4
 ```
 
@@ -180,8 +226,34 @@ components/
 - `lib/api.ts` — Axios com interceptor JWT (401 → redirect /painel/login)
 - `lib/fetchers.ts` — Fetchers SSR: `getNegocio`, `getProdutosDoNegocio`, `getCategorias`, `getNegociosDestaque`, `getProdutosDestaque`, `getNegocios`
 - `lib/utils.ts` — Utilitários gerais; inclui `isAberto(abertura, fechamento, dias[])` — verifica horário de funcionamento em timezone America/Sao_Paulo, normaliza dias pt-BR (remove acentos e ponto)
-- `hooks/useTracking.ts` — Hook para registrar cliques nos endpoints de analytics
+- `hooks/useTracking.ts` — `registrarClique(slug, tipo)` — registra eventos no endpoint de analytics
 - `types/index.ts` — Interfaces TypeScript: `Negocio`, `Produto`, `FotoProduto`, `RedesSociais`, `Localizacao`, `Categoria`, `VideoDestaque`, `EspacoEspecial`, `MetricaDiaria`
+  - `Negocio` inclui `palavras_chave?: string | null` (usado para chips na seção Sobre)
+
+### Frontend — Design System (Lumina SaaS Console)
+
+Tokens aplicados em `src/app/globals.css` via `@theme`. Sistema MD3-inspired com Inter exclusivo.
+
+| Token / Valor     | Uso                                              |
+|-------------------|--------------------------------------------------|
+| `#f8f9ff`         | Background do canvas (`body`, páginas)           |
+| `#ffffff`         | Cards (surface raised)                           |
+| `#0b1c30`         | Texto principal (on-surface)                     |
+| `#3f493f`         | Texto secundário (on-surface-variant)            |
+| `#6f7a6e`         | Labels de metadados (outline)                    |
+| `#becabc`         | Bordas de cards e dividers (outline-variant)     |
+| `#00602a`         | Primary — links, texto de CTA                   |
+| `#1a7a3c`         | Primary container — fundo de botões primários    |
+| `#2b3fd4`         | Secondary — links inline, botão "Visualizar"     |
+| `#eff4ff`         | Surface container low — seções alternadas, chips |
+| `#e5eeff`         | Surface container — hover, placeholders          |
+| `#25D366`         | WhatsApp (fixo — não faz parte da paleta MD3)    |
+
+**Shadow card**: `0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)`
+
+**⚠️ Caveat Tailwind v4**: tokens `@theme` nem sempre geram classes utilitárias. Usar sempre hex direto para elementos críticos: `bg-[#1a7a3c]`, `border-[#2b3fd4]`, `text-[#0b1c30]`. Classes Tailwind padrão (`bg-slate-100`, `border-slate-300`) como fallback seguro.
+
+**Container**: `max-w-[1280px] mx-auto` | Gutter: `px-4 md:px-8` | Espaçamento: ritmo 8px
 
 ---
 
@@ -212,6 +284,88 @@ components/
 - Permissões: checar role + plano em cada endpoint protegido
 - Uploads: nunca usar nome original — sempre renomear com `uuid4()`
 - Imagens: validar com `magic bytes` (python-magic), não apenas extensão
+
+---
+
+## Padrões de segurança obrigatórios
+
+### Arquitetura por camadas (Django)
+| Camada | Onde | Regra |
+|--------|------|-------|
+| Controller | `ViewSet` / `APIView` | Só HTTP: parse de request, delegar para serializer/service, retornar Response |
+| Service | `app/services.py` | Lógica de negócio pura; não importar `request` |
+| Repository | ORM Django (`.objects.*`) | Acesso a banco; sempre filtrar por dono do recurso |
+| Middleware | `core/middleware.py` | Auth, logging, headers de segurança |
+| Utils | `core/utils.py`, `app/utils.py` | Funções auxiliares sem efeito colateral |
+
+> Lógica de negócio NUNCA fica em `views.py`. Se a função faz mais que validar/serializar/responder, mover para `services.py`.
+
+### Autenticação e senhas
+- JWT: access 30min + refresh 7d com rotação e blacklist (SimpleJWT) ✓
+- Hasher: **Argon2** (primário) + PBKDF2 como fallback para senhas antigas ✓
+- HTTPS obrigatório em prod + HSTS 1 ano ✓
+- Cookies de sessão e CSRF marcados `Secure` em prod ✓
+
+### Rate limiting — escopos configurados em `DEFAULT_THROTTLE_RATES`
+| Escopo | Limite | Aplicado em |
+|--------|--------|-------------|
+| `anon` | 60/min | Todos endpoints públicos (visitantes) |
+| `user` | 200/min | Todos endpoints autenticados |
+| `auth` | 5/15min | Login, token refresh (`ThrottledTokenObtainPairView`) |
+| `password_reset` | 5/hour | Reset de senha |
+| `analytics` | 60/min | Registro de cliques |
+| `ia` | 10/day | Geração de texto com IA |
+
+Implementação via `core/throttles.py` + `DEFAULT_THROTTLE_CLASSES` no DRF settings. Usa Redis como backend.
+
+### Isolamento de dados (RLS no nível da aplicação)
+O projeto usa Django ORM — PostgreSQL RLS com `auth.uid()` (padrão Supabase) não se aplica.
+O equivalente é obrigatório via:
+1. `IsDonoDoNegocio` em todo endpoint que manipula dados do comerciante
+2. Cada queryset do painel DEVE filtrar por `negocio__usuario = request.user`
+3. **Obrigatório**: testes que verifiquem que usuário A não acessa dados do usuário B
+
+```python
+# Padrão obrigatório em todo ViewSet do painel:
+def get_queryset(self):
+    return Modelo.objects.filter(negocio__usuario=self.request.user)
+```
+
+### Validação de inputs
+- Backend: DRF Serializers com `validate_*` explícitos em todo campo editável
+- Frontend: TODO — implementar Zod nos formulários do painel
+- Sanitização XSS: Django templates auto-escapam; DRF serializers sanitizam strings
+- Campos SEO passam por `core.validators_seo.validar_texto_seo_completo()` antes de salvar
+
+### Headers de segurança (configurados)
+- **Backend** (`prod.py`): `X-Frame-Options: DENY`, `SECURE_CONTENT_TYPE_NOSNIFF`, HSTS
+- **Frontend** (`next.config.ts`): CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
+- `productionBrowserSourceMaps: false` — source maps desabilitados em produção
+
+### CORS
+- Dev: configurado explicitamente para `localhost:3000`
+- Prod: `CORS_ALLOW_ALL_ORIGINS = False`, apenas `descubrasul.com` e subdomínios
+
+### O que ainda falta implementar (backlog de segurança)
+| Item | Prioridade | Observação |
+|------|-----------|------------|
+| Testes de isolamento entre usuários | 🔴 Alta | Cada endpoint do painel precisa de teste `user_A != user_B` |
+| Zod no frontend (forms do painel) | 🟡 Média | Validação client-side nos forms de meu-negocio e produtos |
+| OpenAPI/Swagger (`drf-spectacular`) | 🟡 Média | Documentação automática dos endpoints |
+| Logging estruturado JSON (`structlog`) | 🟡 Média | Logs com userId, error, timestamp em JSON |
+| Sentry (frontend + backend) | 🟡 Média | Alertas de erro em produção |
+| API versionada `/api/v1/` | 🟠 Decisão | Mudança de alto impacto — requer alteração no frontend também |
+| Cursor-based pagination | 🟢 Baixa | Atualmente usa OFFSET — migrar para cursor |
+| Prometheus + Grafana | 🟢 Baixa | Métricas de infraestrutura |
+
+### Checklist antes de criar qualquer endpoint novo
+- [ ] Separação de camadas respetada (sem lógica de negócio na view)
+- [ ] Throttle class configurada se necessário
+- [ ] Queryset filtra por `request.user` quando dados são privados
+- [ ] `IsDonoDoNegocio` aplicado em `has_object_permission`
+- [ ] Validação de input no serializer (`validate_*`)
+- [ ] Teste de isolamento entre usuários criado
+- [ ] Schema JSON-LD se for página pública nova
 
 ---
 

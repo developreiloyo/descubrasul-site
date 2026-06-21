@@ -97,9 +97,17 @@ CACHES = {
 # ─── Auth ─────────────────────────────────────────────────────────────
 AUTH_USER_MODEL = "usuarios.User"
 
+# Argon2 é mais resistente a ataques de força bruta que PBKDF2.
+# PBKDF2 permanece como fallback para senhas criadas antes da migração.
+# Requer: pip install argon2-cffi
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+]
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
@@ -122,6 +130,19 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
     ),
+    # Rate limiting global via Redis (usa o cache backend já configurado)
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",           # visitantes anônimos
+        "user": "200/min",          # usuários autenticados
+        "auth": "5/15min",          # login / token refresh
+        "password_reset": "5/hour", # reset de senha
+        "analytics": "60/min",      # registro de cliques
+        "ia": "10/day",             # geração de texto com IA (por usuário)
+    },
 }
 
 # ─── JWT ──────────────────────────────────────────────────────────────

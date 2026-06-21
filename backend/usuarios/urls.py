@@ -1,6 +1,5 @@
 from django.urls import path
 from .views import (
-    RegisterView,
     CadastroCompletoView,
     MeView,
     excluir_conta,
@@ -10,7 +9,8 @@ from .views import (
 )
 
 urlpatterns = [
-    path("register/", RegisterView.as_view(), name="register"),
+    # RegisterView removida: criava User sem Negocio, sem rate limit, tornando o
+    # painel quebrável com 500. O fluxo correto é CadastroCompletoView (User+Negocio em transação).
     path("cadastro/", CadastroCompletoView.as_view(), name="cadastro-completo"),
     path("me/", MeView.as_view(), name="me"),
     path("me/delete/", excluir_conta, name="excluir_conta"),

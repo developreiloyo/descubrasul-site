@@ -2,6 +2,16 @@ import type { Negocio } from "@/types";
 
 const PLANOS_PRO = ["pro", "producao", "fundador"] as const;
 
+function isSafeUrl(url?: string): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 interface Props {
   negocio: Negocio;
 }
@@ -21,7 +31,7 @@ function DestaqueBanner({ titulo, conteudo, badge, ctaTexto, ctaLink }: {
       {conteudo && <p className="text-sm leading-relaxed text-white/80">{conteudo}</p>}
       {ctaTexto && ctaLink && (
         <a
-          href={ctaLink}
+          href={isSafeUrl(ctaLink) ? ctaLink : "#"}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-1 w-fit rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-primary transition hover:bg-white/90"
@@ -55,7 +65,7 @@ function DestaqueOferta({ badge, titulo, desconto, conteudo, ctaTexto, ctaLink }
         {conteudo && <p className="text-sm text-white/80">{conteudo}</p>}
         {ctaTexto && ctaLink && (
           <a
-            href={ctaLink}
+            href={isSafeUrl(ctaLink) ? ctaLink : "#"}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-1 w-fit rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-primary transition hover:bg-white/90"

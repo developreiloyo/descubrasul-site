@@ -1,0 +1,11 @@
+# Override para desenvolvimento local.
+# Este arquivo é carregado automaticamente pelo Docker Compose em dev.
+# NÃO usar em produção — em prod usar apenas docker-compose.yml.
+services:
+  backend:
+    ports:
+      - "8000:8000"   # expõe para acesso direto em desenvolvimento
+
+  frontend:
+    ports:
+      - "3000:3000"
