@@ -50,7 +50,7 @@ export function NegociosDestaque({ negocios }: { negocios: Negocio[] }) {
   if (!negocios.length) return null;
 
   return (
-    <section className="py-14 lg:py-20">
+    <section className="pt-14 lg:pt-20">
       <div className="max-w-[1200px] mx-auto px-4">
         <div className="flex items-end justify-between mb-8">
           <div>

@@ -73,6 +73,7 @@ export function Footer() {
             <li><Link href="/privacidade" className="hover:text-accent transition-colors">Política de privacidade</Link></li>
             <li><Link href="/termos"      className="hover:text-accent transition-colors">Termos de uso</Link></li>
             <li><Link href="/faq"         className="hover:text-accent transition-colors">Perguntas frequentes</Link></li>
+            <li><Link href="/credits"     className="hover:text-accent transition-colors">Créditos de imagens</Link></li>
           </ul>
         </div>
 

@@ -40,14 +40,22 @@ const schemaWebSite = {
   },
 };
 
-const CIDADES = [
-  { nome: "Criciúma",           slug: "criciuma",          qtd: "512 negócios" },
-  { nome: "Içara",              slug: "icara",              qtd: "324 negócios" },
-  { nome: "Araranguá",          slug: "ararangua",          qtd: "198 negócios" },
-  { nome: "Tubarão",            slug: "tubarao",            qtd: "288 negócios" },
-  { nome: "Forquilhinha",       slug: "forquilhinha",       qtd: "156 negócios" },
-  { nome: "Morro da Fumaça",    slug: "morro-da-fumaca",    qtd: "98 negócios"  },
-  { nome: "Balneário Rincão",   slug: "balneario-rincao",   qtd: "74 negócios"  },
+type Cidade = {
+  nome: string;
+  slug: string;
+  qtd: string;
+  imagem?: string;
+  alt?: string;
+};
+
+const CIDADES: Cidade[] = [
+  { nome: "Criciúma",         slug: "criciuma",         qtd: "Cadastros abertos", imagem: "/images/cidades/criciuma.jpg",          alt: "Estádio Heriberto Hülse em Criciúma" },
+  { nome: "Tubarão",          slug: "tubarao",          qtd: "Cadastros abertos", imagem: "/images/cidades/tubarao.jpg",           alt: "Centro histórico de Tubarão" },
+  { nome: "Araranguá",        slug: "ararangua",        qtd: "Cadastros abertos", imagem: "/images/cidades/ararangua.jpg",         alt: "Morro dos Conventos em Araranguá" },
+  { nome: "Balneário Rincão", slug: "balneario-rincao", qtd: "Cadastros abertos", imagem: "/images/cidades/balneario-rincao.jpg",  alt: "Praia de Balneário Rincão" },
+  { nome: "Içara",            slug: "icara",            qtd: "Cadastros abertos", imagem: "/images/cidades/icara.jpg",           alt: "Içara" },
+  { nome: "Forquilhinha",     slug: "forquilhinha",     qtd: "Cadastros abertos", imagem: "/images/cidades/forquilhinha.jpg",    alt: "Forquilhinha" },
+  { nome: "Morro da Fumaça",  slug: "morro-da-fumaca",  qtd: "Cadastros abertos", imagem: "/images/cidades/morro-da-fumaca.jpg", alt: "Morro da Fumaça" },
 ];
 
 const CAT_PILLS = [
@@ -161,7 +169,7 @@ export default async function Home() {
         <div className="absolute -top-32 right-1/4 w-96 h-96 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-primary-light/20 blur-3xl pointer-events-none" />
 
-        <div className="max-w-[1200px] mx-auto px-4 py-10 lg:py-24 relative z-10 grid lg:grid-cols-[1.15fr_.85fr] gap-12 items-center">
+        <div className="max-w-[1200px] mx-auto px-4 py-12 lg:py-24 relative z-10 grid lg:grid-cols-[1.15fr_.85fr] gap-12 items-center">
           <div className="text-center lg:text-left">
             <p className="animate-fade-up inline-flex items-center gap-2 text-accent eyebrow mb-3 lg:mb-5 border border-accent/25 rounded-full px-4 py-1.5 bg-accent/5">
               <MapPin className="size-3.5" /> A vitrine digital do Sul catarinense
@@ -188,15 +196,15 @@ export default async function Home() {
             </div>
 
             {/* Stats — compactos em mobile, expandidos em desktop */}
-            <div className="animate-fade-up delay-500 flex flex-wrap items-center justify-center lg:justify-start gap-4 lg:gap-5 mt-5 lg:mt-7 pt-5 lg:pt-7 border-t border-white/10">
+            <div className="animate-fade-up delay-500 grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center lg:justify-start gap-4 lg:gap-5 mt-5 lg:mt-7 pt-5 lg:pt-7 border-t border-white/10">
               {[
-                { valor: "+2.500", label: "negócios" },
-                { valor: "+18k",   label: "produtos"  },
-                { valor: "6",      label: "cidades"   },
-                { valor: "+120k",  label: "visitas/mês"},
+                { valor: "50",             label: "vagas Fundador",         small: false },
+                { valor: "R$ 599",         label: "/ano · acesso total",    small: false },
+                { valor: "7",              label: "cidades · Sul SC",       small: false },
+                { valor: "Em construção",  label: "junte-se aos primeiros", small: true  },
               ].map((s) => (
                 <div key={s.label} className="flex items-baseline gap-1">
-                  <span className="font-display text-accent text-lg lg:text-2xl">{s.valor}</span>
+                  <span className={`font-display text-accent ${s.small ? "text-base lg:text-lg" : "text-lg lg:text-2xl"}`}>{s.valor}</span>
                   <span className="text-white/45 text-[11px] lg:text-xs">{s.label}</span>
                 </div>
               ))}
@@ -289,8 +297,8 @@ export default async function Home() {
 
       {/* ── PRODUTOS EM DESTAQUE ─────────────────────────── */}
       {produtosDestaque.length > 0 && (
-        <section className="py-14 lg:py-20 max-w-[1200px] mx-auto px-4">
-          <div className="flex items-end justify-between mb-8">
+        <section className="pt-14 lg:pt-20 max-w-[1200px] mx-auto px-4">
+          <div className="flex items-end justify-between mb-5 lg:mb-8">
             <div>
               <p className="eyebrow mb-2">Marketplace local</p>
               <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Produtos em destaque</h2>
@@ -303,6 +311,11 @@ export default async function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {produtosDestaque.map((p) => <ProductCard key={p.slug} produto={p} />)}
           </div>
+          <div className="sm:hidden text-center mt-5">
+            <Link href="/marketplace" className="text-sm font-semibold text-primary flex items-center justify-center gap-1.5">
+              Ver todos os produtos <ArrowRight className="size-4" />
+            </Link>
+          </div>
         </section>
       )}
 
@@ -313,8 +326,8 @@ export default async function Home() {
 
       {/* ── CATEGORIAS (do backend) ─────────────────────── */}
       {categorias.length > 0 && (
-        <section id="categorias" className="py-14 lg:py-20 max-w-[1200px] mx-auto px-4">
-          <div className="flex items-end justify-between mb-8">
+        <section id="categorias" className="pt-14 lg:pt-20 max-w-[1200px] mx-auto px-4">
+          <div className="flex items-end justify-between mb-5 lg:mb-8">
             <div>
               <p className="eyebrow mb-2">Explorar</p>
               <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Navegue por categorias</h2>
@@ -344,9 +357,9 @@ export default async function Home() {
       )}
 
       {/* ── PROMOÇÕES ──────────────────────────────────── */}
-      <section className="py-14 lg:py-20 bg-white">
+      <section className="py-8 lg:py-12 bg-white">
         <div className="max-w-[1200px] mx-auto px-4">
-          <div className="flex items-end justify-between mb-8">
+          <div className="flex items-end justify-between mb-5 lg:mb-8">
             <div>
               <p className="eyebrow mb-2">Por tempo limitado</p>
               <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Promoções especiais</h2>
@@ -373,7 +386,7 @@ export default async function Home() {
       </section>
 
       {/* ── CIDADES ────────────────────────────────────── */}
-      <section className="py-14 lg:py-20 max-w-[1200px] mx-auto px-4">
+      <section className="pt-8 pb-14 lg:pt-12 lg:pb-20 max-w-[1200px] mx-auto px-4">
         <div className="text-center mb-10">
           <p className="eyebrow mb-2">Região Sul de SC</p>
           <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Explorar por cidade</h2>
@@ -384,14 +397,32 @@ export default async function Home() {
             <Link
               key={city.slug}
               href={`/cidades/${city.slug}`}
-              className="card-hover relative rounded-2xl overflow-hidden h-40 lg:h-48 block hero-grid group"
-              style={{background:`linear-gradient(160deg,#155C45 ${ix*3}%,#0B3B2C)`}}
+              className="card-hover relative rounded-2xl overflow-hidden h-40 lg:h-48 block group"
+              style={city.imagem ? undefined : {background:`linear-gradient(160deg,#155C45 ${ix*3}%,#0B3B2C)`}}
             >
-              <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+              {city.imagem ? (
+                <>
+                  <Image
+                    src={city.imagem}
+                    alt={city.alt ?? city.nome}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width:1024px) 50vw, 33vw"
+                  />
+                  <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                </>
+              ) : (
+                <>
+                  <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <span className="absolute top-3 left-3 bg-accent/90 text-white text-xs font-semibold rounded-full px-3 py-1">
+                    Em breve
+                  </span>
+                </>
+              )}
               <span className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors duration-300" />
               <span className="absolute bottom-4 left-4 right-4">
-                <p className="font-display text-white text-xl leading-tight">{city.nome}</p>
-                <p className="text-white/60 text-xs mt-0.5 font-medium">{city.qtd}</p>
+                <p className="font-display text-white text-xl leading-tight drop-shadow-sm">{city.nome}</p>
+                <p className="text-white/70 text-xs mt-0.5 font-medium">{city.qtd}</p>
               </span>
               <MapPin className="absolute top-4 right-4 size-4.5 text-accent opacity-80 group-hover:opacity-100 transition-opacity" />
             </Link>
@@ -452,26 +483,23 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── DEPOIMENTO ─────────────────────────────────── */}
+      {/* ── PROMESSA DO FUNDADOR ───────────────────────── */}
       <section className="py-14 lg:py-20 bg-white">
         <div className="max-w-[720px] mx-auto px-4">
           <div className="bg-cream rounded-3xl p-8 lg:p-10 border border-black/5 relative overflow-hidden">
             <span className="absolute -top-4 -right-4 font-display text-[8rem] text-primary/5 leading-none select-none">"</span>
-            <div className="flex items-center gap-1 mb-4">
-              {[...Array(5)].map((_, i) => <Star key={i} className="size-4 text-accent fill-accent" />)}
-              <span className="font-semibold text-ink ml-2 text-sm">4,9</span>
-            </div>
+            <p className="eyebrow mb-4">Promessa do fundador</p>
             <p className="font-display text-ink text-xl lg:text-2xl leading-snug relative z-10">
-              "Cadastrei minha loja e em duas semanas já tinha clientes novos chegando pelo DescubraSul."
+              "Construindo a vitrine que o Sul de SC merece. Sem comissão, sem burocracia, com WhatsApp direto. Junte-se aos primeiros negócios."
             </p>
             <p className="text-sec text-sm mt-3 leading-relaxed">
-              Muito mais fácil do que ter meu próprio site — e sem pagar comissão em cada venda.
+              As primeiras 50 vagas do Plano Fundador garantem acesso total por R$ 599/ano — para sempre neste preço.
             </p>
             <div className="flex items-center gap-3 mt-7 pt-6 border-t border-black/6">
-              <span className="w-11 h-11 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm shrink-0">MR</span>
+              <span className="w-11 h-11 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm shrink-0">DS</span>
               <div>
-                <p className="text-sm font-semibold text-ink">Marcos Rocha</p>
-                <p className="text-xs text-sec">Sports Zone · Içara · Plano Pro</p>
+                <p className="text-sm font-semibold text-ink">DescubraSul</p>
+                <p className="text-xs text-sec">Fundadores · Criciúma, SC · em construção</p>
               </div>
               <BadgeCheck className="size-5 text-primary ml-auto shrink-0" />
             </div>
