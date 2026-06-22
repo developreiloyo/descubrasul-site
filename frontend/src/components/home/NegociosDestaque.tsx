@@ -52,7 +52,7 @@ export function NegociosDestaque({ negocios }: { negocios: Negocio[] }) {
   return (
     <section className="pt-14 lg:pt-20">
       <div className="max-w-[1200px] mx-auto px-4">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-5 lg:mb-8">
           <div>
             <p className="eyebrow mb-2">Vitrine local</p>
             <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Negócios em destaque</h2>

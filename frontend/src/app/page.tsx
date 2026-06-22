@@ -433,7 +433,7 @@ export default async function Home() {
       {/* ── CTA PARA EMPRESAS ──────────────────────────── */}
       <section className="py-16 lg:py-24 bg-primary hero-grid relative overflow-hidden">
         <div className="absolute -top-24 right-0 w-80 h-80 rounded-full bg-accent/8 blur-3xl pointer-events-none" />
-        <div className="max-w-[1200px] mx-auto px-4 relative grid lg:grid-cols-2 gap-14 items-center">
+        <div className="max-w-[1200px] mx-auto px-4 relative grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
           <div>
             <p className="eyebrow text-accent/80 border-accent/20 bg-accent/8 inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-5">
               Para empresas e empreendedores
@@ -470,7 +470,7 @@ export default async function Home() {
               { titulo: "Produção",     preco: "R$ 397", periodo: "/mês", desc: "Fotos · Vídeos · Destaque" },
               { titulo: "Fundador",     preco: "R$ 599", periodo: "/ano", desc: "50 vagas · Acesso total" },
             ].map((p) => (
-              <div key={p.titulo} className="bg-white/8 hover:bg-white/12 transition-colors duration-200 rounded-2xl p-5 border border-white/10 backdrop-blur-sm cursor-pointer">
+              <div key={p.titulo} className="bg-white/8 hover:bg-white/12 transition-colors duration-200 rounded-2xl p-3.5 lg:p-5 border border-white/10 backdrop-blur-sm cursor-pointer">
                 <p className="text-white/60 text-[11px] font-medium uppercase tracking-wide">{p.titulo}</p>
                 <p className="mt-1">
                   <span className="font-display text-accent text-2xl">{p.preco}</span>
