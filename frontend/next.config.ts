@@ -27,6 +27,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   // Source maps apenas em desenvolvimento — não vazar lógica do cliente em produção
+  output: 'standalone',
   productionBrowserSourceMaps: false,
 
   images: {
