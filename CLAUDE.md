@@ -1,7 +1,7 @@
 # DescubraSul — CLAUDE.md
 
 Vitrina digital regional para o Sul de Santa Catarina (Criciúma, Içara, Tubarão e região).
-Duas etapas: Etapa 1 = vitrina de negócios locais. Etapa 2 = plataforma de jogos de previsão esportiva (desenvolvimento separado, do zero).
+Foco exclusivo: Vitrina de negócios locais. A Etapa 2 (jogos) foi cancelada por questões de legislação.
 
 ---
 
