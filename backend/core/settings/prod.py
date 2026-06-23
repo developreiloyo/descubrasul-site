@@ -22,18 +22,79 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "https://descubrasul.com",
     "https://www.descubrasul.com",
-    "https://jogos.descubrasul.com",
+]
+# ─── CSRF trusted origins ─────────────────────────────────────────────
+# Django 4+ exige declarar explicitamente as origens HTTPS confiáveis
+# atrás de proxy reverso. Sem isso, qualquer POST do painel merchant
+# (login, cadastro, CRUD produtos) falha com 403 CSRF verification failed.
+CSRF_TRUSTED_ORIGINS = [
+    "https://descubrasul.com",
+    "https://www.descubrasul.com",
 ]
 
-# ─── Storage Cloudflare R2 (S3-compatible) ────────────────────────────
-# R2: egress gratuito — ideal para servir imagens da vitrina
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-AWS_ACCESS_KEY_ID = env("R2_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = env("R2_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = env("R2_BUCKET_NAME")
-AWS_S3_ENDPOINT_URL = env("R2_ENDPOINT_URL")  # https://<account_id>.r2.cloudflarestorage.com
-AWS_S3_CUSTOM_DOMAIN = env("R2_PUBLIC_DOMAIN", default="")  # ex: img.descubrasul.com
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None       # R2 nao usa ACLs como S3
-AWS_S3_REGION_NAME = "auto"  # R2 usa 'auto'
-AWS_QUERYSTRING_AUTH = False # URLs publicas limpas, sem assinatura
+# ─── Storages (Django 5 syntax) ───────────────────────────────────────
+# default     → R2 (media uploads de produtos, fotos de negócios)
+# staticfiles → WhiteNoise com manifest hash + compressão gzip/brotli
+#               (admin Django, sem necessidade de CDN para static)
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "access_key": env("R2_ACCESS_KEY_ID"),
+            "secret_key": env("R2_SECRET_ACCESS_KEY"),
+            "bucket_name": env("R2_BUCKET_NAME"),
+            "endpoint_url": env("R2_ENDPOINT_URL"),  # https://<account_id>.r2.cloudflarestorage.com
+            "custom_domain": env("R2_PUBLIC_DOMAIN", default=None) or None,  # ex: img.descubrasul.com
+            "region_name": "auto",      # R2 usa 'auto'
+            "default_acl": None,        # R2 não usa ACLs como S3
+            "file_overwrite": False,
+            "querystring_auth": False,  # URLs públicas limpas, sem assinatura
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# ─── Logging ──────────────────────────────────────────────────────────
+# Tudo para stdout em formato estruturado.
+# Docker/EasyPanel/journalctl leem stdout — não escrever em arquivos.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name} — {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        # django.request loga 4xx/5xx; manter em WARNING evita ruído de 200/302
+        "django.request": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        # Celery worker/beat — INFO mostra task started/succeeded sem flood
+        "celery": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # boto3/botocore são MUITO verbosos em DEBUG; manter em WARNING
+        "boto3": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "botocore": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "s3transfer": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+    },
+}
