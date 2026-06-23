@@ -2,7 +2,7 @@ import uuid
 import unicodedata
 from django.db import models
 from django.utils.text import slugify
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
 
@@ -286,3 +286,14 @@ def preencher_direccao_fmt(sender, instance, **kwargs):
     if not instance.direccao_fmt and instance.direccao:
         partes = [instance.direccao, instance.bairro, instance.cidade]
         instance.direccao_fmt = ", ".join(p for p in partes if p)
+
+
+@receiver(post_save, sender=Localizacao)
+def disparar_geocodificacao(sender, instance, **kwargs):
+    """Dispatches async geocoding task whenever lat/lng is missing."""
+    if instance.lat and instance.lng:
+        return
+    if not instance.get_direccao_fmt():
+        return
+    from negocios.tasks import geocodificar_localizacao
+    geocodificar_localizacao.delay(instance.pk)
