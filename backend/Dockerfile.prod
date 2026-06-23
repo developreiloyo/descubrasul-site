@@ -1,0 +1,67 @@
+# syntax=docker/dockerfile:1.7
+
+# ─── Stage 1: builder ──────────────────────────────────────
+# Compila las wheels de las deps de Python en un stage descartable.
+# Las herramientas de build (gcc, libpq-dev) no llegan a la imagen final.
+FROM python:3.12-slim AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Genera wheels de todas las deps en /wheels
+COPY requirements.txt .
+RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+
+
+# ─── Stage 2: runtime ──────────────────────────────────────
+# Imagen final mínima. Solo librerías runtime, sin compiladores.
+FROM python:3.12-slim AS runtime
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Runtime deps:
+#   libpq5     → cliente Postgres (psycopg2)
+#   libmagic1  → python-magic (validación de tipos de imagen en CRUD produtos)
+#   curl       → healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpq5 \
+        libmagic1 \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Usuario no-root
+RUN groupadd --system --gid 1001 django \
+ && useradd  --system --uid 1001 --gid django --no-create-home django
+
+WORKDIR /app
+
+# Instalar wheels generados en el builder (sin recompilar nada)
+COPY --from=builder /wheels /wheels
+COPY requirements.txt .
+RUN pip install --no-index --find-links=/wheels -r requirements.txt \
+ && rm -rf /wheels
+
+# Código de la app (después de las deps para aprovechar layer cache)
+COPY --chown=django:django . .
+
+# Crear y dar permisos a directorios escribibles por el usuario django
+RUN mkdir -p /app/staticfiles /app/media \
+ && chown -R django:django /app/staticfiles /app/media
+
+USER django
+
+EXPOSE 8000
+
+# Healthcheck: Traefik/EasyPanel y docker compose lo usan para saber si el container está vivo.
+# Apuntamos al admin login porque siempre responde 200 sin necesidad de auth ni DB queries pesadas.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD curl -fsS http://localhost:8000/admin/login/ || exit 1
+
+ENTRYPOINT ["./entrypoint.sh"]
