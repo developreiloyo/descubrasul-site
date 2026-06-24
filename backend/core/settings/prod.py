@@ -18,18 +18,24 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 # ─── CORS restrito ────────────────────────────────────────────────────
+# Frontend (descubrasul.com / www) → Backend (api.descubrasul.com): cross-origin
+# Requer ambos os origens do frontend listados aqui.
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "https://descubrasul.com",
     "https://www.descubrasul.com",
 ]
+CORS_ALLOW_CREDENTIALS = True  # necessário para enviar cookies JWT httpOnly
+
 # ─── CSRF trusted origins ─────────────────────────────────────────────
 # Django 4+ exige declarar explicitamente as origens HTTPS confiáveis
-# atrás de proxy reverso. Sem isso, qualquer POST do painel merchant
-# (login, cadastro, CRUD produtos) falha com 403 CSRF verification failed.
+# atrás de proxy reverso. Inclui:
+# - apex e www: o admin Django serve nesses domínios quando acessado direto
+# - api.descubrasul.com: o backend mesmo (POSTs do admin Django)
 CSRF_TRUSTED_ORIGINS = [
     "https://descubrasul.com",
     "https://www.descubrasul.com",
+    "https://api.descubrasul.com",
 ]
 
 # ─── Storages (Django 5 syntax) ───────────────────────────────────────
