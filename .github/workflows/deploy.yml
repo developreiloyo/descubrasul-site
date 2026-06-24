@@ -1,4 +1,4 @@
-name: Build y deploy a producción
+name: Build y push de imágenes a GHCR
 
 on:
   push:
@@ -9,19 +9,29 @@ permissions:
   contents: read
   packages: write
 
+# Evita que dos pushes consecutivos a main corran en paralelo y se pisen.
+# El más reciente cancela al anterior.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   test:
-    name: Correr tests
+    name: Tests Django
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:16
+        # pgvector/pgvector:pg16 — necesario porque las migrations crean
+        # la extensión vector. postgres:16 vanilla falla en CREATE EXTENSION.
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_DB: test_db
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_pass
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -30,6 +40,8 @@ jobs:
 
       redis:
         image: redis:7-alpine
+        ports:
+          - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -37,23 +49,33 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Bajar el código
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configurar Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
           cache-dependency-path: backend/requirements.txt
 
-      - name: Instalar dependencias del sistema
+      - name: Install system deps
         run: sudo apt-get install -y libmagic1
 
-      - name: Instalar dependencias Python
+      - name: Install Python deps
         run: pip install -r backend/requirements.txt
 
-      - name: Correr tests Django
+      - name: Run migrations
+        working-directory: backend
+        env:
+          SECRET_KEY: test-secret-key-only-for-ci
+          DEBUG: 'True'
+          DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379/0
+          DJANGO_SETTINGS_MODULE: core.settings.dev
+        run: python manage.py migrate --noinput
+
+      - name: Run tests
         working-directory: backend
         env:
           SECRET_KEY: test-secret-key-only-for-ci
@@ -64,18 +86,15 @@ jobs:
         run: python manage.py test --verbosity=2
 
   build:
-    name: Build imágenes Docker
+    name: Build y push imágenes
     runs-on: ubuntu-latest
     needs: test
 
-    outputs:
-      image_tag: ${{ steps.tag.outputs.version }}
-
     steps:
-      - name: Bajar el código
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login a ghcr.io
+      - name: Login a GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -87,9 +106,9 @@ jobs:
         run: |
           TAG=$(date +%Y%m%d)-$(echo ${{ github.sha }} | cut -c1-7)
           echo "version=$TAG" >> $GITHUB_OUTPUT
-          echo "Tag generado: $TAG"
+          echo "▶ Tag generado: $TAG"
 
-      - name: Configurar Docker Buildx
+      - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Build y push backend
@@ -113,62 +132,23 @@ jobs:
           tags: |
             ghcr.io/developreiloyo/descubrasul-site/frontend:${{ steps.tag.outputs.version }}
             ghcr.io/developreiloyo/descubrasul-site/frontend:latest
+          # NEXT_PUBLIC_* se inlinean en build time, no en runtime.
+          # Sin esto el cliente JS queda con process.env.NEXT_PUBLIC_* = undefined.
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://api.descubrasul.com/api
+            NEXT_PUBLIC_GA4_ID=
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    name: Deploy a producción
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Bajar el código
-        uses: actions/checkout@v4
-
-      - name: Copiar docker-compose.prod.yml al VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: "docker-compose.prod.yml"
-          target: "/var/www/descubrasul"
-
-      - name: Deploy al VPS via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            set -e
-
-            APP_DIR="/var/www/descubrasul"
-            IMAGE_TAG="${{ needs.build.outputs.image_tag }}"
-
-            echo "▶ Desplegando versión: $IMAGE_TAG"
-
-            cd $APP_DIR
-
-            echo "${{ secrets.GITHUB_TOKEN }}" | \
-              docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            docker pull ghcr.io/developreiloyo/descubrasul-site/backend:$IMAGE_TAG
-            docker pull ghcr.io/developreiloyo/descubrasul-site/frontend:$IMAGE_TAG
-
-            if [ -f .current_tag ]; then
-              cp .current_tag .previous_tag
-            fi
-            echo $IMAGE_TAG > .current_tag
-
-            export IMAGE_TAG=$IMAGE_TAG
-            export POSTGRES_DB=$(grep POSTGRES_DB .env.prod | cut -d= -f2)
-            export POSTGRES_USER=$(grep POSTGRES_USER .env.prod | cut -d= -f2)
-            export POSTGRES_PASSWORD=$(grep POSTGRES_PASSWORD .env.prod | cut -d= -f2)
-
-            docker compose -f docker-compose.prod.yml up -d --no-build --remove-orphans
-
-            sleep 10
-            docker compose -f docker-compose.prod.yml ps
-
-            echo "✅ Deploy $IMAGE_TAG completado"
+      - name: Summary
+        run: |
+          echo "## Build exitoso" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag**: \`${{ steps.tag.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Imágenes publicadas en GHCR**:" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/developreiloyo/descubrasul-site/backend:${{ steps.tag.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/developreiloyo/descubrasul-site/frontend:${{ steps.tag.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Próximo paso" >> $GITHUB_STEP_SUMMARY
+          echo "Ir a EasyPanel → proyecto \`descubrasul\` → click **Implementar**" >> $GITHUB_STEP_SUMMARY
