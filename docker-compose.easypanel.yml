@@ -126,13 +126,17 @@ services:
   frontend:
     image: ghcr.io/developreiloyo/descubrasul-site/frontend:latest
     restart: unless-stopped
+    networks:
+      - default
+      - easypanel
     environment:
-      # SSR (container → container, red interna de EasyPanel)
       - API_URL_INTERNAL=http://backend:8000/api
-      # NEXT_PUBLIC_API_URL viene inlineada en el bundle desde el build (deploy.yml)
-      # No hace falta declararla acá.
     depends_on:
       - backend
+      
+networks:
+  easypanel:
+    external: true
 
 volumes:
   postgres_data:
