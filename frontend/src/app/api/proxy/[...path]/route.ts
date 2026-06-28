@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-
 const API = process.env.API_URL_INTERNAL || "http://backend:8000/api";
-
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -10,24 +8,31 @@ const COOKIE_OPTS = {
   path: "/",
 };
 
+// Endpoints que NÃO requerem auth — chamados de páginas públicas como /painel/cadastro
+// onde o usuário ainda não tem sessão. Match por prefixo do path.
+const PUBLIC_PATHS = [
+  "categorias",
+  "planos",
+  "usuarios/cadastro",
+];
+
+function isPublicPath(path: string[]): boolean {
+  const joined = path.join("/");
+  return PUBLIC_PATHS.some((p) => joined === p || joined.startsWith(`${p}/`));
+}
+
 async function renovarAccessToken(): Promise<string | null> {
   const cookieStore = await cookies();
   const refresh = cookieStore.get("refresh_token")?.value;
   if (!refresh) return null;
-
   const res = await fetch(`${API}/auth/token/refresh/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh }),
     cache: "no-store",
   });
-
   if (!res.ok) return null;
-
   const data = await res.json();
-
-  // Atualizar cookies — com ROTATE_REFRESH_TOKENS o Django devolve
-  // tambem um novo refresh token
   cookieStore.set("access_token", data.access, {
     ...COOKIE_OPTS,
     maxAge: 60 * 30,
@@ -38,24 +43,21 @@ async function renovarAccessToken(): Promise<string | null> {
       maxAge: 60 * 60 * 24 * 7,
     });
   }
-
   return data.access;
 }
 
 async function chamarBackend(
   request: NextRequest,
   url: string,
-  access: string,
+  access: string | null,
   body: ArrayBuffer | undefined
 ) {
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${access}`,
-  };
+  const headers: Record<string, string> = {};
+  if (access) headers["Authorization"] = `Bearer ${access}`;
   if (body !== undefined) {
     const contentType = request.headers.get("content-type");
     if (contentType) headers["Content-Type"] = contentType;
   }
-
   return fetch(url, {
     method: request.method,
     headers,
@@ -66,25 +68,29 @@ async function chamarBackend(
 
 async function proxy(request: NextRequest, path: string[]) {
   const cookieStore = await cookies();
-  let access = cookieStore.get("access_token")?.value;
-
+  let access = cookieStore.get("access_token")?.value ?? null;
   const url = `${API}/${path.join("/")}/${request.nextUrl.search}`;
-
   let body: ArrayBuffer | undefined = undefined;
   if (!["GET", "HEAD"].includes(request.method)) {
     body = await request.arrayBuffer();
   }
 
-  // Sem access token? Tentar renovar direto com o refresh
+  // Endpoints públicos: passam direto, sem exigir auth
+  if (isPublicPath(path)) {
+    const res = await chamarBackend(request, url, access, body);
+    if (res.status === 204) return new NextResponse(null, { status: 204 });
+    const data = await res.json().catch(() => ({}));
+    return NextResponse.json(data, { status: res.status });
+  }
+
+  // Endpoints autenticados: sem access token? Tentar renovar com refresh
   if (!access) {
-    access = (await renovarAccessToken()) ?? undefined;
+    access = (await renovarAccessToken()) ?? null;
     if (!access) {
       return NextResponse.json({ detail: "Nao autenticado." }, { status: 401 });
     }
   }
-
   let res = await chamarBackend(request, url, access, body);
-
   // Access expirado? Renovar UMA vez e repetir a request original
   if (res.status === 401) {
     const novoAccess = await renovarAccessToken();
@@ -96,14 +102,11 @@ async function proxy(request: NextRequest, path: string[]) {
     }
     res = await chamarBackend(request, url, novoAccess, body);
   }
-
   if (res.status === 204) return new NextResponse(null, { status: 204 });
   const data = await res.json().catch(() => ({}));
   return NextResponse.json(data, { status: res.status });
 }
-
 type Ctx = { params: Promise<{ path: string[] }> };
-
 export async function GET(req: NextRequest, ctx: Ctx) {
   return proxy(req, (await ctx.params).path);
 }
