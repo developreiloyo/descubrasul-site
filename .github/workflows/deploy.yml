@@ -137,6 +137,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=https://api.descubrasul.com/api
             NEXT_PUBLIC_GA4_ID=
+            NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${{ secrets.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
