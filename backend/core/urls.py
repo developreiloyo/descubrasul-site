@@ -7,9 +7,14 @@ from core.auth_views import (
     ThrottledTokenRefreshView,
     ThrottledTokenBlacklistView,
 )
+from core.health import liveness, readiness
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
+    # ─── Health checks (Docker healthcheck, monitoring externo) ───
+    path("health/", liveness, name="health_liveness"),
+    path("health/ready/", readiness, name="health_readiness"),
 
     # ─── Auth (throttled: 5 req / 15min por IP) ───────────────────
     path("api/auth/token/", ThrottledTokenObtainPairView.as_view(), name="token_obtain_pair"),

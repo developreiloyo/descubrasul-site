@@ -59,9 +59,7 @@ USER django
 
 EXPOSE 8000
 
-# Healthcheck: Traefik/EasyPanel y docker compose lo usan para saber si el container está vivo.
-# Apuntamos al admin login porque siempre responde 200 sin necesidad de auth ni DB queries pesadas.
+# Liveness probe: endpoint propio /health/ sin DB queries ni middleware pesado.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-    CMD curl -fsS http://localhost:8000/admin/login/ || exit 1
-
+    CMD curl -fsS -H "Host: api.descubrasul.com" http://localhost:8000/health/ || exit 1
 ENTRYPOINT ["./entrypoint.sh"]
