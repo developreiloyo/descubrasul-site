@@ -52,7 +52,9 @@ backend/
 
 #### categorias/
 - `Categoria`: slug auto-gerado, nome, icone, schema_tipo, ativo, ordem
-- Migration: `0001_initial`
+- Migrations: `0001_initial`, `0002_seed_categorias` (idempotente via `get_or_create`)
+- 10 categorias base seedadas: Restaurantes, Moda, Estetica, Academias, Pet Shop, Clinicas, Educacao, Lojas Gerais, Servicos, Alimentacao
+- `CategoriaListView` — `GET /api/categorias/` retorna apenas ativas ordenadas por `ordem`
 
 #### negocios/
 - `Negocio`: todos os campos (nome, descricao, historia, logo, categoria, cidade, bairro, whatsapp, website, plano, status, verificado, slug auto, seo_title/description, og_image, alt_logo, palavras_chave, espaco_especial JSONField, horario, dias_funcionamento, media_nota)
@@ -61,7 +63,7 @@ backend/
 - `Localizacao`: endereco, lat/lng, direccao_fmt auto-gerada, cidade, estado, cep, bairro, area_servico
 - `RedesSociais`: instagram, tiktok, facebook, youtube, x
 - `VideoDestaque`: url_original, plataforma, oembed_html (cache)
-- Signals: normalizar_cidade, gerar_slug_negocio, gerar_slug_produto, preencher_direccao_fmt
+- Signals: `normalizar_cidade_negocio`, `gerar_slug_negocio`, `gerar_slug_produto`, `preencher_direccao_fmt`, `disparar_geocodificacao` (post_save de Localizacao — dispara task async se lat/lng ausentes)
 - Permissões: `IsDonoDoNegocio`, `IsPlanoPro`, `IsPlanoBasicoOuSuperior`, `PodicionarProduto`
 - Validações: `validar_imagem` (magic bytes, 5MB max, jpg/png/webp)
 - Migration: até `0006_unaccent_normalizar_cidade`
@@ -73,11 +75,18 @@ backend/
 - Management command: `setup_celery_beat` — seed dos agendamentos no banco
 - Migration: `0001_initial`
 
-#### negocios/ — tasks
+#### negocios/ — tasks e services
 - Task Celery: `ocultar_produtos_vencidos` (02:00h diário) — oculta produtos sem confirmação há +30 dias
+- Task Celery: `geocodificar_localizacao(localizacao_id)` — chama Google Maps API, preenche lat/lng, max_retries=3, countdown=60s
+- `negocios/services.py` → `geocodificar_endereco(endereco)` — HTTP call ao Google Maps Geocoding API; retorna `(Decimal lat, Decimal lng)` ou `None`
 
 #### core/celery.py
 - `app.conf.beat_schedule` configurado com as 3 tasks e horários
+
+#### core/health.py
+- `GET /health/` → liveness probe (processo Django respondendo, sem checar deps)
+- `GET /health/ready/` → readiness probe (verifica DB com `SELECT 1`, retorna 503 se falhar)
+- Ambas com `@never_cache` — Dockerfile.prod aponta healthcheck para `/health/`
 
 #### planos/ e ia/
 - Apps criados mas **completamente vazios** — apenas arquivos stub gerados pelo Django
@@ -135,10 +144,16 @@ GET   /api/usuarios/me/                     # Dados do usuário autenticado
 POST  /api/usuarios/password-reset/         # Solicitar reset de senha (rate limit 5/h por IP)
 POST  /api/usuarios/password-reset/confirm/ # Confirmar reset com uid + token
 
+# Health checks (Docker + monitoramento)
+GET    /health/                         # Liveness — processo Django vivo
+GET    /health/ready/                   # Readiness — DB OK (retorna 503 se falhar)
+
+# Categorias — público
+GET    /api/categorias/                 # Lista categorias ativas ordenadas por `ordem`
+
 # Stubs vazios
 /api/planos/
 /api/ia/
-/api/categorias/
 ```
 
 > `NegocioPainelSerializer` retorna `categoria` como objeto aninhado `{slug, nome, icone}` — necessário para o QR Code no painel.
@@ -174,8 +189,10 @@ POST  /api/usuarios/password-reset/confirm/ # Confirmar reset com uid + token
 /api/auth/me
 /api/auth/password-reset
 /api/auth/password-reset/confirm
-/api/proxy/[...path]                       # Proxy transparente para o Django
+/api/proxy/[...path]                       # Proxy BFF para o Django (com JWT automático)
 ```
+
+> **Proxy BFF (`/api/proxy/[...path]/route.ts`)**: injeta `Authorization: Bearer` automaticamente a partir dos cookies httpOnly. `PUBLIC_PATHS` (sem auth): `categorias`, `planos`, `usuarios/cadastro`. Token expirado → tenta refresh silencioso antes de retornar 401.
 
 > **Route group `painel/(panel)/`**: as páginas autenticadas do painel (dashboard, meu-negocio, produtos, metricas) ficam dentro do grupo `(panel)` que injeta `MerchantNavbar` + `MobileBottomNav` via `layout.tsx`. As páginas de auth (login, cadastro, esqueci-senha, nova-senha) ficam **fora** do grupo e não recebem esse layout.
 
@@ -266,7 +283,7 @@ Tokens aplicados em `src/app/globals.css` via `@theme`. Sistema MD3-inspired com
 | Geração de texto com IA            | `ia/`           | Claude Haiku 4.5 — só plano Pro+                  |
 | CTAs upgrade de plano              | `planos/`       | Botões em /planos e /painel/ apontam para /cadastro em vez de fluxo de upgrade |
 | pgvector busca semântica           | `core/`         | MiniLM-L12-v2 pendente de setup                  |
-| Geocodificação automática Maps     | `negocios/`     | Campo lat/lng existe, geocoding não implementado  |
+| Geocodificação automática Maps     | `negocios/`     | **Implementado**: `geocodificar_localizacao` task + `geocodificar_endereco` service. Requer `GOOGLE_MAPS_API_KEY` no `.env` — sem a chave retorna `None` silenciosamente |
 | Razão social + CNPJ legais         | —               | `[PENDENTE]` em /privacidade e /termos — aguarda confirmação do dono |
 | SMTP produção                      | `.env`          | `EMAIL_BACKEND=console` em dev; vars SMTP comentadas para prod |
 
@@ -338,9 +355,10 @@ def get_queryset(self):
 - Campos SEO passam por `core.validators_seo.validar_texto_seo_completo()` antes de salvar
 
 ### Headers de segurança (configurados)
-- **Backend** (`prod.py`): `X-Frame-Options: DENY`, `SECURE_CONTENT_TYPE_NOSNIFF`, HSTS
-- **Frontend** (`next.config.ts`): CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
-- `productionBrowserSourceMaps: false` — source maps desabilitados em produção
+- **Backend** (`prod.py`): `SECURE_PROXY_SSL_HEADER` (Traefik), `SECURE_SSL_REDIRECT = False` (Traefik cuida do redirect), HSTS 1 ano, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`
+- **Frontend — CSP nonce-based** (`src/middleware.ts`): gera nonce por request via `crypto.randomUUID()`, injeta CSP header com `'nonce-{nonce}'` + `'strict-dynamic'`. Passa o nonce para o App Router via header `x-nonce`.
+  - `src/app/layout.tsx` tem `export const dynamic = "force-dynamic"` obrigatório — sem isso, SSG/ISR serviriam HTML sem nonce e o browser bloquearia toda a hidratação React.
+  - `productionBrowserSourceMaps: false` — source maps desabilitados em produção
 
 ### CORS
 - Dev: configurado explicitamente para `localhost:3000`
@@ -448,10 +466,14 @@ npm run lint
 
 ## Arquivos de configuração relevantes
 
-- `docker-compose.yml` — orquestração de serviços
+- `docker-compose.yml` — stack de desenvolvimento local
+- `docker-compose.override.yml` — overrides locais (não commitar)
+- `docker-compose.prod.yml` — stack de produção com `${IMAGE_TAG}` e `env_file: .env.prod`
+- `docker-compose.easypanel.yml` — stack EasyPanel COMPOSE: sem `networks`, sempre `:latest`, envs via UI do EasyPanel, sem `ports` expostos (Traefik roteia por nome interno)
 - `.env` — todas as variáveis (nunca commitar)
 - `backend/core/settings/` — base, dev, prod
 - `frontend/next.config.ts` — config do Next.js
+- `frontend/src/middleware.ts` — CSP nonce-based + auth guard das rotas do painel
 
 ---
 
