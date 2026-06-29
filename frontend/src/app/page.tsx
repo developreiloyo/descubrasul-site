@@ -5,14 +5,16 @@ import {
   MapPin, Star, BadgeCheck, ArrowRight, CheckCircle2,
   Shirt, Smartphone, Utensils, Sparkles, Home as HomeIcon,
   Dumbbell, Baby, Car,
-  UtensilsCrossed, ShoppingBag, Scissors, Heart, GraduationCap,
-  Wrench, PawPrint, Apple, type LucideIcon,
 } from "lucide-react";
+import { CategoryCard } from "@/components/home/CategoryCard";
+import { CityCard } from "@/components/home/CityCard";
+import { PromoCard } from "@/components/home/PromoCard";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { HeroSearch } from "@/components/home/HeroSearch";
 import { NegociosDestaque } from "@/components/home/NegociosDestaque";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { getCategorias, getProdutosDestaque, getNegociosDestaque } from "@/lib/fetchers";
 import { mediaUrl, linkWhatsApp } from "@/lib/utils";
 import type { Produto } from "@/types";
@@ -43,19 +45,17 @@ const schemaWebSite = {
 type Cidade = {
   nome: string;
   slug: string;
-  qtd: string;
-  imagem?: string;
-  alt?: string;
+  count: number;
 };
 
 const CIDADES: Cidade[] = [
-  { nome: "Criciúma",         slug: "criciuma",         qtd: "Cadastros abertos", imagem: "/images/cidades/criciuma.jpg",          alt: "Estádio Heriberto Hülse em Criciúma" },
-  { nome: "Tubarão",          slug: "tubarao",          qtd: "Cadastros abertos", imagem: "/images/cidades/tubarao.jpg",           alt: "Centro histórico de Tubarão" },
-  { nome: "Araranguá",        slug: "ararangua",        qtd: "Cadastros abertos", imagem: "/images/cidades/ararangua.jpg",         alt: "Morro dos Conventos em Araranguá" },
-  { nome: "Balneário Rincão", slug: "balneario-rincao", qtd: "Cadastros abertos", imagem: "/images/cidades/balneario-rincao.jpg",  alt: "Praia de Balneário Rincão" },
-  { nome: "Içara",            slug: "icara",            qtd: "Cadastros abertos", imagem: "/images/cidades/icara.jpg",           alt: "Içara" },
-  { nome: "Forquilhinha",     slug: "forquilhinha",     qtd: "Cadastros abertos", imagem: "/images/cidades/forquilhinha.jpg",    alt: "Forquilhinha" },
-  { nome: "Morro da Fumaça",  slug: "morro-da-fumaca",  qtd: "Cadastros abertos", imagem: "/images/cidades/morro-da-fumaca.jpg", alt: "Morro da Fumaça" },
+  { nome: "Criciúma",         slug: "criciuma",         count: 0 },
+  { nome: "Tubarão",          slug: "tubarao",          count: 0 },
+  { nome: "Araranguá",        slug: "ararangua",        count: 0 },
+  { nome: "Balneário Rincão", slug: "balneario-rincao", count: 0 },
+  { nome: "Içara",            slug: "icara",            count: 0 },
+  { nome: "Forquilhinha",     slug: "forquilhinha",     count: 0 },
+  { nome: "Morro da Fumaça",  slug: "morro-da-fumaca",  count: 0 },
 ];
 
 const CAT_PILLS = [
@@ -72,9 +72,39 @@ const CAT_PILLS = [
 
 
 const MOCK_PROMOS = [
-  { off:"-25%", title:"Combo Família",      sub:"2 pizzas grandes + refri 1,5L",      price:"R$ 79,90",  store:"Pizzaria Sabores · Criciúma", prazo:"válido até domingo" },
-  { off:"-30%", title:"Kit Skincare",       sub:"3 produtos por preço especial",       price:"R$ 109,90", store:"Studio Bella Vita · Tubarão", prazo:"somente esta semana" },
-  { off:"-24%", title:"Tênis + Meia",       sub:"kit esportivo completo",              price:"R$ 199,90", store:"Sports Zone · Içara",         prazo:"agende até sexta" },
+  {
+    nome: "Cantina Nonna Rosa",
+    categoria: "Restaurante",
+    cidade: "Criciúma",
+    descricao: "Jantar para dois com entrada, prato principal e vinho da casa.",
+    precoOriginal: 180,
+    precoNovo: 126,
+    validade: "Válido até 30 de junho de 2026",
+    desconto: 30,
+    colorVariant: "verde" as const,
+  },
+  {
+    nome: "Sports Zone",
+    categoria: "Esporte",
+    cidade: "Içara",
+    descricao: "20% off em toda a linha de tênis de corrida da nova coleção 2026.",
+    precoOriginal: 350,
+    precoNovo: 280,
+    validade: "Válido até 15 de julho de 2026",
+    desconto: 20,
+    colorVariant: "azul" as const,
+  },
+  {
+    nome: "Studio Élite",
+    categoria: "Beleza",
+    cidade: "Criciúma",
+    descricao: "Pacote de tratamento capilar completo com hidratação e escova.",
+    precoOriginal: 220,
+    precoNovo: 187,
+    validade: "Válido até 20 de julho de 2026",
+    desconto: 15,
+    colorVariant: "dourado" as const,
+  },
 ];
 
 const BENEFICIOS = [
@@ -84,18 +114,6 @@ const BENEFICIOS = [
 ];
 
 
-const CAT_ICONS: Record<string, LucideIcon> = {
-  restaurantes: UtensilsCrossed,
-  moda:         Shirt,
-  estetica:     Scissors,
-  academias:    Dumbbell,
-  "pet-shop":   PawPrint,
-  clinicas:     Heart,
-  educacao:     GraduationCap,
-  "lojas-gerais": ShoppingBag,
-  servicos:     Wrench,
-  alimentacao:  Apple,
-};
 
 /* ── Componente ProductCard ── */
 function ProductCard({ produto }: { produto: Produto }) {
@@ -298,19 +316,23 @@ export default async function Home() {
       {/* ── PRODUTOS EM DESTAQUE ─────────────────────────── */}
       {produtosDestaque.length > 0 && (
         <section className="pt-14 lg:pt-20 max-w-[1200px] mx-auto px-4">
-          <div className="flex items-end justify-between mb-5 lg:mb-8">
-            <div>
-              <p className="eyebrow mb-2">Marketplace local</p>
-              <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Produtos em destaque</h2>
-              <p className="text-sec text-sm mt-1.5">Das melhores lojas do Sul catarinense, direto para você.</p>
+          <ScrollReveal>
+            <div className="flex items-end justify-between mb-5 lg:mb-8">
+              <div>
+                <p className="eyebrow mb-2">Marketplace local</p>
+                <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Produtos em destaque</h2>
+                <p className="text-sec text-sm mt-1.5">Das melhores lojas do Sul catarinense, direto para você.</p>
+              </div>
+              <Link href="/marketplace" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors duration-200">
+                Ver todos <ArrowRight className="size-4" />
+              </Link>
             </div>
-            <Link href="/marketplace" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors duration-200">
-              Ver todos <ArrowRight className="size-4" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {produtosDestaque.map((p) => <ProductCard key={p.slug} produto={p} />)}
-          </div>
+          </ScrollReveal>
+          <ScrollReveal delay={120}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {produtosDestaque.map((p) => <ProductCard key={p.slug} produto={p} />)}
+            </div>
+          </ScrollReveal>
           <div className="sm:hidden text-center mt-5">
             <Link href="/marketplace" className="text-sm font-semibold text-primary flex items-center justify-center gap-1.5">
               Ver todos os produtos <ArrowRight className="size-4" />
@@ -326,107 +348,142 @@ export default async function Home() {
 
       {/* ── CATEGORIAS (do backend) ─────────────────────── */}
       {categorias.length > 0 && (
-        <section id="categorias" className="pt-14 lg:pt-20 max-w-[1200px] mx-auto px-4">
-          <div className="flex items-end justify-between mb-5 lg:mb-8">
-            <div>
-              <p className="eyebrow mb-2">Explorar</p>
-              <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Navegue por categorias</h2>
-              <p className="text-sec text-sm mt-1.5">Tudo o que a região oferece, organizado para você.</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-            {categorias.map((cat) => {
-              const Icon = CAT_ICONS[cat.slug] ?? ShoppingBag;
-              return (
+        <section id="categorias" aria-labelledby="cats-title" className="py-[88px]">
+          <div className="max-w-[1200px] mx-auto px-4">
+
+            <ScrollReveal>
+              <div className="flex items-end justify-between mb-12">
+                <div>
+                  <div className="inline-flex items-center gap-3.5 mb-9">
+                    <span className="w-7 h-px bg-[#D4A437] shrink-0" aria-hidden="true" />
+                    <span className="font-playfair text-[11px] italic text-[#D4A437]">01</span>
+                    <span className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-[#6b6561]">
+                      Categorias
+                    </span>
+                  </div>
+                  <h2
+                    id="cats-title"
+                    className="font-playfair text-[clamp(2rem,3.5vw,3.2rem)] font-bold leading-[1.08] tracking-[-0.02em] text-[#1a1a1a]"
+                  >
+                    Do que você<br />
+                    <em>está procurando?</em>
+                  </h2>
+                </div>
                 <Link
-                  key={cat.slug}
-                  href={`/${cat.slug}`}
-                  className="card-hover bg-white rounded-2xl border border-black/[0.06] p-5 flex flex-col gap-4 group"
+                  href="/busca"
+                  className="hidden sm:block self-end text-[13px] text-[#6b6561] border-b border-[#ddd8cf] pb-0.5 hover:text-[#1a7a3c] hover:border-[#1a7a3c] transition-colors whitespace-nowrap"
                 >
-                  <span className="w-16 h-16 rounded-2xl bg-primary/8 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-200">
-                    <Icon className="size-8" />
-                  </span>
-                  <p className="font-semibold text-base text-ink leading-tight group-hover:text-primary transition-colors">
-                    {cat.nome}
-                  </p>
+                  Ver todas as categorias →
                 </Link>
-              );
-            })}
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={100}>
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-px bg-[#ddd8cf] border border-[#ddd8cf]">
+                {categorias.map((cat, i) => (
+                  <CategoryCard
+                    key={cat.slug}
+                    slug={cat.slug}
+                    nome={cat.nome}
+                    icone={cat.icone}
+                    numero={String(i + 1).padStart(2, "0")}
+                  />
+                ))}
+              </div>
+            </ScrollReveal>
+
           </div>
         </section>
       )}
 
       {/* ── PROMOÇÕES ──────────────────────────────────── */}
-      <section className="py-8 lg:py-12 bg-white">
+      <section
+        aria-labelledby="promos-title"
+        className="py-20 bg-[#F2EDE3] border-t border-b border-[#ddd8cf]"
+      >
         <div className="max-w-[1200px] mx-auto px-4">
-          <div className="flex items-end justify-between mb-5 lg:mb-8">
-            <div>
-              <p className="eyebrow mb-2">Por tempo limitado</p>
-              <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Promoções especiais</h2>
-              <p className="text-sec text-sm mt-1.5">Ofertas exclusivas dos negócios da região.</p>
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-3 gap-5">
-            {MOCK_PROMOS.map((p) => (
-              <div key={p.title} className="card-hover bg-white rounded-2xl border-2 border-accent/40 p-6 relative overflow-hidden cursor-pointer">
-                <span className="absolute -right-7 -top-7 w-24 h-24 rounded-full bg-accent/10" />
-                <span className="badge-gold text-white font-extrabold text-xl rounded-xl px-3 py-1.5 inline-block">{p.off}</span>
-                <p className="font-bold text-lg text-ink mt-4">{p.title}</p>
-                <p className="text-sm text-sec">{p.sub}</p>
-                <p className="font-extrabold text-2xl text-primary mt-3">{p.price}</p>
-                <p className="text-xs text-sec mt-1">{p.store}</p>
-                <div className="flex items-center justify-between mt-5">
-                  <span className="text-[11px] font-medium text-accent-dark">{p.prazo}</span>
-                  <span className="text-sm font-semibold text-primary flex items-center gap-1">Aproveitar <ArrowRight className="size-4" /></span>
+
+          <ScrollReveal>
+            <div className="flex items-end justify-between mb-12">
+              <div>
+                <div className="inline-flex items-center gap-3.5 mb-9">
+                  <span className="w-7 h-px bg-[#D4A437] shrink-0" aria-hidden="true" />
+                  <span className="font-playfair text-[11px] italic text-[#D4A437]">02</span>
+                  <span className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-[#6b6561]">
+                    Ofertas da Semana
+                  </span>
                 </div>
+                <h2
+                  id="promos-title"
+                  className="font-playfair text-[clamp(2rem,3.5vw,3.2rem)] font-bold leading-[1.08] tracking-[-0.02em] text-[#1a1a1a]"
+                >
+                  Economize com<br />
+                  <em>quem é daqui.</em>
+                </h2>
               </div>
+              <Link
+                href="/busca"
+                className="hidden sm:block self-end text-[13px] text-[#6b6561] border-b border-[#ddd8cf] pb-0.5 hover:text-[#1a7a3c] hover:border-[#1a7a3c] transition-colors whitespace-nowrap"
+              >
+                Ver todas as ofertas →
+              </Link>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid sm:grid-cols-3 gap-5">
+            {MOCK_PROMOS.map((p, i) => (
+              <ScrollReveal key={p.nome} delay={i * 80}>
+                <PromoCard {...p} />
+              </ScrollReveal>
             ))}
           </div>
+
         </div>
       </section>
 
       {/* ── CIDADES ────────────────────────────────────── */}
-      <section className="pt-8 pb-14 lg:pt-12 lg:pb-20 max-w-[1200px] mx-auto px-4">
-        <div className="text-center mb-10">
-          <p className="eyebrow mb-2">Região Sul de SC</p>
-          <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Explorar por cidade</h2>
-          <p className="text-sec text-sm mt-1.5 max-w-md mx-auto">O Sul de Santa Catarina inteiro, cidade por cidade.</p>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {CIDADES.map((city, ix) => (
-            <Link
-              key={city.slug}
-              href={`/cidades/${city.slug}`}
-              className="card-hover relative rounded-2xl overflow-hidden h-40 lg:h-48 block group"
-              style={city.imagem ? undefined : {background:`linear-gradient(160deg,#155C45 ${ix*3}%,#0B3B2C)`}}
-            >
-              {city.imagem ? (
-                <>
-                  <Image
-                    src={city.imagem}
-                    alt={city.alt ?? city.nome}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width:1024px) 50vw, 33vw"
-                  />
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                </>
-              ) : (
-                <>
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                  <span className="absolute top-3 left-3 bg-accent/90 text-white text-xs font-semibold rounded-full px-3 py-1">
-                    Em breve
+      <section id="cidades" aria-labelledby="cities-title" className="py-20">
+        <div className="max-w-[1200px] mx-auto px-4">
+
+          <ScrollReveal>
+            <div className="flex items-end justify-between mb-12">
+              <div>
+                <div className="inline-flex items-center gap-3.5 mb-9">
+                  <span className="w-7 h-px bg-[#D4A437] shrink-0" aria-hidden="true" />
+                  <span className="font-playfair text-[11px] italic text-[#D4A437]">03</span>
+                  <span className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-[#6b6561]">
+                    Cidades
                   </span>
-                </>
-              )}
-              <span className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors duration-300" />
-              <span className="absolute bottom-4 left-4 right-4">
-                <p className="font-display text-white text-xl leading-tight drop-shadow-sm">{city.nome}</p>
-                <p className="text-white/70 text-xs mt-0.5 font-medium">{city.qtd}</p>
-              </span>
-              <MapPin className="absolute top-4 right-4 size-4.5 text-accent opacity-80 group-hover:opacity-100 transition-opacity" />
-            </Link>
-          ))}
+                </div>
+                <h2
+                  id="cities-title"
+                  className="font-playfair text-[clamp(2rem,3.5vw,3.2rem)] font-bold leading-[1.08] tracking-[-0.02em] text-[#1a1a1a]"
+                >
+                  De onde você é?
+                </h2>
+              </div>
+              <Link
+                href="/busca"
+                className="hidden sm:block self-end text-[13px] text-[#6b6561] border-b border-[#ddd8cf] pb-0.5 hover:text-[#1a7a3c] hover:border-[#1a7a3c] transition-colors whitespace-nowrap"
+              >
+                Explorar todas →
+              </Link>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={100}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-px bg-[#ddd8cf] border border-[#ddd8cf]">
+              {CIDADES.map((city) => (
+                <CityCard
+                  key={city.slug}
+                  slug={city.slug}
+                  nome={city.nome}
+                  count={city.count}
+                />
+              ))}
+            </div>
+          </ScrollReveal>
+
         </div>
       </section>
 
@@ -486,24 +543,26 @@ export default async function Home() {
       {/* ── PROMESSA DO FUNDADOR ───────────────────────── */}
       <section className="py-14 lg:py-20 bg-white">
         <div className="max-w-[720px] mx-auto px-4">
-          <div className="bg-cream rounded-3xl p-8 lg:p-10 border border-black/5 relative overflow-hidden">
-            <span className="absolute -top-4 -right-4 font-display text-[8rem] text-primary/5 leading-none select-none">"</span>
-            <p className="eyebrow mb-4">Promessa do fundador</p>
-            <p className="font-display text-ink text-xl lg:text-2xl leading-snug relative z-10">
-              "Construindo a vitrine que o Sul de SC merece. Sem comissão, sem burocracia, com WhatsApp direto. Junte-se aos primeiros negócios."
-            </p>
-            <p className="text-sec text-sm mt-3 leading-relaxed">
-              As primeiras 50 vagas do Plano Fundador garantem acesso total por R$ 599/ano — para sempre neste preço.
-            </p>
-            <div className="flex items-center gap-3 mt-7 pt-6 border-t border-black/6">
-              <span className="w-11 h-11 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm shrink-0">DS</span>
-              <div>
-                <p className="text-sm font-semibold text-ink">DescubraSul</p>
-                <p className="text-xs text-sec">Fundadores · Criciúma, SC · em construção</p>
+          <ScrollReveal>
+            <div className="bg-cream rounded-3xl p-8 lg:p-10 border border-black/5 relative overflow-hidden">
+              <span className="absolute -top-4 -right-4 font-display text-[8rem] text-primary/5 leading-none select-none">"</span>
+              <p className="eyebrow mb-4">Promessa do fundador</p>
+              <p className="font-display text-ink text-xl lg:text-2xl leading-snug relative z-10">
+                "Construindo a vitrine que o Sul de SC merece. Sem comissão, sem burocracia, com WhatsApp direto. Junte-se aos primeiros negócios."
+              </p>
+              <p className="text-sec text-sm mt-3 leading-relaxed">
+                As primeiras 50 vagas do Plano Fundador garantem acesso total por R$ 599/ano — para sempre neste preço.
+              </p>
+              <div className="flex items-center gap-3 mt-7 pt-6 border-t border-black/6">
+                <span className="w-11 h-11 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm shrink-0">DS</span>
+                <div>
+                  <p className="text-sm font-semibold text-ink">DescubraSul</p>
+                  <p className="text-xs text-sec">Fundadores · Criciúma, SC · em construção</p>
+                </div>
+                <BadgeCheck className="size-5 text-primary ml-auto shrink-0" />
               </div>
-              <BadgeCheck className="size-5 text-primary ml-auto shrink-0" />
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
