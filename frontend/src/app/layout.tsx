@@ -4,6 +4,12 @@ import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 import { CookieBanner } from "@/components/ui/CookieBanner";
 import "./globals.css";
 
+// Nonce-based CSP requer render dinâmico — sem isso, páginas prerenderizadas
+// servem HTML cacheado sem nonce nos <script>, e o browser bloqueia toda a
+// hidratação React. Trade-off: perdemos SSG/ISR mas garantimos que CSP
+// estrito funcione. Ver src/middleware.ts.
+export const dynamic = "force-dynamic";
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const calistoga = Calistoga({
   subsets: ["latin"],
