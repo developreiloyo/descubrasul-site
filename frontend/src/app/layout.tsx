@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Calistoga } from "next/font/google";
+import { Inter, Calistoga, Playfair_Display } from "next/font/google";
 import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 import { CookieBanner } from "@/components/ui/CookieBanner";
 import "./globals.css";
@@ -15,6 +15,12 @@ const calistoga = Calistoga({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-calistoga",
+});
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair-base",
 });
 
 export const metadata: Metadata = {
@@ -39,7 +45,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${inter.variable} ${calistoga.variable} font-sans`}>
+      <body className={`${inter.variable} ${calistoga.variable} ${playfair.variable} font-sans`}>
         <GoogleAnalytics />
         {children}
         <CookieBanner />
