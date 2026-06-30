@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
 
   const cspHeader = [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://www.googletagmanager.com https://www.google-analytics.com`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `font-src 'self' https://fonts.gstatic.com`,
     `img-src 'self' data: blob: https:`,
@@ -19,7 +19,8 @@ export function middleware(request: NextRequest) {
     `base-uri 'self'`,
     `form-action 'self'`,
     `frame-ancestors 'none'`,
-    `upgrade-insecure-requests`,
+    // upgrade-insecure-requests rompe local (forza HTTPS en localhost que es HTTP)
+    ...(process.env.NODE_ENV === 'development' ? [] : [`upgrade-insecure-requests`]),
   ].join("; ");
 
   // Pasa o nonce ao Next via header — App Router le e injeta nos <Script> automaticamente
