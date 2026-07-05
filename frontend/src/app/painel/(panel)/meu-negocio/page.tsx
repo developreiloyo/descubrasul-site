@@ -254,6 +254,7 @@ export default function MeuNegocioPage() {
         await fetch('/api/proxy/negocios/painel/meu-negocio', { method: 'PATCH', body: fd });
         setLogoFile(null);
       }
+      console.log('capaFile antes de salvar:', capaFile);
       if (capaFile) {
         const fd = new FormData();
         fd.append('og_image', capaFile);
