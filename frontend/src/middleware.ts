@@ -13,7 +13,7 @@ export function middleware(request: NextRequest) {
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `font-src 'self' https://fonts.gstatic.com`,
     `img-src 'self' data: blob: https:`,
-    `connect-src 'self' https://api.descubrasul.com https://www.google-analytics.com`,
+    `connect-src 'self' https://api.descubrasul.com https://www.google-analytics.com https://viacep.com.br`,
     `frame-src 'self' https://www.google.com https://maps.google.com`,
     `object-src 'none'`,
     `base-uri 'self'`,

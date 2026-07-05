@@ -11,7 +11,7 @@ from rest_framework import status
 
 from usuarios.models import User
 from categorias.models import Categoria
-from .models import Negocio, Produto
+from .models import Negocio, Produto, Localizacao
 
 
 def criar_usuario_com_negocio(email: str, plano: str = "gratuito") -> tuple[User, Negocio]:
@@ -152,6 +152,51 @@ class ProdutoIsolamentoTests(TestCase):
         novo = Produto.objects.get(pk=response.data["id"])
         self.assertEqual(novo.negocio, self.negocio_a)
         self.assertNotEqual(novo.negocio, self.negocio_b)
+
+
+class ValidacoesPainelTests(TestCase):
+    """Testes de validação de campos no PATCH /api/negocios/painel/meu-negocio/."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user, self.negocio = criar_usuario_com_negocio("v@test.com")
+        self.client.force_authenticate(user=self.user)
+        self.url = "/api/negocios/painel/meu-negocio/"
+
+    def test_patch_logradouro_numero_gera_direccao_fmt(self):
+        payload = {
+            "localizacao": {
+                "logradouro": "Rua das Flores",
+                "numero": "123",
+                "bairro": "Centro",
+                "cidade": "Criciúma",
+                "estado": "SC",
+                "cep": "88800-000",
+            }
+        }
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        loc = Localizacao.objects.get(negocio=self.negocio)
+        self.assertEqual(loc.logradouro, "Rua das Flores")
+        self.assertEqual(loc.numero, "123")
+        self.assertIn("Rua das Flores", loc.direccao_fmt)
+        self.assertIn("123", loc.direccao_fmt)
+
+    def test_patch_cidade_invalida_retorna_400(self):
+        response = self.client.patch(self.url, {"cidade": "São Paulo"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("cidade", response.data)
+
+    def test_patch_whatsapp_menos_de_10_digitos_retorna_400(self):
+        response = self.client.patch(self.url, {"whatsapp": "4899"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("whatsapp", response.data)
+
+    def test_patch_whatsapp_valido_salva_apenas_digitos(self):
+        response = self.client.patch(self.url, {"whatsapp": "+55 (48) 99999-0000"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.negocio.refresh_from_db()
+        self.assertEqual(self.negocio.whatsapp, "48999990000")
 
 
 class StatusPlanoIsolamentoTests(TestCase):

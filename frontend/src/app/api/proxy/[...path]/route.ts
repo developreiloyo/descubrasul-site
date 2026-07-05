@@ -12,6 +12,7 @@ const COOKIE_OPTS = {
 // onde o usuário ainda não tem sessão. Match por prefixo do path.
 const PUBLIC_PATHS = [
   "categorias",
+  "cidades",
   "planos",
   "usuarios/cadastro",
 ];

@@ -2,7 +2,11 @@ from rest_framework import serializers
 from .models import Negocio, Produto, Localizacao, RedesSociais, VideoDestaque, FotoProduto
 from .validators import validar_imagem
 from categorias.serializers import CategoriaSerializer
+from categorias.models import Categoria
 from core.validators_seo import validar_texto_seo_completo, validar_seo_title
+from core.constants import CIDADES_NOMES
+
+DIAS_VALIDOS = {"seg", "ter", "qua", "qui", "sex", "sab", "dom"}
 
 
 class RedesSociaisSerializer(serializers.ModelSerializer):
@@ -27,15 +31,16 @@ class RedesSociaisPainelSerializer(serializers.ModelSerializer):
 class LocalizacaoSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Localizacao
-        fields = ["direccao", "cep", "direccao_fmt", "lat", "lng", "cidade", "bairro", "area_servico"]
+        fields = ["logradouro", "numero", "direccao_fmt", "lat", "lng", "cidade", "bairro", "area_servico", "cep"]
 
 
 class LocalizacaoPainelSerializer(serializers.ModelSerializer):
-    direccao = serializers.CharField(required=False, allow_blank=True, max_length=300)
+    logradouro = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    numero     = serializers.CharField(required=False, allow_blank=True, max_length=20)
 
     class Meta:
         model  = Localizacao
-        fields = ["direccao", "cep", "bairro", "cidade", "estado"]
+        fields = ["logradouro", "numero", "cep", "bairro", "cidade", "estado"]
         extra_kwargs = {
             "cep":    {"required": False, "allow_blank": True},
             "bairro": {"required": False, "allow_blank": True},
@@ -86,22 +91,29 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
 
 # ─── Serializer do painel (comerciante) ───────────────────────────────
 class NegocioPainelSerializer(serializers.ModelSerializer):
-    localizacao   = LocalizacaoPainelSerializer(required=False)
-    redes_sociais = RedesSociaisPainelSerializer(required=False)
-    categoria     = CategoriaSerializer(read_only=True)
+    localizacao    = LocalizacaoPainelSerializer(required=False)
+    redes_sociais  = RedesSociaisPainelSerializer(required=False)
+    categoria      = CategoriaSerializer(read_only=True)
+    categoria_slug = serializers.SlugRelatedField(
+        slug_field="slug",
+        queryset=Categoria.objects.filter(ativo=True),
+        source="categoria",
+        required=False,
+        write_only=True,
+    )
 
     class Meta:
         model  = Negocio
         fields = [
             "slug", "nome", "descricao", "historia", "logo", "alt_logo",
-            "categoria", "cidade", "bairro", "whatsapp", "website",
+            "categoria", "categoria_slug", "cidade", "bairro", "whatsapp", "website",
             "plano", "status", "verificado",
             "seo_title", "seo_description", "og_image", "palavras_chave",
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
             "media_nota", "total_avaliacoes", "criado_em", "atualizado_em",
             "localizacao", "redes_sociais", "espaco_especial",
         ]
-        read_only_fields = ["slug", "plano", "status", "verificado",
+        read_only_fields = ["slug", "plano", "status", "verificado", "bairro",
                             "media_nota", "total_avaliacoes", "criado_em", "atualizado_em"]
 
     def validate_descricao(self, value):
@@ -121,6 +133,36 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
         validar_texto_seo_completo(value, campo="descricao SEO")
         return value
 
+    def validate_cidade(self, value):
+        if value and value not in CIDADES_NOMES:
+            raise serializers.ValidationError(
+                "Cidade não atendida pelo DescubraSul. "
+                f"Cidades aceitas: {', '.join(CIDADES_NOMES)}."
+            )
+        return value
+
+    def validate_whatsapp(self, value):
+        digits = "".join(c for c in (value or "") if c.isdigit())
+        if len(digits) < 10:
+            raise serializers.ValidationError(
+                "WhatsApp inválido — informe DDD + número (mínimo 10 dígitos)."
+            )
+        if len(digits) > 11:
+            raise serializers.ValidationError(
+                "WhatsApp inválido — máximo 11 dígitos (com DDD)."
+            )
+        return digits
+
+    def validate_dias_funcionamento(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("dias_funcionamento deve ser uma lista.")
+        invalidos = [d for d in value if d not in DIAS_VALIDOS]
+        if invalidos:
+            raise serializers.ValidationError(
+                f"Dias inválidos: {invalidos}. Use: {sorted(DIAS_VALIDOS)}."
+            )
+        return value
+
     def validate_espaco_especial(self, value):
         if value is None:
             return value
@@ -137,16 +179,13 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         loc_data   = validated_data.pop("localizacao", None)
         redes_data = validated_data.pop("redes_sociais", None)
+
+        # bairro is read-only at the Negocio level — kept in sync by signal
+        validated_data.pop("bairro", None)
+
         instance = super().update(instance, validated_data)
 
         if loc_data and any(v for v in loc_data.values()):
-            if not loc_data.get("direccao_fmt") and loc_data.get("direccao"):
-                partes = [
-                    loc_data.get("direccao", ""),
-                    loc_data.get("bairro", ""),
-                    loc_data.get("cidade", ""),
-                ]
-                loc_data["direccao_fmt"] = ", ".join(p for p in partes if p)
             Localizacao.objects.update_or_create(
                 negocio=instance,
                 defaults=loc_data,

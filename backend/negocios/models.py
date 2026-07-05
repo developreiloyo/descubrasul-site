@@ -188,7 +188,9 @@ class Localizacao(models.Model):
     """Geocodificada automaticamente via Google Maps (Plano Pro) ou manualmente."""
 
     negocio      = models.OneToOneField(Negocio, on_delete=models.CASCADE, related_name="localizacao")
-    direccao     = models.CharField(max_length=300)
+    direccao     = models.CharField(max_length=300, blank=True)
+    logradouro   = models.CharField(max_length=200, blank=True)
+    numero       = models.CharField(max_length=20, blank=True)
     direccao_fmt = models.CharField(max_length=300, blank=True)
     lat          = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     lng          = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -282,10 +284,19 @@ def gerar_slug_produto(sender, instance, **kwargs):
 
 @receiver(pre_save, sender=Localizacao)
 def preencher_direccao_fmt(sender, instance, **kwargs):
-    """Preenche direccao_fmt automaticamente ao salvar."""
-    if not instance.direccao_fmt and instance.direccao:
-        partes = [instance.direccao, instance.bairro, instance.cidade]
-        instance.direccao_fmt = ", ".join(p for p in partes if p)
+    """Builds direccao_fmt from logradouro + numero + bairro + cidade."""
+    rua = instance.logradouro or instance.direccao
+    partes = [rua, instance.numero, instance.bairro, instance.cidade]
+    fmt = ", ".join(p for p in partes if p)
+    if fmt:
+        instance.direccao_fmt = fmt
+
+
+@receiver(post_save, sender=Localizacao)
+def sincronizar_bairro_negocio(sender, instance, **kwargs):
+    """Keeps Negocio.bairro in sync with Localizacao.bairro."""
+    if instance.bairro and instance.negocio.bairro != instance.bairro:
+        Negocio.objects.filter(pk=instance.negocio_id).update(bairro=instance.bairro)
 
 
 @receiver(post_save, sender=Localizacao)

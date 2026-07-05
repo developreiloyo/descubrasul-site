@@ -19,7 +19,8 @@ interface NegocioForm {
   nome: string;
   descricao: string;
   historia: string;
-  bairro: string;
+  cidade: string;
+  categoria_slug: string;
   whatsapp: string;
   website: string;
   seo_title: string;
@@ -27,8 +28,10 @@ interface NegocioForm {
   palavras_chave: string;
   horario_abertura: string;
   horario_fechamento: string;
+  dias_funcionamento: string[];
   cep: string;
-  direccao: string;
+  logradouro: string;
+  numero: string;
   loc_bairro: string;
   loc_cidade: string;
   estado: string;
@@ -43,7 +46,8 @@ const VAZIO_FORM: NegocioForm = {
   nome: '',
   descricao: '',
   historia: '',
-  bairro: '',
+  cidade: '',
+  categoria_slug: '',
   whatsapp: '',
   website: '',
   seo_title: '',
@@ -51,8 +55,10 @@ const VAZIO_FORM: NegocioForm = {
   palavras_chave: '',
   horario_abertura: '',
   horario_fechamento: '',
+  dias_funcionamento: [],
   cep: '',
-  direccao: '',
+  logradouro: '',
+  numero: '',
   loc_bairro: '',
   loc_cidade: '',
   estado: '',
@@ -113,7 +119,8 @@ export default function MeuNegocioPage() {
           nome: d.nome ?? '',
           descricao: d.descricao ?? '',
           historia: d.historia ?? '',
-          bairro: d.bairro ?? '',
+          cidade: d.cidade ?? '',
+          categoria_slug: d.categoria?.slug ?? '',
           whatsapp: d.whatsapp ?? '',
           website: d.website ?? '',
           seo_title: d.seo_title ?? '',
@@ -121,8 +128,10 @@ export default function MeuNegocioPage() {
           palavras_chave: d.palavras_chave ?? '',
           horario_abertura: d.horario_abertura ?? '',
           horario_fechamento: d.horario_fechamento ?? '',
+          dias_funcionamento: Array.isArray(d.dias_funcionamento) ? d.dias_funcionamento : [],
           cep: d.localizacao?.cep ?? '',
-          direccao: d.localizacao?.direccao ?? '',
+          logradouro: d.localizacao?.logradouro ?? '',
+          numero: d.localizacao?.numero ?? '',
           loc_bairro: d.localizacao?.bairro ?? '',
           loc_cidade: d.localizacao?.cidade ?? '',
           estado: d.localizacao?.estado ?? '',
@@ -155,6 +164,11 @@ export default function MeuNegocioPage() {
     setSucesso(false);
   }
 
+  function setDias(dias: string[]) {
+    setForm((f) => ({ ...f, dias_funcionamento: dias }));
+    setSucesso(false);
+  }
+
   function setEE(campo: keyof EspacoEspecialForm, valor: string) {
     setEspaco((e) => ({ ...e, [campo]: valor }));
     setSucesso(false);
@@ -174,13 +188,10 @@ export default function MeuNegocioPage() {
     setSucesso(false);
     setSalvando(true);
     try {
-      const payload: Record<string, unknown> = { ...form };
-      if (!payload.horario_abertura) payload.horario_abertura = null;
-      if (!payload.horario_fechamento) payload.horario_fechamento = null;
-
       const {
         cep,
-        direccao,
+        logradouro,
+        numero,
         loc_bairro,
         loc_cidade,
         estado,
@@ -190,10 +201,16 @@ export default function MeuNegocioPage() {
         youtube_url,
         x_url,
         historia,
+        dias_funcionamento,
+        categoria_slug,
         ...resto
-      } = payload as Record<string, string | null>;
+      } = form;
 
-      // Espaço especial: null quando desativado, objeto quando configurado
+      const horario = {
+        horario_abertura: resto.horario_abertura || null,
+        horario_fechamento: resto.horario_fechamento || null,
+      };
+
       let espacoPayload: Record<string, string> | null = null;
       if (isPro && espaco.tipo) {
         espacoPayload = { tipo: espaco.tipo };
@@ -206,13 +223,16 @@ export default function MeuNegocioPage() {
         if (espaco.codigo) espacoPayload.codigo = espaco.codigo;
       }
 
-      const body = {
+      const body: Record<string, unknown> = {
         ...resto,
+        ...horario,
         historia,
-        localizacao: { cep, direccao, bairro: loc_bairro, cidade: loc_cidade, estado },
+        dias_funcionamento,
+        localizacao: { cep, logradouro, numero, bairro: loc_bairro, cidade: loc_cidade, estado },
         redes_sociais: { instagram_url, tiktok_url, facebook_url, youtube_url, x_url },
         espaco_especial: espacoPayload,
       };
+      if (categoria_slug) body.categoria_slug = categoria_slug;
 
       const res = await fetch('/api/proxy/negocios/painel/meu-negocio', {
         method: 'PATCH',
@@ -283,14 +303,16 @@ export default function MeuNegocioPage() {
             nome={form.nome}
             descricao={form.descricao}
             historia={form.historia}
-            bairro={form.bairro}
+            cidade={form.cidade}
+            categoria_slug={form.categoria_slug}
             whatsapp={form.whatsapp}
             website={form.website}
             onChange={set}
           />
           <EnderecoCard
             cep={form.cep}
-            direccao={form.direccao}
+            logradouro={form.logradouro}
+            numero={form.numero}
             loc_bairro={form.loc_bairro}
             loc_cidade={form.loc_cidade}
             estado={form.estado}
@@ -299,7 +321,9 @@ export default function MeuNegocioPage() {
           <HorarioCard
             horario_abertura={form.horario_abertura}
             horario_fechamento={form.horario_fechamento}
+            dias_funcionamento={form.dias_funcionamento}
             onChange={set}
+            onDiasChange={setDias}
           />
           <RedesSociaisCard
             instagram_url={form.instagram_url}

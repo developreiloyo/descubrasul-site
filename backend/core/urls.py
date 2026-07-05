@@ -8,6 +8,7 @@ from core.auth_views import (
     ThrottledTokenBlacklistView,
 )
 from core.health import liveness, readiness
+from core.views import listar_cidades
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -20,6 +21,9 @@ urlpatterns = [
     path("api/auth/token/", ThrottledTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", ThrottledTokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/token/blacklist/", ThrottledTokenBlacklistView.as_view(), name="token_blacklist"),
+
+    # ─── Cidades atendidas (público) ──────────────────────────────
+    path("api/cidades/", listar_cidades, name="listar_cidades"),
 
     # ─── Apps ─────────────────────────────────────────────────────
     path("api/negocios/", include("negocios.urls")),

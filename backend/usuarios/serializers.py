@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 from .models import User
+from core.constants import CIDADES_NOMES
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -50,10 +51,18 @@ class CadastroCompletoSerializer(serializers.Serializer):
             raise serializers.ValidationError("Categoria invalida.")
         return value
 
+    def validate_cidade(self, value):
+        if value and value.strip() not in CIDADES_NOMES:
+            raise serializers.ValidationError(
+                "Cidade não atendida pelo DescubraSul. "
+                f"Cidades aceitas: {', '.join(CIDADES_NOMES)}."
+            )
+        return value.strip()
+
     def validate_whatsapp(self, value):
         numero = "".join(c for c in value if c.isdigit())
-        if len(numero) < 10 or len(numero) > 13:
-            raise serializers.ValidationError("Numero de WhatsApp invalido.")
+        if len(numero) < 10 or len(numero) > 11:
+            raise serializers.ValidationError("Numero de WhatsApp invalido — informe DDD + numero (10 ou 11 digitos).")
         return numero
 
     @transaction.atomic

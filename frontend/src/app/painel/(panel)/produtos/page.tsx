@@ -151,12 +151,19 @@ export default function ProdutosPage() {
       <section className="rounded-xl border border-ink/10 bg-white shadow-card p-6 mb-8">
         <h2 className="mb-4 text-xl font-semibold">Adicionar produto</h2>
         <div className="flex flex-col gap-3">
-          <input
-            className={inputCls}
-            placeholder="Nome do produto"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label htmlFor="prod-nome" className="text-xs font-semibold text-ink/50 uppercase tracking-wide">
+              Nome do produto <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="prod-nome"
+              required
+              className={inputCls}
+              placeholder="Nome do produto"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+            />
+          </div>
           <textarea
             className={inputCls}
             placeholder="Descrição (natural, sem repetir palavras)"
