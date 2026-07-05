@@ -143,6 +143,11 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
 
     def validate_whatsapp(self, value):
         digits = "".join(c for c in (value or "") if c.isdigit())
+        # Remove código do país 55 se presente (ex: +55 48 99999-0000 → 13 dígitos → 11)
+        if len(digits) == 13 and digits.startswith("55"):
+            digits = digits[2:]
+        if len(digits) == 12 and digits.startswith("55"):
+            digits = digits[2:]
         if len(digits) < 10:
             raise serializers.ValidationError(
                 "WhatsApp inválido — informe DDD + número (mínimo 10 dígitos)."
