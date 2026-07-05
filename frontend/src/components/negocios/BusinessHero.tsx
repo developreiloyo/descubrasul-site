@@ -10,7 +10,7 @@ interface Props {
 export function BusinessHero({ negocio }: Props) {
   const ogImageUrl = mediaUrl(negocio.og_image);
   const logoUrl = mediaUrl(negocio.logo);
-  const bannerUrl = ogImageUrl || logoUrl;
+  const bannerUrl = ogImageUrl;
   const aberto = isAberto(
     negocio.horario_abertura,
     negocio.horario_fechamento,
