@@ -1,0 +1,91 @@
+schema: spec-driven
+
+context: |
+  Projeto: DescubraSul — vitrina digital regional para o Sul de Santa Catarina
+  (Criciúma, Içara, Tubarão e região). Foco exclusivo: vitrina de negócios locais.
+
+  ## Stack
+  - Backend: Django 5 + DRF (Python)
+  - Tarefas async: Celery + Redis
+  - Banco: PostgreSQL + pgvector
+  - Frontend: Next.js 16 (App Router) + TypeScript
+  - Estilo: Tailwind CSS v4 (tokens via @theme em globals.css)
+  - State: Zustand + TanStack Query
+  - Auth: SimpleJWT (rotação de tokens) via proxy BFF Next.js
+  - Pagamentos: Mercado Pago (pendente implementação)
+  - IA: Claude Haiku 4.5 (somente plano Pro — pendente)
+  - Imagens: S3-compatible + validação magic bytes + uuid4 rename
+  - Deploy: Docker Compose + EasyPanel v2.30.1 (VPS Hostinger Ubuntu 24.04)
+
+  ## Apps Django
+  - negocios/ — Negocio, Produto, FotoProduto, Localizacao, RedesSociais, VideoDestaque
+  - usuarios/ — User customizado (email auth), roles: comerciante|admin|superadmin
+  - planos/   — VAZIO (pendente implementação Mercado Pago)
+  - analytics/ — Clique (eventos crus), MetricaDiaria (agregados diários)
+  - ia/        — VAZIO (pendente Claude Haiku)
+  - categorias/ — Categoria com slug, ícone, schema_tipo
+  - core/      — Settings, middleware, validators, utils
+
+  ## Convenções obrigatórias
+  - Idioma do código: inglês (variáveis, funções, modelos, comentários)
+  - Idioma do conteúdo para o usuário: português do Brasil
+  - Scripts de banco: SEMPRE via management/commands/ — nunca /scripts/
+  - Variáveis de ambiente: SEMPRE .env — nunca hardcoded
+  - Slugs: sempre gerados automaticamente a partir do nome + cidade
+  - Nunca usar raw() queries com input do usuário — sempre ORM Django
+  - Uploads: nunca usar nome original — sempre renomear com uuid4()
+  - Imagens: validar com magic bytes (python-magic), não apenas extensão
+  - Lógica de negócio NUNCA em views.py — sempre em services.py
+  - Commits: separados por área (backend, frontend, docker, etc.)
+
+  ## Arquitetura por camadas (Django)
+  - Controller (ViewSet/APIView): só HTTP — parse request, delegar, retornar Response
+  - Service (services.py): lógica de negócio pura
+  - Repository (ORM): acesso a banco, sempre filtrar por dono do recurso
+  - Middleware (core/middleware.py): auth, logging, headers de segurança
+
+  ## Segurança obrigatória em todo endpoint novo
+  - Throttle class configurada
+  - Queryset filtra por request.user quando dados são privados
+  - IsDonoDoNegocio em has_object_permission
+  - Validação de input no serializer com validate_*
+  - Teste de isolamento entre usuários (user_A != user_B)
+  - Schema JSON-LD se for página pública nova
+
+  ## Design System (Lumina SaaS Console)
+  Cores principais (usar hex direto — Tailwind v4 não garante classes utilitárias):
+  - #f8f9ff — background do canvas
+  - #ffffff — cards (surface raised)
+  - #0b1c30 — texto principal
+  - #00602a — primary (links, CTA text)
+  - #1a7a3c — primary container (fundo de botões)
+  - #2b3fd4 — secondary (links inline)
+  - #eff4ff — surface container low (seções alternadas)
+  - #25D366 — WhatsApp (fixo)
+  Container: max-w-[1280px] mx-auto | Gutter: px-4 md:px-8 | Ritmo: 8px
+
+  ## Planos de assinatura
+  - Gratuito (R$0): 5 produtos no painel, 10 públicos, sem IA
+  - Básico (R$79/mês): 20 produtos no painel, 10 públicos, sem IA
+  - Pro (R$197/mês): ilimitado, com IA
+  - Produção (R$397/mês): ilimitado, IA + fotos/vídeos
+  - Fundador (R$599/ano): ilimitado, IA (primeiros 50)
+
+  ## SEO — regras invioláveis
+  - Todo campo de texto editável passa por core.validators_seo.validar_texto_seo_completo()
+  - Nunca imprimir palavras_chave como texto visível
+  - seo_title máx 60 chars, seo_description máx 160 chars
+  - Schema JSON-LD obrigatório em toda página pública nova
+  - Nunca criar doorway pages (página sem conteúdo real)
+
+rules:
+  proposal:
+    - Incluir seção "Non-goals" para delimitar o escopo
+    - Incluir impacto em SEO se a feature envolver páginas públicas
+    - Indicar qual app Django é afetado
+    - Indicar se requer migração de banco de dados
+  tasks:
+    - Separar tarefas de backend e frontend em grupos distintos
+    - Incluir tarefa de teste de isolamento entre usuários se envolver dados do comerciante
+    - Incluir tarefa de validação SEO se envolver conteúdo editável
+    - Máximo de 4 horas por tarefa individual
