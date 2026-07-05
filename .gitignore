@@ -30,5 +30,7 @@ Thumbs.db
 # Reference designs / mockups (local only)
 /design-reference/
 
-# Claude Code local config
-.claude/
+# Claude Code — ignorar config local, rastrear commands/skills do projeto
+.claude/settings.json
+.claude/settings.local.json
+.claude/agents/

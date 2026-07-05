@@ -506,3 +506,118 @@ afeta o domínio INTEIRO, não apenas uma página. Regras invioláveis:
 
 Qualquer feature nova que envolva conteúdo editável pelo comerciante
 deve ser revisada contra estas regras ANTES de ir para produção.
+
+---
+
+## Roadmap Tecnológico — Ferramentas Futuras
+
+Ferramentas identificadas para integração futura. Não implementar antes 
+do momento indicado — registradas aqui para não perder o contexto.
+
+### OpenSpec (github.com/Fission-AI/OpenSpec) — Prioridade: ALTA
+**O que é:** Framework de desenvolvimento guiado por specs (SDD).
+Substitui prompts livres por specs estruturadas antes de escrever código.
+Gera automaticamente: proposal.md, specs/, design.md, tasks.md.
+
+**Fluxo de trabalho:**
+1. /opsx:propose {feature} — propõe a spec
+2. Revisar e aprovar
+3. /opsx:apply — Claude Code implementa com contexto estruturado
+4. /opsx:archive — arquiva a spec concluída
+
+**Quando integrar:** Imediatamente após o lançamento da Etapa 1.
+Substitui o fluxo atual de prompts longos no Claude Code.
+
+**Instalação futura:**
+npm install -g @fission-ai/openspec@latest
+openspec init  (rodar na raiz do repo)
+
+**Benefício principal:** O OpenSpec lê o CLAUDE.md automaticamente 
+como contexto base — integração nativa com a documentação existente.
+
+---
+
+### ENGRAM — Prioridade: MÉDIA
+**O que é:** Sistema de memória persistente para agentes de IA.
+Permite que o agente lembre contexto entre sessões, decisões tomadas 
+e padrões estabelecidos no projeto.
+
+**Quando integrar:** Fase 2 — quando houver múltiplas sessões de 
+desenvolvimento simultâneas ou um time crescendo.
+
+**Benefício principal:** Elimina a necessidade de repassar contexto 
+do projeto a cada nova sessão de desenvolvimento.
+
+---
+
+### Agent Teams Lite — Prioridade: BAIXA
+**O que é:** Orquestração de múltiplos agentes especializados 
+trabalhando em paralelo.
+
+**Casos de uso no DescubraSul:**
+- Agente de geração de descrições via Claude Haiku (app ia/)
+- Agente de validação SEO (core/validators_seo.py)
+- Agente de agregação de métricas (analytics/tasks.py)
+- Agente de moderação de conteúdo do comerciante
+
+**Quando integrar:** Fase 3 (mês 3+) — junto com a ativação 
+do app ia/ e Claude Haiku para planos Pro.
+
+---
+
+### Framer Motion — Prioridade: ALTA
+**O que é:** Biblioteca de animações para React/Next.js.
+
+**Casos de uso no DescubraSul:**
+- HeroSearch: headline com fade-in + translateY
+- NegociosDestaque: cards com stagger ao scrollar (whileInView)
+- Navbar: fundo muda de transparente para branco ao scrollar
+- Botões: hover com whileHover={{ scale: 1.02 }}
+- Minisite /p/{slug}: galeria com crossfade entre fotos
+
+**Quando integrar:** Sprint de polish visual — antes do lançamento.
+
+**Instalação futura:**
+npm install framer-motion
+(rodar em frontend/)
+
+---
+
+### GSAP + ScrollTrigger — Prioridade: MÉDIA
+**O que é:** Biblioteca de animações avançadas para scroll-triggered,
+timelines complexas e efeitos de entrada.
+
+**Quando integrar:** Se Framer Motion não cobrir casos avançados 
+de animação, especialmente na landing /para-empresas.
+
+---
+
+### Google Business Profile API — Prioridade: ALTA (serviço manual agora)
+**O que é:** API do Google para gerenciar perfis no Google Maps e busca local.
+
+**Situação atual:** Não há API pública para criar perfis automaticamente.
+O onboarding GBP é feito manualmente como serviço de valor agregado nos planos.
+
+**Fluxo manual atual:**
+1. Comerciante contrata plano Básico ou superior
+2. DescubraSul cria/reivindica o perfil GBP do negócio
+3. Website do GBP = página do negócio em descubrasul.com/{slug}
+4. Backlink do domínio Google → descubrasul.com (SEO fortíssimo)
+
+**Campos a adicionar no modelo Negocio (quando formalizar):**
+- google_business_url: URLField (link do perfil GBP criado)
+- gbp_status: CharField choices pendente|configurado|verificado
+- Badge "Verificado no Google" na página pública
+
+**Quando automatizar via API:** Fase 3+ — requer aprovação do app 
+pelo Google (processo burocrático). Priorizar o serviço manual primeiro.
+
+**Estratégia de monetização GBP por plano:**
+- Gratuito: guia PDF de como configurar sozinho
+- Básico: DescubraSul configura o GBP (setup único)
+- Pro: setup + otimização + fotos + posts mensais
+- Produção: gestão completa contínua
+
+---
+
+*Seção criada em junho de 2026. Revisar prioridades a cada sprint.*
