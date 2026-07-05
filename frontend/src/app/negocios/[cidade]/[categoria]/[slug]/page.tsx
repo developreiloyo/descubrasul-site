@@ -67,6 +67,7 @@ function schemaLocalBusiness(
       negocio.redes_sociais?.instagram_url,
       negocio.redes_sociais?.facebook_url,
       negocio.redes_sociais?.tiktok_url,
+      negocio.redes_sociais?.linkedin_url,
     ].filter(Boolean),
   };
 }

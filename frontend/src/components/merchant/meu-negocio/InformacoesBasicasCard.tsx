@@ -10,20 +10,11 @@ interface Cidade {
   nome: string;
 }
 
-interface Categoria {
-  slug: string;
-  nome: string;
-  icone: string;
-  ativo: boolean;
-  ordem: number;
-}
-
 interface Props {
   nome: string;
   descricao: string;
   historia: string;
   cidade: string;
-  categoria_slug: string;
   whatsapp: string;
   website: string;
   onChange: (campo: string, valor: string) => void;
@@ -34,26 +25,16 @@ export function InformacoesBasicasCard({
   descricao,
   historia,
   cidade,
-  categoria_slug,
   whatsapp,
   website,
   onChange,
 }: Props) {
   const [cidades, setCidades] = useState<Cidade[]>([]);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
 
   useEffect(() => {
     fetch('/api/proxy/cidades/')
       .then((r) => r.json())
       .then((data) => setCidades(Array.isArray(data) ? data : []))
-      .catch(() => {});
-
-    fetch('/api/proxy/categorias/')
-      .then((r) => r.json())
-      .then((data) => {
-        const lista = Array.isArray(data) ? data : (data.results ?? []);
-        setCategorias(lista.filter((c: Categoria) => c.ativo));
-      })
       .catch(() => {});
   }, []);
 
@@ -70,39 +51,21 @@ export function InformacoesBasicasCard({
           />
         </FormField>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Cidade" htmlFor="cidade" required>
-            <select
-              id="cidade"
-              value={cidade}
-              onChange={(e) => onChange('cidade', e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Selecione a cidade</option>
-              {cidades.map((c) => (
-                <option key={c.slug} value={c.nome}>
-                  {c.nome}
-                </option>
-              ))}
-            </select>
-          </FormField>
-
-          <FormField label="Categoria" htmlFor="categoria_slug" required>
-            <select
-              id="categoria_slug"
-              value={categoria_slug}
-              onChange={(e) => onChange('categoria_slug', e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Selecione a categoria</option>
-              {categorias.map((c) => (
-                <option key={c.slug} value={c.slug}>
-                  {c.icone} {c.nome}
-                </option>
-              ))}
-            </select>
-          </FormField>
-        </div>
+        <FormField label="Cidade" htmlFor="cidade" required>
+          <select
+            id="cidade"
+            value={cidade}
+            onChange={(e) => onChange('cidade', e.target.value)}
+            className={inputClass}
+          >
+            <option value="">Selecione a cidade</option>
+            {cidades.map((c) => (
+              <option key={c.slug} value={c.nome}>
+                {c.nome}
+              </option>
+            ))}
+          </select>
+        </FormField>
 
         <FormField
           label="Descrição curta"

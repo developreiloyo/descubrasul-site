@@ -12,19 +12,19 @@ DIAS_VALIDOS = {"seg", "ter", "qua", "qui", "sex", "sab", "dom"}
 class RedesSociaisSerializer(serializers.ModelSerializer):
     class Meta:
         model  = RedesSociais
-        fields = ["instagram_url", "tiktok_url", "facebook_url", "youtube_url", "x_url"]
+        fields = ["instagram_url", "tiktok_url", "facebook_url", "youtube_url", "linkedin_url"]
 
 
 class RedesSociaisPainelSerializer(serializers.ModelSerializer):
     class Meta:
         model  = RedesSociais
-        fields = ["instagram_url", "tiktok_url", "facebook_url", "youtube_url", "x_url"]
+        fields = ["instagram_url", "tiktok_url", "facebook_url", "youtube_url", "linkedin_url"]
         extra_kwargs = {
             "instagram_url": {"required": False, "allow_blank": True},
             "tiktok_url":    {"required": False, "allow_blank": True},
             "facebook_url":  {"required": False, "allow_blank": True},
             "youtube_url":   {"required": False, "allow_blank": True},
-            "x_url":         {"required": False, "allow_blank": True},
+            "linkedin_url":  {"required": False, "allow_blank": True},
         }
 
 

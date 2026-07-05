@@ -8,7 +8,9 @@ interface Props {
 }
 
 export function BusinessHero({ negocio }: Props) {
+  const ogImageUrl = mediaUrl(negocio.og_image);
   const logoUrl = mediaUrl(negocio.logo);
+  const bannerUrl = ogImageUrl || logoUrl;
   const aberto = isAberto(
     negocio.horario_abertura,
     negocio.horario_fechamento,
@@ -20,11 +22,11 @@ export function BusinessHero({ negocio }: Props) {
       className="relative w-full h-80 md:h-[480px]"
       style={{ borderTop: "3px solid #DC2626" }}
     >
-      {/* Background image */}
+      {/* Background image: og_image (capa) → logo → emoji placeholder */}
       <div className="absolute inset-0">
-        {logoUrl ? (
+        {bannerUrl ? (
           <Image
-            src={logoUrl}
+            src={bannerUrl}
             alt={negocio.alt_logo || negocio.nome}
             fill
             className="object-cover"

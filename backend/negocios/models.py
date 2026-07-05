@@ -222,7 +222,7 @@ class RedesSociais(models.Model):
     tiktok_url    = models.URLField(blank=True)
     facebook_url  = models.URLField(blank=True)
     youtube_url   = models.URLField(blank=True)
-    x_url         = models.URLField(blank=True)
+    linkedin_url  = models.URLField(blank=True)
 
     class Meta:
         verbose_name        = "Redes Sociais"

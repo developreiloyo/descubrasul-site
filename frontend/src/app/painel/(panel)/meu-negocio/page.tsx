@@ -20,7 +20,6 @@ interface NegocioForm {
   descricao: string;
   historia: string;
   cidade: string;
-  categoria_slug: string;
   whatsapp: string;
   website: string;
   seo_title: string;
@@ -39,7 +38,7 @@ interface NegocioForm {
   tiktok_url: string;
   facebook_url: string;
   youtube_url: string;
-  x_url: string;
+  linkedin_url: string;
 }
 
 const VAZIO_FORM: NegocioForm = {
@@ -47,7 +46,6 @@ const VAZIO_FORM: NegocioForm = {
   descricao: '',
   historia: '',
   cidade: '',
-  categoria_slug: '',
   whatsapp: '',
   website: '',
   seo_title: '',
@@ -66,7 +64,7 @@ const VAZIO_FORM: NegocioForm = {
   tiktok_url: '',
   facebook_url: '',
   youtube_url: '',
-  x_url: '',
+  linkedin_url: '',
 };
 
 const VAZIO_ESPACO: EspacoEspecialForm = {
@@ -94,6 +92,8 @@ export default function MeuNegocioPage() {
   } | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
   const [capaUrl, setCapaUrl] = useState<string | undefined>(undefined);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [capaFile, setCapaFile] = useState<File | null>(null);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(true);
@@ -115,12 +115,12 @@ export default function MeuNegocioPage() {
           });
         }
         if (d.logo) setLogoUrl(d.logo);
+        if (d.og_image) setCapaUrl(d.og_image);
         setForm({
           nome: d.nome ?? '',
           descricao: d.descricao ?? '',
           historia: d.historia ?? '',
           cidade: d.cidade ?? '',
-          categoria_slug: d.categoria?.slug ?? '',
           whatsapp: d.whatsapp ?? '',
           website: d.website ?? '',
           seo_title: d.seo_title ?? '',
@@ -139,7 +139,7 @@ export default function MeuNegocioPage() {
           tiktok_url: d.redes_sociais?.tiktok_url ?? '',
           facebook_url: d.redes_sociais?.facebook_url ?? '',
           youtube_url: d.redes_sociais?.youtube_url ?? '',
-          x_url: d.redes_sociais?.x_url ?? '',
+          linkedin_url: d.redes_sociais?.linkedin_url ?? '',
         });
         const ee = d.espaco_especial;
         if (ee) {
@@ -175,10 +175,12 @@ export default function MeuNegocioPage() {
   }
 
   function handleLogo(file: File) {
+    setLogoFile(file);
     setLogoUrl(URL.createObjectURL(file));
   }
 
   function handleCapa(file: File) {
+    setCapaFile(file);
     setCapaUrl(URL.createObjectURL(file));
   }
 
@@ -199,10 +201,9 @@ export default function MeuNegocioPage() {
         tiktok_url,
         facebook_url,
         youtube_url,
-        x_url,
+        linkedin_url,
         historia,
         dias_funcionamento,
-        categoria_slug,
         ...resto
       } = form;
 
@@ -229,10 +230,9 @@ export default function MeuNegocioPage() {
         historia,
         dias_funcionamento,
         localizacao: { cep, logradouro, numero, bairro: loc_bairro, cidade: loc_cidade, estado },
-        redes_sociais: { instagram_url, tiktok_url, facebook_url, youtube_url, x_url },
+        redes_sociais: { instagram_url, tiktok_url, facebook_url, youtube_url, linkedin_url },
         espaco_especial: espacoPayload,
       };
-      if (categoria_slug) body.categoria_slug = categoria_slug;
 
       const res = await fetch('/api/proxy/negocios/painel/meu-negocio', {
         method: 'PATCH',
@@ -246,6 +246,21 @@ export default function MeuNegocioPage() {
         setErro(Array.isArray(primeiro) ? String(primeiro[0]) : 'Erro ao salvar.');
         return;
       }
+
+      // Upload de imagens via multipart PATCH separado (DRF não parseia nested JSON em multipart)
+      if (logoFile) {
+        const fd = new FormData();
+        fd.append('logo', logoFile);
+        await fetch('/api/proxy/negocios/painel/meu-negocio', { method: 'PATCH', body: fd });
+        setLogoFile(null);
+      }
+      if (capaFile) {
+        const fd = new FormData();
+        fd.append('og_image', capaFile);
+        await fetch('/api/proxy/negocios/painel/meu-negocio', { method: 'PATCH', body: fd });
+        setCapaFile(null);
+      }
+
       setSucesso(true);
     } catch {
       setErro('Erro de conexão.');
@@ -304,7 +319,6 @@ export default function MeuNegocioPage() {
             descricao={form.descricao}
             historia={form.historia}
             cidade={form.cidade}
-            categoria_slug={form.categoria_slug}
             whatsapp={form.whatsapp}
             website={form.website}
             onChange={set}
@@ -330,7 +344,7 @@ export default function MeuNegocioPage() {
             facebook_url={form.facebook_url}
             tiktok_url={form.tiktok_url}
             youtube_url={form.youtube_url}
-            x_url={form.x_url}
+            linkedin_url={form.linkedin_url}
             onChange={set}
           />
           <EspacoEspecialCard
