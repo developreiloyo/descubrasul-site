@@ -1,6 +1,7 @@
 "use client";
 
 import { Share2, MapPin, Star, MessageCircle, Phone } from "lucide-react";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import { linkWhatsApp } from "@/lib/utils";
 import { registrarClique } from "@/hooks/useTracking";
 import type { Negocio } from "@/types";
@@ -42,7 +43,7 @@ export function StickyActionBar({ negocio }: Props) {
                 Categoria
               </span>
               <span className="font-bold" style={{ color: "#0b1c30" }}>
-                {negocio.categoria.icone} {negocio.categoria.nome}
+                <CategoriaIcon icone={negocio.categoria.icone} size={14} className="inline-block" /> {negocio.categoria.nome}
               </span>
             </div>
           )}

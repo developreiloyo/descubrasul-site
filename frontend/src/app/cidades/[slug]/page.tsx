@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { getNegocios } from "@/lib/fetchers";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import { mediaUrl } from "@/lib/utils";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Navbar } from "@/components/layout/Navbar";
@@ -92,7 +93,7 @@ export default async function PaginaCidade({ params }: Props) {
           <section key={catSlug} className="py-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-2xl font-semibold">
-                {grupo.icone} {grupo.nome}
+                <CategoriaIcon icone={grupo.icone} size={20} className="inline-block mr-2" />{grupo.nome}
               </h2>
               <Link
                 href={`/${catSlug}/${slug}`}

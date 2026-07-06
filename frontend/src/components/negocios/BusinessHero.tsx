@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { BadgeCheck } from "lucide-react";
 import { mediaUrl, isAberto } from "@/lib/utils";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import type { Negocio } from "@/types";
 
 interface Props {
@@ -34,10 +35,10 @@ export function BusinessHero({ negocio }: Props) {
           />
         ) : (
           <div
-            className="w-full h-full flex items-center justify-center text-9xl"
-            style={{ backgroundColor: "#e5eeff" }}
+            className="w-full h-full flex items-center justify-center"
+            style={{ backgroundColor: "#e5eeff", color: "#6f7a6e" }}
           >
-            {negocio.categoria?.icone ?? "🏪"}
+            <CategoriaIcon icone={negocio.categoria?.icone ?? ""} size={80} />
           </div>
         )}
       </div>
@@ -92,10 +93,10 @@ export function BusinessHero({ negocio }: Props) {
               />
             ) : (
               <div
-                className="w-full h-full flex items-center justify-center text-4xl md:text-5xl"
-                style={{ backgroundColor: "#eff4ff" }}
+                className="w-full h-full flex items-center justify-center"
+                style={{ backgroundColor: "#eff4ff", color: "#6f7a6e" }}
               >
-                {negocio.categoria?.icone ?? "🏪"}
+                <CategoriaIcon icone={negocio.categoria?.icone ?? ""} size={48} />
               </div>
             )}
           </div>

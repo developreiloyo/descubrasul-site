@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, BadgeCheck, Star } from "lucide-react";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -118,7 +119,7 @@ export default async function MarketplacePage({ searchParams }: Props) {
                   href={`/marketplace?${new URLSearchParams({ cat: c.slug, ...(cid && { cidade: cid }) }).toString()}`}
                   className={`text-sm py-1.5 px-2.5 rounded-lg transition-colors flex items-center gap-2 ${cat === c.slug ? "bg-primary text-white" : "text-sec hover:bg-black/5 hover:text-ink"}`}
                 >
-                  <span>{c.icone}</span> {c.nome}
+                  <CategoriaIcon icone={c.icone} size={14} /> {c.nome}
                 </Link>
               ))}
             </div>

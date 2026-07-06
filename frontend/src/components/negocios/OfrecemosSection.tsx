@@ -1,4 +1,5 @@
 import { Clock, MapPin } from "lucide-react";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import type { Negocio } from "@/types";
 
 const DIAS_MAP: Record<string, string> = {
@@ -26,13 +27,13 @@ export function OfrecemosSection({ negocio }: Props) {
   return (
     <section className="rounded-2xl border border-ink/10 bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
-        <span className="text-2xl">{negocio.categoria?.icone}</span>
+        <CategoriaIcon icone={negocio.categoria?.icone || ""} size={22} className="text-ink/60" />
         <h2 className="text-xl font-bold text-ink">O que oferecemos</h2>
       </div>
 
       <div className="flex flex-col gap-3">
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary w-fit">
-          {negocio.categoria?.icone} {negocio.categoria?.nome}
+          <CategoriaIcon icone={negocio.categoria?.icone || ""} size={14} /> {negocio.categoria?.nome}
           {negocio.bairro && ` · ${negocio.bairro}`}
         </div>
 

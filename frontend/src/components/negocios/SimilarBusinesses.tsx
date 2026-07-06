@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import { mediaUrl } from "@/lib/utils";
 import type { Negocio } from "@/types";
 
@@ -53,7 +54,7 @@ export function SimilarBusinesses({ negocios }: Props) {
                   className="flex h-40 items-center justify-center text-4xl"
                   style={{ backgroundColor: "#e5eeff" }}
                 >
-                  {n.categoria?.icone || "🏪"}
+                  <CategoriaIcon icone={n.categoria?.icone || ""} size={40} className="text-[#6f7a6e]" />
                 </div>
               )}
               <div className="flex flex-1 flex-col gap-1 p-4">

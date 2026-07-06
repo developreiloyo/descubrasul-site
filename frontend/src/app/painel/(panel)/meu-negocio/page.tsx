@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Save } from 'lucide-react';
 import { InformacoesBasicasCard } from '@/components/merchant/meu-negocio/InformacoesBasicasCard';
 import { EnderecoCard } from '@/components/merchant/meu-negocio/EnderecoCard';
@@ -98,64 +98,69 @@ export default function MeuNegocioPage() {
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const sucessoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isPro = PLANOS_PRO.includes(plano);
+
+  // ── Popula o form a partir da resposta da API ─────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function popularForm(d: any) {
+    setPlano(d.plano ?? 'gratuito');
+    if (d.slug && d.cidade && d.categoria?.slug) {
+      setNegocioMeta({ slug: d.slug, cidade: d.cidade, categoriaSlug: d.categoria.slug });
+    }
+    if (d.logo) setLogoUrl(d.logo);
+    if (d.og_image) setCapaUrl(d.og_image);
+    setForm({
+      nome: d.nome ?? '',
+      descricao: d.descricao ?? '',
+      historia: d.historia ?? '',
+      cidade: d.cidade ?? '',
+      whatsapp: d.whatsapp ?? '',
+      website: d.website ?? '',
+      seo_title: d.seo_title ?? '',
+      seo_description: d.seo_description ?? '',
+      palavras_chave: d.palavras_chave ?? '',
+      horario_abertura: d.horario_abertura ?? '',
+      horario_fechamento: d.horario_fechamento ?? '',
+      dias_funcionamento: Array.isArray(d.dias_funcionamento) ? d.dias_funcionamento : [],
+      cep: d.localizacao?.cep ?? '',
+      logradouro: d.localizacao?.logradouro ?? '',
+      numero: d.localizacao?.numero ?? '',
+      loc_bairro: d.localizacao?.bairro ?? '',
+      loc_cidade: d.localizacao?.cidade ?? '',
+      estado: d.localizacao?.estado ?? '',
+      instagram_url: d.redes_sociais?.instagram_url ?? '',
+      tiktok_url: d.redes_sociais?.tiktok_url ?? '',
+      facebook_url: d.redes_sociais?.facebook_url ?? '',
+      youtube_url: d.redes_sociais?.youtube_url ?? '',
+      linkedin_url: d.redes_sociais?.linkedin_url ?? '',
+    });
+    const ee = d.espaco_especial;
+    if (ee) {
+      setEspaco({
+        tipo: ee.tipo ?? '',
+        titulo: ee.titulo ?? '',
+        conteudo: ee.conteudo ?? '',
+        badge: ee.badge ?? '',
+        cta_texto: ee.cta_texto ?? '',
+        cta_link: ee.cta_link ?? '',
+        desconto: ee.desconto ?? '',
+        codigo: ee.codigo ?? '',
+      });
+    }
+  }
 
   // ── Carrega dados do negócio ───────────────────────────────────
   useEffect(() => {
     fetch('/api/proxy/negocios/painel/meu-negocio')
       .then((r) => r.json())
-      .then((d) => {
-        setPlano(d.plano ?? 'gratuito');
-        if (d.slug && d.cidade && d.categoria?.slug) {
-          setNegocioMeta({
-            slug: d.slug,
-            cidade: d.cidade,
-            categoriaSlug: d.categoria.slug,
-          });
-        }
-        if (d.logo) setLogoUrl(d.logo);
-        if (d.og_image) setCapaUrl(d.og_image);
-        setForm({
-          nome: d.nome ?? '',
-          descricao: d.descricao ?? '',
-          historia: d.historia ?? '',
-          cidade: d.cidade ?? '',
-          whatsapp: d.whatsapp ?? '',
-          website: d.website ?? '',
-          seo_title: d.seo_title ?? '',
-          seo_description: d.seo_description ?? '',
-          palavras_chave: d.palavras_chave ?? '',
-          horario_abertura: d.horario_abertura ?? '',
-          horario_fechamento: d.horario_fechamento ?? '',
-          dias_funcionamento: Array.isArray(d.dias_funcionamento) ? d.dias_funcionamento : [],
-          cep: d.localizacao?.cep ?? '',
-          logradouro: d.localizacao?.logradouro ?? '',
-          numero: d.localizacao?.numero ?? '',
-          loc_bairro: d.localizacao?.bairro ?? '',
-          loc_cidade: d.localizacao?.cidade ?? '',
-          estado: d.localizacao?.estado ?? '',
-          instagram_url: d.redes_sociais?.instagram_url ?? '',
-          tiktok_url: d.redes_sociais?.tiktok_url ?? '',
-          facebook_url: d.redes_sociais?.facebook_url ?? '',
-          youtube_url: d.redes_sociais?.youtube_url ?? '',
-          linkedin_url: d.redes_sociais?.linkedin_url ?? '',
-        });
-        const ee = d.espaco_especial;
-        if (ee) {
-          setEspaco({
-            tipo: ee.tipo ?? '',
-            titulo: ee.titulo ?? '',
-            conteudo: ee.conteudo ?? '',
-            badge: ee.badge ?? '',
-            cta_texto: ee.cta_texto ?? '',
-            cta_link: ee.cta_link ?? '',
-            desconto: ee.desconto ?? '',
-            codigo: ee.codigo ?? '',
-          });
-        }
-      })
+      .then(popularForm)
       .finally(() => setCarregando(false));
+    return () => {
+      if (sucessoTimer.current) clearTimeout(sucessoTimer.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Mutadores ─────────────────────────────────────────────────
@@ -188,6 +193,7 @@ export default function MeuNegocioPage() {
   async function salvar() {
     setErro('');
     setSucesso(false);
+    if (sucessoTimer.current) clearTimeout(sucessoTimer.current);
     setSalvando(true);
     try {
       const {
@@ -206,6 +212,13 @@ export default function MeuNegocioPage() {
         dias_funcionamento,
         ...resto
       } = form;
+
+      // Bug 3: enviar dígitos limpos sem código de país
+      const whatsappDigits = resto.whatsapp.replace(/\D/g, '').replace(/^55/, '');
+      if (whatsappDigits.length > 0 && (whatsappDigits.length < 10 || whatsappDigits.length > 11)) {
+        setErro('WhatsApp inválido — informe DDD + número (10 ou 11 dígitos).');
+        return;
+      }
 
       const horario = {
         horario_abertura: resto.horario_abertura || null,
@@ -226,6 +239,7 @@ export default function MeuNegocioPage() {
 
       const body: Record<string, unknown> = {
         ...resto,
+        whatsapp: whatsappDigits,
         ...horario,
         historia,
         dias_funcionamento,
@@ -254,7 +268,6 @@ export default function MeuNegocioPage() {
         await fetch('/api/proxy/negocios/painel/meu-negocio', { method: 'PATCH', body: fd });
         setLogoFile(null);
       }
-      console.log('capaFile antes de salvar:', capaFile);
       if (capaFile) {
         const fd = new FormData();
         fd.append('og_image', capaFile);
@@ -262,7 +275,13 @@ export default function MeuNegocioPage() {
         setCapaFile(null);
       }
 
+      // Bug 2: recarrega dados da API para sincronizar estado com o servidor
+      const fresh = await fetch('/api/proxy/negocios/painel/meu-negocio').then((r) => r.json());
+      popularForm(fresh);
+
+      // Bug 1: mostra sucesso por 3s e some automaticamente
       setSucesso(true);
+      sucessoTimer.current = setTimeout(() => setSucesso(false), 3000);
     } catch {
       setErro('Erro de conexão.');
     } finally {

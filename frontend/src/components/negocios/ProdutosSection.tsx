@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, MessageCircle } from "lucide-react";
 import { formatarPreco, mediaUrl } from "@/lib/utils";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import type { Negocio, Produto } from "@/types";
 
 const TITULO_SECAO: Record<string, string> = {
@@ -174,8 +175,8 @@ function CardDestaque({
             priority
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-7xl">
-            {negocio.categoria?.icone ?? "📦"}
+          <div className="flex h-full w-full items-center justify-center" style={{ color: "#6f7a6e" }}>
+            <CategoriaIcon icone={negocio.categoria?.icone ?? ""} size={64} />
           </div>
         )}
 
@@ -255,8 +256,8 @@ function CardPequeno({
             className="object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-4xl">
-            {negocio.categoria?.icone ?? "📦"}
+          <div className="flex h-full w-full items-center justify-center" style={{ color: "#6f7a6e" }}>
+            <CategoriaIcon icone={negocio.categoria?.icone ?? ""} size={36} />
           </div>
         )}
       </div>

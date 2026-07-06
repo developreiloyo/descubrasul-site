@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import { linkWhatsApp, truncar, formatarPreco, mediaUrl } from "@/lib/utils";
 import { registrarClique } from "@/hooks/useTracking";
 import type { Negocio, Produto } from "@/types";
@@ -46,8 +47,8 @@ function ProdutoDestaque({ negocio, produto }: { negocio: Negocio; produto: Prod
               />
             </div>
           ) : (
-            <div className="flex aspect-[4/3] w-full shrink-0 items-center justify-center bg-ink/5 text-6xl sm:aspect-auto sm:h-52 sm:w-52">
-              {negocio.categoria?.icone || "📦"}
+            <div className="flex aspect-[4/3] w-full shrink-0 items-center justify-center bg-ink/5 sm:aspect-auto sm:h-52 sm:w-52 text-[#6f7a6e]">
+              <CategoriaIcon icone={negocio.categoria?.icone || ""} size={48} />
             </div>
           )}
 
@@ -116,8 +117,8 @@ export function ServicosSection({ negocio, produtos, titulo }: Props) {
                       />
                     </div>
                   ) : (
-                    <div className="flex aspect-[4/3] w-full items-center justify-center bg-ink/5 text-5xl">
-                      {negocio.categoria?.icone || "📦"}
+                    <div className="flex aspect-[4/3] w-full items-center justify-center bg-ink/5 text-[#6f7a6e]">
+                      <CategoriaIcon icone={negocio.categoria?.icone || ""} size={40} />
                     </div>
                   )}
                   <div className="flex flex-1 flex-col gap-2 p-3">

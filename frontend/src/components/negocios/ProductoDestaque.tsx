@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import { mediaUrl, formatarPreco, linkWhatsApp } from "@/lib/utils";
 import { registrarClique } from "@/hooks/useTracking";
 
@@ -67,8 +68,8 @@ export function ProductoDestaque({ produto, negocio }: Props) {
     <div className="overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-sm">
       <div className="relative aspect-[16/9] w-full bg-ink/5">
         {semFoto ? (
-          <div className="flex h-full items-center justify-center text-6xl">
-            {negocio.categoria?.icone || "📦"}
+          <div className="flex h-full items-center justify-center text-[#6f7a6e]">
+            <CategoriaIcon icone={negocio.categoria?.icone || ""} size={56} />
           </div>
         ) : (
           <>

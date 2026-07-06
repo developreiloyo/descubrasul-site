@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, BadgeCheck, Star, ArrowRight } from "lucide-react";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -130,8 +131,8 @@ export default async function CategoriaPage({ params }: Props) {
           </nav>
           <div className="flex items-center gap-4 mb-3">
             {cat?.icone && (
-              <span className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-3xl">
-                {cat.icone}
+              <span className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-white">
+                <CategoriaIcon icone={cat.icone} size={32} />
               </span>
             )}
             <div>
@@ -168,7 +169,9 @@ export default async function CategoriaPage({ params }: Props) {
       <main className="max-w-[1200px] mx-auto px-4 py-10">
         {negocios.length === 0 ? (
           <div className="bg-white rounded-2xl border border-black/[0.06] p-14 text-center">
-            <p className="text-5xl mb-4">{cat?.icone || "🔍"}</p>
+            <div className="flex justify-center mb-4 text-[#6f7a6e]">
+              <CategoriaIcon icone={cat?.icone || ""} size={48} />
+            </div>
             <h2 className="font-display text-xl text-ink">Em breve por aqui</h2>
             <p className="text-sec text-sm mt-2 max-w-sm mx-auto">
               Ainda não temos {nome.toLowerCase()} cadastrados. Seja o primeiro!

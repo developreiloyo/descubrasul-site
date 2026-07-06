@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, BadgeCheck, MapPin, Star } from "lucide-react";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import { mediaUrl, isAberto } from "@/lib/utils";
 import type { Negocio } from "@/types";
 
@@ -141,7 +142,7 @@ export function NegociosDestaque({ negocios }: { negocios: Negocio[] }) {
               <div className="p-4 flex flex-col gap-3">
                 <div className="flex items-center gap-2 text-xs text-sec">
                   <span className="inline-flex items-center gap-1 rounded-full bg-primary/8 text-primary px-2.5 py-1 font-medium text-[11px]">
-                    {negocio.categoria?.icone} {negocio.categoria?.nome}
+                    <CategoriaIcon icone={negocio.categoria?.icone || ""} size={11} className="inline-block" /> {negocio.categoria?.nome}
                   </span>
                   <span className="flex items-center gap-1 ml-auto">
                     <MapPin className="size-3" />

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 
 interface CategoryCardProps {
   slug: string;
@@ -27,12 +28,12 @@ export function CategoryCard({ slug, nome, icone, numero, count }: CategoryCardP
         ↗
       </span>
 
-      {/* Emoji — grayscale no estado normal, colorido no hover */}
+      {/* Ícone da categoria */}
       <span
         aria-hidden="true"
-        className="text-[28px] leading-none select-none transition-transform duration-200 group-hover:scale-110"
+        className="leading-none select-none transition-transform duration-200 group-hover:scale-110 text-[#1a1a1a] group-hover:text-[#FAF6EF]"
       >
-        {icone}
+        <CategoriaIcon icone={icone} size={28} />
       </span>
 
       {/* Nome da categoria */}

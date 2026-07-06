@@ -7,7 +7,7 @@ from django.dispatch import receiver
 class Categoria(models.Model):
     slug        = models.SlugField(max_length=100, unique=True, blank=True)
     nome        = models.CharField(max_length=100)
-    icone       = models.CharField(max_length=10, blank=True)
+    icone       = models.CharField(max_length=50, blank=True)
     schema_tipo = models.CharField(max_length=50, blank=True)
     ativo       = models.BooleanField(default=True)
     ordem       = models.PositiveIntegerField(default=0)

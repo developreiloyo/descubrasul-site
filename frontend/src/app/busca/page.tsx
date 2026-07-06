@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Search, BadgeCheck, Star, SlidersHorizontal } from "lucide-react";
+import { CategoriaIcon } from "@/lib/categoria-icons";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -191,7 +192,7 @@ export default async function BuscaPage(
                     href={`/busca?${new URLSearchParams({ ...(q && {q}), ...(cidadeP && {cidade: cidadeP}), cat: cat.slug }).toString()}`}
                     className={`text-sm py-1.5 px-2.5 rounded-lg transition-colors flex items-center gap-2 ${catParam === cat.slug ? "bg-primary text-white" : "text-sec hover:text-ink hover:bg-black/5"}`}
                   >
-                    <span>{cat.icone}</span> {cat.nome}
+                    <CategoriaIcon icone={cat.icone} size={14} /> {cat.nome}
                   </Link>
                 ))}
               </div>

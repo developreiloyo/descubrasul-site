@@ -163,7 +163,7 @@ export default function CadastroPage() {
             <option value="">Escolha a categoria</option>
             {categorias.map((c) => (
               <option key={c.slug} value={c.slug}>
-                {c.icone} {c.nome}
+                {c.nome}
               </option>
             ))}
           </select>
