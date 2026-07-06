@@ -3,20 +3,24 @@ import { useState, useRef, useEffect } from 'react';
 import { Share2, Plus, X, ChevronDown, ExternalLink } from 'lucide-react';
 import { Card } from '../Card';
 import { inputClass } from '../FormField';
+import { SocialIcon } from '@/components/ui/SocialIcon';
+import type { ComponentProps } from 'react';
+
+type RedeKey = ComponentProps<typeof SocialIcon>['rede'];
 
 interface Rede {
   key: string;
+  socialKey: RedeKey;
   label: string;
   placeholder: string;
-  color: string;
 }
 
 const REDES: Rede[] = [
-  { key: 'instagram_url', label: 'Instagram',  placeholder: 'https://instagram.com/seunegocio', color: '#E1306C' },
-  { key: 'tiktok_url',    label: 'TikTok',     placeholder: 'https://tiktok.com/@seunegocio',  color: '#010101' },
-  { key: 'facebook_url',  label: 'Facebook',   placeholder: 'https://facebook.com/seunegocio', color: '#1877F2' },
-  { key: 'youtube_url',   label: 'YouTube',    placeholder: 'https://youtube.com/@seunegocio',  color: '#FF0000' },
-  { key: 'linkedin_url',  label: 'LinkedIn',   placeholder: 'https://linkedin.com/company/...',color: '#0A66C2' },
+  { key: 'instagram_url', socialKey: 'instagram', label: 'Instagram',  placeholder: 'https://instagram.com/seunegocio' },
+  { key: 'tiktok_url',    socialKey: 'tiktok',    label: 'TikTok',     placeholder: 'https://tiktok.com/@seunegocio'  },
+  { key: 'facebook_url',  socialKey: 'facebook',  label: 'Facebook',   placeholder: 'https://facebook.com/seunegocio' },
+  { key: 'youtube_url',   socialKey: 'youtube',   label: 'YouTube',    placeholder: 'https://youtube.com/@seunegocio'  },
+  { key: 'linkedin_url',  socialKey: 'linkedin',  label: 'LinkedIn',   placeholder: 'https://linkedin.com/company/...' },
 ];
 
 interface Props {
@@ -97,10 +101,7 @@ export function RedesSociaisCard({
             key={rede.key}
             className="flex items-center gap-3 rounded-lg border border-[#becabc] bg-white px-3 py-2.5"
           >
-            <span
-              className="w-2 h-2 rounded-full flex-shrink-0"
-              style={{ backgroundColor: rede.color }}
-            />
+            <SocialIcon rede={rede.socialKey} size={18} className="flex-shrink-0" />
             <span className="text-sm font-medium text-[#0b1c30] w-20 flex-shrink-0">
               {rede.label}
             </span>
@@ -190,10 +191,7 @@ export function RedesSociaisCard({
                     onClick={() => iniciarEdicao(rede.key)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#0b1c30] hover:bg-[#eff4ff] transition-colors text-left"
                   >
-                    <span
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: rede.color }}
-                    />
+                    <SocialIcon rede={rede.socialKey} size={16} className="flex-shrink-0" />
                     {rede.label}
                   </button>
                 ))}

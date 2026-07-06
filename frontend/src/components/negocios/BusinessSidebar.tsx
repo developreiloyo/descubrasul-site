@@ -1,6 +1,7 @@
 import { Clock, MapPin, Phone, Globe, ShieldCheck, ExternalLink } from "lucide-react";
 import type { Negocio } from "@/types";
 import { isAberto, linkWhatsApp } from "@/lib/utils";
+import { SocialIcon } from "@/components/ui/SocialIcon";
 
 function mapaEmbed(negocio: Negocio): string {
   if (negocio.localizacao?.lat) {
@@ -159,6 +160,58 @@ export function BusinessSidebar({ negocio }: Props) {
                   </a>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Redes sociais */}
+      {negocio.redes_sociais && Object.values(negocio.redes_sociais).some(Boolean) && (
+        <div className={cardClass} style={cardStyle}>
+          <h3 className="text-lg font-semibold flex items-center gap-2" style={headingStyle}>
+            <Globe className="w-5 h-5" style={{ color: "#1a7a3c" }} />
+            Redes sociais
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {negocio.redes_sociais.instagram_url && (
+              <a href={negocio.redes_sociais.instagram_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium hover:underline"
+                aria-label="Instagram">
+                <SocialIcon rede="instagram" size={20} />
+                <span style={mutedStyle}>Instagram</span>
+              </a>
+            )}
+            {negocio.redes_sociais.tiktok_url && (
+              <a href={negocio.redes_sociais.tiktok_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium hover:underline"
+                aria-label="TikTok">
+                <SocialIcon rede="tiktok" size={20} />
+                <span style={mutedStyle}>TikTok</span>
+              </a>
+            )}
+            {negocio.redes_sociais.facebook_url && (
+              <a href={negocio.redes_sociais.facebook_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium hover:underline"
+                aria-label="Facebook">
+                <SocialIcon rede="facebook" size={20} />
+                <span style={mutedStyle}>Facebook</span>
+              </a>
+            )}
+            {negocio.redes_sociais.youtube_url && (
+              <a href={negocio.redes_sociais.youtube_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium hover:underline"
+                aria-label="YouTube">
+                <SocialIcon rede="youtube" size={20} />
+                <span style={mutedStyle}>YouTube</span>
+              </a>
+            )}
+            {negocio.redes_sociais.linkedin_url && (
+              <a href={negocio.redes_sociais.linkedin_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium hover:underline"
+                aria-label="LinkedIn">
+                <SocialIcon rede="linkedin" size={20} />
+                <span style={mutedStyle}>LinkedIn</span>
+              </a>
             )}
           </div>
         </div>

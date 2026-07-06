@@ -248,6 +248,8 @@ export default function MeuNegocioPage() {
         espaco_especial: espacoPayload,
       };
 
+      console.log('payload antes do PATCH:', JSON.stringify(body, null, 2));
+
       const res = await fetch('/api/proxy/negocios/painel/meu-negocio', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
