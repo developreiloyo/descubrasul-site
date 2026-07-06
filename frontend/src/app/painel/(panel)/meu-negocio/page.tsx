@@ -213,8 +213,8 @@ export default function MeuNegocioPage() {
         ...resto
       } = form;
 
-      // Bug 3: enviar dígitos limpos sem código de país
-      const whatsappDigits = resto.whatsapp.replace(/\D/g, '').replace(/^55/, '');
+      // enviar apenas dígitos — a máscara exibe (XX) XXXXX-XXXX sem código de país
+      const whatsappDigits = resto.whatsapp.replace(/\D/g, '');
       if (whatsappDigits.length > 0 && (whatsappDigits.length < 10 || whatsappDigits.length > 11)) {
         setErro('WhatsApp inválido — informe DDD + número (10 ou 11 dígitos).');
         return;
