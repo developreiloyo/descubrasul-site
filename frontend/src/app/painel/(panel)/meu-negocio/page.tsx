@@ -121,8 +121,8 @@ export default function MeuNegocioPage() {
       seo_title: d.seo_title ?? '',
       seo_description: d.seo_description ?? '',
       palavras_chave: d.palavras_chave ?? '',
-      horario_abertura: d.horario_abertura ?? '',
-      horario_fechamento: d.horario_fechamento ?? '',
+      horario_abertura: d.horario_abertura ? d.horario_abertura.slice(0, 5) : '',
+      horario_fechamento: d.horario_fechamento ? d.horario_fechamento.slice(0, 5) : '',
       dias_funcionamento: Array.isArray(d.dias_funcionamento) ? d.dias_funcionamento : [],
       cep: d.localizacao?.cep ?? '',
       logradouro: d.localizacao?.logradouro ?? '',
@@ -220,9 +220,10 @@ export default function MeuNegocioPage() {
         return;
       }
 
+      const normalizarHorario = (h: string | null | undefined) => (h ? h.slice(0, 5) : null);
       const horario = {
-        horario_abertura: resto.horario_abertura || null,
-        horario_fechamento: resto.horario_fechamento || null,
+        horario_abertura: normalizarHorario(resto.horario_abertura),
+        horario_fechamento: normalizarHorario(resto.horario_fechamento),
       };
 
       let espacoPayload: Record<string, string> | null = null;

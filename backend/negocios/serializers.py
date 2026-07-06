@@ -134,12 +134,18 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
         return value
 
     def validate_cidade(self, value):
-        if value and value not in CIDADES_NOMES:
-            raise serializers.ValidationError(
-                "Cidade não atendida pelo DescubraSul. "
-                f"Cidades aceitas: {', '.join(CIDADES_NOMES)}."
-            )
-        return value
+        if not value:
+            return value
+        from negocios.models import normalizar_cidade
+        from core.constants import CIDADES_ATENDIDAS
+        normalized_input = normalizar_cidade(value.strip())
+        for _, nome in CIDADES_ATENDIDAS:
+            if normalizar_cidade(nome) == normalized_input:
+                return nome  # retorna forma canônica com acentos
+        raise serializers.ValidationError(
+            "Cidade não atendida pelo DescubraSul. "
+            f"Cidades aceitas: {', '.join(CIDADES_NOMES)}."
+        )
 
     def validate_whatsapp(self, value):
         digits = "".join(c for c in (value or "") if c.isdigit())

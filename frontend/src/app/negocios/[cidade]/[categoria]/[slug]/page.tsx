@@ -120,9 +120,7 @@ export default async function PaginaNegocio({ params }: Props) {
 
         {/* Sidebar */}
         <aside className="w-full md:w-[35%]">
-          <div className="md:sticky md:top-24">
-            <BusinessSidebar negocio={negocio} />
-          </div>
+          <BusinessSidebar negocio={negocio} />
         </aside>
       </main>
 

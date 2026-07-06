@@ -7,9 +7,9 @@ from django.dispatch import receiver
 
 
 def normalizar_cidade(cidade: str) -> str:
-    """Remove acentos e normaliza capitalização: 'criciúma' → 'Criciuma'."""
+    """Remove acentos para comparação normalizada: 'Içara' → 'icara'."""
     sem_acento = unicodedata.normalize("NFKD", cidade).encode("ASCII", "ignore").decode()
-    return sem_acento.strip().title()
+    return sem_acento.strip().lower()
 
 
 def gerar_caminho_seguro(instance, filename):
@@ -254,8 +254,16 @@ class VideoDestaque(models.Model):
 
 @receiver(pre_save, sender=Negocio)
 def normalizar_cidade_negocio(sender, instance, **kwargs):
-    if instance.cidade:
-        instance.cidade = normalizar_cidade(instance.cidade)
+    """Armazena a forma canônica (com acentos) de CIDADES_ATENDIDAS.
+    Fallback: mantém o valor como veio se não encontrar correspondência."""
+    if not instance.cidade:
+        return
+    from core.constants import CIDADES_ATENDIDAS
+    normalized_input = normalizar_cidade(instance.cidade)
+    for _, nome in CIDADES_ATENDIDAS:
+        if normalizar_cidade(nome) == normalized_input:
+            instance.cidade = nome
+            return
 
 
 @receiver(pre_save, sender=Negocio)
