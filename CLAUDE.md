@@ -20,7 +20,7 @@ Foco exclusivo: Vitrina de negócios locais. A Etapa 2 (jogos) foi cancelada por
 | IA textos     | API Claude Haiku 4.5 (somente Plano Pro)        |
 | IA busca      | pgvector + MiniLM-L12-v2 (grátis, no VPS)      |
 | Imagens       | S3-compatible                                   |
-| Deploy        | Docker Compose + EasyPanel v2.30.1 (Hostinger VPS Ubuntu 24.04) |
+| Deploy        | Docker Compose + Traefik (Hostinger VPS Ubuntu 24.04)           |
 
 ---
 
@@ -220,7 +220,7 @@ components/
 │   ├── EspacoEspecial         # Pro+: texto/oferta/cupom/banner/video. Lock UI para não-Pro
 │   └── TrackerView            # Registra evento "view" no analytics ao montar
 ├── merchant/       # Painel do comerciante — route group (panel)
-│   ├── Navbar                 # MerchantNavbar: logo /logo.png + links (meu-negocio, produtos, metricas)
+~/Documentos/Desarrollos/Descubrasul/repo/CLAUDE.md│   ├── Navbar                 # MerchantNavbar: logo /logo.png + links (meu-negocio, produtos, metricas)
 │   ├── MobileBottomNav        # Nav inferior mobile do painel
 │   └── meu-negocio/
 │       ├── InformacoesBasicasCard
@@ -469,7 +469,7 @@ npm run lint
 - `docker-compose.yml` — stack de desenvolvimento local
 - `docker-compose.override.yml` — overrides locais (não commitar)
 - `docker-compose.prod.yml` — stack de produção com `${IMAGE_TAG}` e `env_file: .env.prod`
-- `docker-compose.easypanel.yml` — stack EasyPanel COMPOSE: sem `networks`, sempre `:latest`, envs via UI do EasyPanel, sem `ports` expostos (Traefik roteia por nome interno)
+- `docker-compose.prod.yml` — stack de produção com Traefik direto: sem `networks` externas, sempre `:latest`, envs via `.env.prod`, sem `ports` expostos (Traefik roteia por nome interno)
 - `.env` — todas as variáveis (nunca commitar)
 - `backend/core/settings/` — base, dev, prod
 - `frontend/next.config.ts` — config do Next.js
@@ -621,3 +621,12 @@ pelo Google (processo burocrático). Priorizar o serviço manual primeiro.
 ---
 
 *Seção criada em junho de 2026. Revisar prioridades a cada sprint.*
+[... todo el contenido que ya tengas en CLAUDE.md ...]
+
+## Memory Protocol
+
+Tienes acceso a memoria persistente de Engram vía MCP tools (mem_save, mem_search, mem_context, mem_session_summary, etc.).
+
+- Guarda proactivamente con mem_save después de trabajo significativo: bugs resueltos, decisiones de arquitectura, cambios de infraestructura, pendientes identificados. No esperes a que se te pida.
+- Después de cualquier compactación o reinicio de contexto, llama a mem_context primero para recuperar el estado de la sesión antes de continuar.
+- Al iniciar una sesión nueva, busca en memoria contexto relevante al pedido del usuario antes de asumir que no existe historial.

@@ -112,6 +112,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# Password-reset tokens expire after 1 hour (Django default is 3 days / 259200 s).
+# Short expiry reduces the window of opportunity if a reset e-mail is intercepted.
+PASSWORD_RESET_TIMEOUT = 3600
+
 # ─── DRF ──────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (

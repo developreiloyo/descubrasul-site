@@ -35,12 +35,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         ADMIN       = "admin",       "Admin"
         SUPERADMIN  = "superadmin",  "Super Admin"
 
-    email     = models.EmailField(unique=True)
-    nome      = models.CharField(max_length=150, blank=True)
-    role      = models.CharField(max_length=20, choices=Role.choices, default=Role.COMERCIANTE)
-    is_active = models.BooleanField(default=True)
-    is_staff  = models.BooleanField(default=False)
-    criado_em = models.DateTimeField(auto_now_add=True)
+    email               = models.EmailField(unique=True)
+    nome                = models.CharField(max_length=150, blank=True)
+    role                = models.CharField(max_length=20, choices=Role.choices, default=Role.COMERCIANTE)
+    is_active           = models.BooleanField(default=True)
+    is_staff            = models.BooleanField(default=False)
+    criado_em           = models.DateTimeField(auto_now_add=True)
+    # Incremented every time a password-reset e-mail is sent.
+    # Including this value in the token hash invalidates all previously
+    # issued reset tokens for the same user the moment a new one is generated.
+    reset_token_version = models.IntegerField(default=0)
 
     objects = UserManager()
 
