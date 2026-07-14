@@ -50,7 +50,7 @@ export default function CadastroPage() {
     setErro("");
     setCarregando(true);
     try {
-      const payload = { ...form, whatsapp: form.whatsapp.replace(/\D/g, "") };
+      const payload = { ...form, whatsapp: form.whatsapp.replace(/\D/g, ""), lgpd_consent: aceitouTermos };
       const res = await fetch("/api/proxy/usuarios/cadastro/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

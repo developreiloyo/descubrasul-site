@@ -6,7 +6,7 @@ Vitrina digital regional para o Sul de Santa Catarina.
 
 - **Backend**: Django 5 + DRF + PostgreSQL + pgvector + Redis + Celery
 - **Frontend**: Next.js 16 (App Router) + TypeScript + Tailwind CSS
-- **Deploy**: Docker Compose + EasyPanel
+- **Deploy**: Docker Compose + Traefik (via EasyPanel)
 
 ## Setup local
 

@@ -185,6 +185,10 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "cta_link deve ser uma URL http ou https válida."
             )
+        for campo in ("titulo", "conteudo"):
+            valor = value.get(campo, "")
+            if valor:
+                validar_texto_seo_completo(valor, campo)
         return value
 
     def update(self, instance, validated_data):

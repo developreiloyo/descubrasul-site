@@ -45,6 +45,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Including this value in the token hash invalidates all previously
     # issued reset tokens for the same user the moment a new one is generated.
     reset_token_version = models.IntegerField(default=0)
+    # LGPD Art. 9° §1° — registro de consentimento obrigatório
+    lgpd_consent = models.BooleanField(default=False)
+    consent_date  = models.DateTimeField(null=True, blank=True)
 
     objects = UserManager()
 

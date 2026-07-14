@@ -13,17 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "email", "role", "criado_em"]
 
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=8)
-
-    class Meta:
-        model  = User
-        fields = ["email", "nome", "password"]
-
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
-
-
 class CadastroCompletoSerializer(serializers.Serializer):
     """
     Cria User + Negocio em uma unica transacao.
@@ -39,6 +28,9 @@ class CadastroCompletoSerializer(serializers.Serializer):
     categoria_slug = serializers.SlugField()
     cidade         = serializers.CharField(max_length=100)
     whatsapp       = serializers.CharField(max_length=20)
+
+    # LGPD Art. 9° §1° — consentimento explícito obrigatório
+    lgpd_consent = serializers.BooleanField(write_only=True)
 
     def validate_email(self, value):
         if User.objects.filter(email__iexact=value).exists():
@@ -65,16 +57,28 @@ class CadastroCompletoSerializer(serializers.Serializer):
             raise serializers.ValidationError("Numero de WhatsApp invalido — informe DDD + numero (10 ou 11 digitos).")
         return numero
 
+    def validate_lgpd_consent(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                "Você deve aceitar a Política de Privacidade e os Termos de Uso para continuar."
+            )
+        return value
+
     @transaction.atomic
     def create(self, validated_data):
         from negocios.models import Negocio
         from categorias.models import Categoria
+        from django.utils import timezone
+
+        validated_data.pop("lgpd_consent")  # sempre True após validate_lgpd_consent
 
         user = User.objects.create_user(
             email=validated_data["email"],
             nome=validated_data["nome"],
             password=validated_data["password"],
             role=User.Role.COMERCIANTE,
+            lgpd_consent=True,
+            consent_date=timezone.now(),
         )
 
         Negocio.objects.create(

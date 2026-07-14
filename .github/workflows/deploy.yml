@@ -152,4 +152,4 @@ jobs:
           echo "- \`ghcr.io/developreiloyo/descubrasul-site/frontend:${{ steps.tag.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Próximo paso" >> $GITHUB_STEP_SUMMARY
-          echo "Ir a EasyPanel → proyecto \`descubrasul\` → click **Implementar**" >> $GITHUB_STEP_SUMMARY
+          echo "EasyPanel detecta a nova imagem automaticamente e faz o deploy. Para forçar o deploy manual via SSH no VPS: \`docker compose pull && docker compose up -d\`" >> $GITHUB_STEP_SUMMARY

@@ -12,7 +12,6 @@ from rest_framework.views import APIView
 from core.throttles import PasswordResetThrottle
 from .models import User
 from .serializers import (
-    RegisterSerializer,
     UserSerializer,
     CadastroCompletoSerializer,
     ChangePasswordSerializer,
@@ -20,12 +19,6 @@ from .serializers import (
     PasswordResetConfirmSerializer,
 )
 from .tokens import password_reset_token_generator
-
-
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [AllowAny]
 
 
 @method_decorator(ratelimit(key="ip", rate="3/h", method="POST", block=True), name="post")

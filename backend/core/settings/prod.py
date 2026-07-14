@@ -4,7 +4,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
-# ─── Traefik / EasyPanel (OBRIGATÓRIO) ────────────────────────────────
+# ─── Traefik (OBRIGATÓRIO) ──────────────────────────────────────────────
 # Sem isso Django retorna 400 Bad Request atrás do proxy reverso
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -64,7 +64,7 @@ STORAGES = {
 
 # ─── Logging ──────────────────────────────────────────────────────────
 # Tudo para stdout em formato estruturado.
-# Docker/EasyPanel/journalctl leem stdout — não escrever em arquivos.
+# Docker/journalctl leem stdout — não escrever em arquivos.
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

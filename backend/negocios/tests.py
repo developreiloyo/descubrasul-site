@@ -135,6 +135,23 @@ class ProdutoIsolamentoTests(TestCase):
         response = self.client.post(self.url_b_dest)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_adicionar_foto_produto_alheio_retorna_404(self):
+        self.client.force_authenticate(user=self.user_a)
+        url = f"/api/negocios/painel/produtos/{self.produto_b.pk}/fotos/"
+        response = self.client.post(url, {}, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_remover_foto_produto_alheio_retorna_404(self):
+        from .models import FotoProduto
+        foto = FotoProduto.objects.create(
+            produto=self.produto_b, foto="test/foto.jpg", alt_texto="", ordem=0
+        )
+        self.client.force_authenticate(user=self.user_a)
+        url = f"/api/negocios/painel/produtos/{self.produto_b.pk}/fotos/{foto.pk}/"
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(FotoProduto.objects.filter(pk=foto.pk).exists())
+
     # ── Sem autenticação ─────────────────────────────────────────────────
     def test_lista_sem_autenticacao_retorna_401(self):
         response = self.client.get(self.url_list)
