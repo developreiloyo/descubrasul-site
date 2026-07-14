@@ -23,8 +23,8 @@ export default function PrivacidadePage() {
         <p>
           O <strong>DescubraSul</strong> é uma vitrina digital de negócios locais
           do Sul de Santa Catarina, operado por{" "}
-          <strong>[PENDENTE: razão social]</strong> (CNPJ{" "}
-          <strong>[PENDENTE: CNPJ]</strong>), com sede em Içara/SC.
+          <strong>DescubraSul Serviços Digitais</strong>, com sede em Içara/SC.
+          CNPJ em processo de registro.
         </p>
       </Section>
 

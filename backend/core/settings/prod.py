@@ -1,6 +1,17 @@
+import sentry_sdk
 from .base import *
 
 DEBUG = False
+
+# ─── Sentry (alertas proativos de erro — ISO 27001 8.16) ─────────────
+SENTRY_DSN = env("SENTRY_DSN", default="")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment="production",
+        traces_sample_rate=0.1,   # amostragem de 10% para performance
+        send_default_pii=False,   # LGPD — sem PII por padrão
+    )
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 

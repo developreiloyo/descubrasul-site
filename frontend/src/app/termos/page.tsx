@@ -21,8 +21,8 @@ export default function TermosPage() {
         <p>
           O <strong>DescubraSul</strong> (doravante "Plataforma") é um serviço
           digital de vitrina e divulgação de negócios locais do Sul de Santa
-          Catarina, operado por <strong>[PENDENTE: razão social]</strong> (CNPJ{" "}
-          <strong>[PENDENTE: CNPJ]</strong>).
+          Catarina, operado por <strong>DescubraSul Serviços Digitais</strong>
+          (CNPJ em processo de registro).
         </p>
         <p>
           Ao se cadastrar, o usuário ("Comerciante") aceita integralmente estes
@@ -128,7 +128,7 @@ export default function TermosPage() {
         <p>
           A marca DescubraSul, o design, o código-fonte e os textos institucionais
           da Plataforma são de propriedade exclusiva de{" "}
-          <strong>[PENDENTE: razão social]</strong>.
+          <strong>DescubraSul Serviços Digitais</strong>.
           É vedada a reprodução ou uso sem autorização prévia e por escrito.
         </p>
       </Section>
