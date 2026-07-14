@@ -59,7 +59,6 @@ services:
         condition: service_healthy
     networks:
       - internal
-      - easypanel
 
   celery:
     image: ghcr.io/developreiloyo/descubrasul-site/backend:${IMAGE_TAG:-latest}
@@ -104,7 +103,6 @@ services:
         condition: service_healthy
     networks:
       - internal
-      - easypanel
 
 volumes:
   postgres_data:
@@ -113,6 +111,3 @@ volumes:
 networks:
   internal:
     driver: bridge
-  easypanel:
-    external: true
-    name: easypanel

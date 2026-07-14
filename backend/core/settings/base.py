@@ -85,12 +85,19 @@ DATABASES = {
     "default": env.db("DATABASE_URL")
 }
 DATABASES["default"]["OPTIONS"] = {"connect_timeout": 10}
+DATABASES["default"]["CONN_MAX_AGE"] = 60
 
 # ─── Cache / Redis ────────────────────────────────────────────────────
+# django-redis com IGNORE_EXCEPTIONS: se Redis cair, cache miss silencioso
+# em vez de erro 500 — ISO 22301 (degradação com graça)
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": env("REDIS_URL"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "IGNORE_EXCEPTIONS": True,
+        },
     }
 }
 
@@ -162,7 +169,7 @@ SIMPLE_JWT = {
 
 # ─── Celery ───────────────────────────────────────────────────────────
 CELERY_BROKER_URL = env("REDIS_URL")
-CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_BACKEND = env("REDIS_URL")
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"

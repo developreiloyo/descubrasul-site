@@ -387,6 +387,121 @@ def get_queryset(self):
 
 ---
 
+## Compliance ISO 27001:2022 e ISO 22301:2019 — Framework Obrigatório
+
+> **Regra de ouro:** Estas normas NÃO são uma revisão posterior. São um filtro aplicado ANTES de escrever código ou propor mudanças de infraestrutura. Todo agente deve consultar esta seção ao iniciar qualquer tarefa.
+
+---
+
+### ISO 27001:2022 — Segurança da Informação
+
+Mapeamento dos controles ativos no projeto:
+
+| Controle ISO 27001 | O que o projeto faz | Onde está implementado |
+|--------------------|---------------------|------------------------|
+| 5.15 — Controle de acesso | Roles: visitante / comerciante / admin / superadmin | `usuarios/models.py`, `permissions.py` |
+| 5.17 — Informações de autenticação | Argon2 primário + PBKDF2 fallback; JWT access 30min + refresh 7d com blacklist | `settings/base.py` PASSWORD_HASHERS, SIMPLE_JWT |
+| 8.5 — Autenticação segura | MFA não implementado; JWT com rotação e blacklist | `core/settings/base.py` SIMPLE_JWT |
+| 8.6 — Gestão de capacidade | `CONN_MAX_AGE=60`, N+1 eliminados, cache Redis em endpoints públicos | `settings/base.py`, `negocios/views.py` |
+| 8.8 — Vulnerabilidades técnicas | Rate limiting por IP/usuário/endpoint; validação magic bytes em uploads | `core/throttles.py`, `negocios/validators.py` |
+| 8.9 — Gestão de configuração | Variáveis via `.env`; `DEBUG=False` obrigatório em produção; `CONN_MAX_AGE`, `CELERY_RESULT_BACKEND` via env | `settings/base.py`, `.env` |
+| 8.12 — Prevenção de vazamento de dados | Uploads renomeados com `uuid4()`; sem `id` sequencial em URLs públicas; CORS restrito | `models.py` gerar_caminho_seguro |
+| 8.15 — Logging | **GAP ATIVO** — logging estruturado (`structlog`) pendente | Backlog: prioridade 🟡 Média |
+| 8.16 — Monitoramento | **GAP ATIVO** — Sentry pendente; sem alertas automáticos de erro 500 | Backlog: prioridade 🟡 Média |
+| 8.24 — Criptografia | HTTPS obrigatório via Traefik + Let's Encrypt; HSTS 1 ano; cookies Secure | `settings/prod.py`, `docker-compose.prod.yml` |
+| 8.25 — Ciclo de vida de desenvolvimento seguro | Specs antes de implementar (OpenSpec); revisão via `code-reviewer` e `security` agents | `.claude/agents/` |
+| 8.28 — Codificação segura | ORM sempre (proibido `raw()` com input); validação no serializer; sanitização XSS | Convenções obrigatórias CLAUDE.md |
+| 8.29 — Testes de segurança | `qa-verifier` executa testes de isolamento entre usuários antes de aprovar qualquer endpoint | `.claude/agents/qa-verifier.md` |
+| 8.32 — Gestão de mudanças | Commits atômicos por área; specs aprovadas antes de implementar; never `--no-verify` | Convenções de commits |
+
+#### Checklist ISO 27001 — obrigatório antes de qualquer mudança de backend ou infra
+
+- [ ] **8.9** O dado configurado está em `.env`? Nenhum segredo hardcoded?
+- [ ] **8.6** A mudança introduz pressão de memória ou CPU desproporcionais ao VPS 8GB/2vCPU?
+- [ ] **8.12** Algum campo novo expõe PII ou dado sensível em resposta pública?
+- [ ] **8.28** Todo input do usuário passa por `validate_*` no serializer antes de tocar o banco?
+- [ ] **8.29** Existe teste que verifique que usuário A não acessa dados do usuário B via este endpoint?
+- [ ] **8.16** A operação gera log rastreável (quem fez, quando, o quê)? Se não, é aceitável sem log?
+- [ ] **5.15** As permissões estão explícitas e mínimas (least privilege)?
+
+---
+
+### ISO 22301:2019 — Continuidade do Negócio
+
+#### Objetivos de continuidade definidos (RTO/RPO)
+
+| Serviço | RTO (tempo máximo de recuperação) | RPO (perda máxima de dados aceitável) |
+|---------|-----------------------------------|---------------------------------------|
+| API pública (negocios, categorias) | 15 minutos | N/A — dados em PostgreSQL com WAL |
+| Painel do comerciante | 30 minutos | 0 — todas as escritas são síncronas em PG |
+| Celery tasks (métricas, geocodificação) | 2 horas | Tasks com `max_retries=3` — reexecutáveis |
+| Redis (cache + rate limiting + broker) | 5 minutos (restart automático via Docker) | Cache: 0 (repopula sozinho). Broker: tasks na fila são perdidas se Redis cair sem AOF |
+| PostgreSQL | 1 hora | Depende do último backup — configurar backup diário |
+
+#### Análise de Pontos Únicos de Falha (SPOF) — estado atual
+
+| Componente | SPOF? | Mitigação atual | Mitigação recomendada |
+|------------|-------|-----------------|----------------------|
+| Redis | **SIM** | `restart: unless-stopped` no Docker | AOF habilitado + `IGNORE_EXCEPTIONS: True` no cache |
+| PostgreSQL | **SIM** | Volume Docker persistente | Backup diário automatizado via cron |
+| VPS Hostinger | **SIM** | Nenhuma | Snapshot semanal do VPS |
+| Traefik | **SIM** | `restart: unless-stopped` | Healthcheck no container |
+
+#### Checklist ISO 22301 — obrigatório antes de qualquer mudança de infraestrutura
+
+- [ ] A mudança introduz ou agrava um SPOF existente?
+- [ ] Se o componente novo falhar, o sistema degrada com gracia (graceful degradation) ou cai completamente?
+- [ ] Redis tem AOF habilitado (`--appendonly yes`)? Verificar antes do deploy.
+- [ ] O último backup de PostgreSQL foi testado (restore funcionou)?
+- [ ] O `CELERY_RESULT_EXPIRES` está configurado para evitar crescimento infinito do backend de resultados?
+- [ ] O `restart: unless-stopped` está em todos os serviços críticos do `docker-compose.prod.yml`?
+- [ ] Após a mudança, os health checks `/health/` e `/health/ready/` continuam respondendo 200?
+
+#### Degradação com gracia — padrão obrigatório
+
+Qualquer componente externo (Redis, API Maps, API Mercado Pago, API Anthropic) deve falhar silenciosamente sem derrubar a API principal:
+
+```python
+# Padrão obrigatório para dependências externas opcionais
+from django.core.cache import cache, InvalidCacheBackendError
+
+try:
+    resultado = cache.get(chave)
+except Exception:
+    resultado = None  # cache miss silencioso — nunca propagar exceção de cache
+
+# Para APIs externas — sempre com timeout e fallback
+try:
+    resposta = requests.get(url, timeout=5)
+except requests.RequestException:
+    return None  # fallback: operação continua sem o dado externo
+```
+
+---
+
+### Fluxo de aprovação para mudanças críticas
+
+```
+Proposta de mudança
+       │
+       ▼
+ISO 27001 checklist acima ──── falhou? ──► Corrigir antes de prosseguir
+       │ passou
+       ▼
+ISO 22301 checklist acima ──── SPOF novo? ──► Documentar mitigação
+       │ passou
+       ▼
+qa-verifier executa testes de isolamento + edge cases
+       │ passou
+       ▼
+security agent revisa se há superfícies de ataque novas
+       │ passou
+       ▼
+Commit + deploy
+```
+
+---
+
 ## Roles do sistema
 
 | Role         | O que pode fazer                                  |

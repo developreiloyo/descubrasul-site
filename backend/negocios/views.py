@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import generics, viewsets, status
 from rest_framework.decorators import api_view, permission_classes as deco_permissions
 from rest_framework.decorators import action
@@ -26,6 +28,7 @@ PLAN_PRIORITY = Case(
 )
 
 
+@method_decorator(cache_page(60 * 5), name="dispatch")
 class NegocioListView(generics.ListAPIView):
     serializer_class   = NegocioPublicoSerializer
     permission_classes = [AllowAny]
@@ -56,6 +59,7 @@ class NegocioListView(generics.ListAPIView):
         return qs.annotate(plan_order=PLAN_PRIORITY).order_by("plan_order", "-verificado", "-atualizado_em")
 
 
+@method_decorator(cache_page(60 * 10), name="dispatch")
 class NegocioDetailView(generics.RetrieveAPIView):
     serializer_class   = NegocioPublicoSerializer
     permission_classes = [AllowAny]
@@ -82,15 +86,18 @@ class ProdutoListView(generics.ListAPIView):
             negocio__slug=slug,
             negocio__status=Negocio.Status.ATIVO,
             disponivel=True,
-        ).select_related("negocio").prefetch_related("fotos").order_by("ordem", "criado_em")
+        ).select_related("negocio", "negocio__categoria").prefetch_related("fotos").order_by("ordem", "criado_em")
 
-        plano = Negocio.objects.filter(slug=slug).values_list("plano", flat=True).first()
-        limite = LIMITE_PRODUTOS_PUBLICO.get(plano)
+        primeiro = qs.first()
+        if primeiro is None:
+            return qs.none()
+        limite = LIMITE_PRODUTOS_PUBLICO.get(primeiro.negocio.plano)
         if limite is not None:
             return qs[:limite]
         return qs
 
 
+@cache_page(60 * 5)
 @api_view(["GET"])
 @deco_permissions([AllowAny])
 def produtos_destaque(request):
@@ -107,12 +114,14 @@ def produtos_destaque(request):
 
     negocios = (
         Negocio.objects.filter(status=Negocio.Status.ATIVO, plano__in=PLANOS_PAGOS)
+        .select_related("categoria")
         .annotate(plan_order=PLAN_PRIORITY)
         .order_by("plan_order", "-verificado", "-atualizado_em")
         .prefetch_related(
             Prefetch(
                 "produtos",
                 queryset=Produto.objects.filter(disponivel=True)
+                    .select_related("negocio", "negocio__categoria")
                     .prefetch_related("fotos")
                     .order_by(
                         # produtos com foto primeiro, depois por ordem definida pelo comerciante
@@ -142,7 +151,11 @@ class MeuNegocioView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return self.request.user.negocio
+        return (
+            Negocio.objects
+            .select_related("categoria", "localizacao", "redes_sociais")
+            .get(usuario=self.request.user)
+        )
 
 
 class MeusProdutosViewSet(viewsets.ModelViewSet):
@@ -188,26 +201,27 @@ class MeusProdutosViewSet(viewsets.ModelViewSet):
     def adicionar_foto(self, request, pk=None):
         """Adiciona foto ao produto — máximo 3."""
         produto = self.get_object()
-        
-        if produto.fotos.count() >= 3:
+
+        fotos_count = produto.fotos.count()
+        if fotos_count >= 3:
             return Response(
                 {"detail": "Máximo de 3 fotos por produto atingido."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         foto = request.FILES.get("foto")
         if not foto:
             return Response({"detail": "Foto obrigatória."}, status=400)
-        
+
         from .validators import validar_imagem
         validar_imagem(foto)
-        
+
         from .models import FotoProduto
         FotoProduto.objects.create(
             produto=produto,
             foto=foto,
             alt_texto=request.data.get("alt_texto", ""),
-            ordem=produto.fotos.count(),
+            ordem=fotos_count,
         )
         return Response({"ok": True}, status=status.HTTP_201_CREATED)
 
