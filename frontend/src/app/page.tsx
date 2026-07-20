@@ -193,10 +193,11 @@ export default async function Home() {
               <MapPin className="size-3.5" /> A vitrine digital do Sul catarinense
             </p>
             <h1 className="animate-fade-up delay-100 font-display text-white text-[2rem] sm:text-[2.6rem] lg:text-[3.6rem] leading-[1.08] tracking-tight">
-              Encontre o <span className="text-gradient">melhor</span> do Sul de Santa Catarina
+              <span className="text-gradient">Conectando</span> pessoas,{" "}
+              <span className="text-gradient">Fortalecendo</span> negócios locais.
             </h1>
             <p className="animate-fade-up delay-200 text-white/65 text-sm lg:text-[1.1rem] mt-3 lg:mt-5 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Produtos, empresas, restaurantes e serviços da sua região — num só lugar.
+              Atualmente disponível para Içara e Criciúma. Em breve, novas cidades.
             </p>
 
             <div className="animate-fade-up delay-300">
@@ -205,7 +206,7 @@ export default async function Home() {
 
             <div className="animate-fade-up delay-400 hidden sm:flex flex-wrap items-center justify-center lg:justify-start gap-2 mt-5">
               <span className="text-white/40 text-xs font-medium">Popular:</span>
-              {["Tênis esportivo","Pizza artesanal","Mochila escolar","Skincare natural"].map((t) => (
+              {["Restaurante","Contador","Advogado","Mecânico","Clínica Odontológica"].map((t) => (
                 <Link key={t} href={`/busca?q=${encodeURIComponent(t)}`}
                   className="text-xs text-white/75 border border-white/15 rounded-full px-3 py-1 hover:border-accent/60 hover:text-accent transition-all duration-200">
                   {t}
@@ -213,19 +214,21 @@ export default async function Home() {
               ))}
             </div>
 
-            {/* Stats — compactos em mobile, expandidos em desktop */}
-            <div className="animate-fade-up delay-500 grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center lg:justify-start gap-4 lg:gap-5 mt-5 lg:mt-7 pt-5 lg:pt-7 border-t border-white/10">
-              {[
-                { valor: "50",             label: "vagas Fundador",         small: false },
-                { valor: "R$ 599",         label: "/ano · acesso total",    small: false },
-                { valor: "7",              label: "cidades · Sul SC",       small: false },
-                { valor: "Em construção",  label: "junte-se aos primeiros", small: true  },
-              ].map((s) => (
-                <div key={s.label} className="flex items-baseline gap-1">
-                  <span className={`font-display text-accent ${s.small ? "text-base lg:text-lg" : "text-lg lg:text-2xl"}`}>{s.valor}</span>
-                  <span className="text-white/45 text-[11px] lg:text-xs">{s.label}</span>
-                </div>
-              ))}
+            {/* Stats */}
+            <div className="animate-fade-up delay-500 grid grid-cols-3 gap-4 lg:gap-6 mt-5 lg:mt-7 pt-5 lg:pt-7 border-t border-white/10">
+              <div>
+                <p className="text-white/45 text-[10px] lg:text-[11px] font-medium uppercase tracking-wide mb-1">Disponível em</p>
+                <p className="font-display text-accent text-base lg:text-xl leading-tight">Içara e Criciúma</p>
+                <p className="text-white/40 text-[10px] mt-0.5">SC</p>
+              </div>
+              <div>
+                <p className="text-white/45 text-[10px] lg:text-[11px] font-medium uppercase tracking-wide mb-1">Nosso compromisso</p>
+                <p className="font-display text-accent text-base lg:text-xl leading-tight">Fortalecer os negócios locais</p>
+              </div>
+              <div>
+                <p className="text-white/45 text-[10px] lg:text-[11px] font-medium uppercase tracking-wide mb-1">Crescimento</p>
+                <p className="font-display text-accent text-base lg:text-xl leading-tight">Expandindo para novas cidades</p>
+              </div>
             </div>
           </div>
 

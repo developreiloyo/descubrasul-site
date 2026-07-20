@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { formatarPreco, mediaUrl } from '@/lib/utils';
 
@@ -140,7 +141,10 @@ export default function ProdutosPage() {
             {plano.limite_produtos !== null && ` de ${plano.limite_produtos}`} produto(s) ativo(s)
             {!plano.pode_adicionar && (
               <span className="ml-2 font-semibold text-secondary">
-                Limite atingido — faça upgrade para adicionar mais
+                Limite atingido —{' '}
+                <Link href="/planos" className="underline hover:opacity-80">
+                  faça upgrade para adicionar mais
+                </Link>
               </span>
             )}
           </p>

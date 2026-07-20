@@ -175,6 +175,14 @@ export default function PlanosPage() {
           ))}
         </div>
 
+        {/* Nota para clientes existentes */}
+        <p className="mt-4 text-center text-sm text-ink/50">
+          Já tem uma conta e quer fazer upgrade?{' '}
+          <a href="mailto:contato@descubrasul.com" className="underline hover:text-ink/80">
+            contato@descubrasul.com
+          </a>
+        </p>
+
         {/* Plano Fundador */}
         <div className="mt-8 bg-primary hero-grid rounded-3xl p-8 lg:p-10 relative overflow-hidden">
           <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-accent/10 blur-2xl" />

@@ -34,7 +34,7 @@ export function HeroSearch() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Produto, loja ou serviço..."
+          placeholder="Ex.: eletricista, restaurante, dentista..."
           className="w-full text-sm outline-none placeholder:text-sec bg-transparent text-ink"
         />
       </label>

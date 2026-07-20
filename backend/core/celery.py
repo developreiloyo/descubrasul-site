@@ -24,4 +24,9 @@ app.conf.beat_schedule = {
         "task": "analytics.tasks.purgar_cliques_antigos",
         "schedule": crontab(hour=3, minute=0, day_of_week=0),
     },
+    # Rebaixa para gratuito assinaturas canceladas/pausadas há mais de 7 dias
+    "verificar-assinaturas-vencidas": {
+        "task": "planos.tasks.verificar_assinaturas_vencidas",
+        "schedule": crontab(hour=1, minute=0),
+    },
 }

@@ -108,10 +108,10 @@ export default function MetricasPage() {
             </div>
           </div>
           <Link
-            href="/painel/planos"
+            href="/planos"
             className="mt-6 inline-block rounded-full bg-secondary px-8 py-3 font-bold text-white hover:opacity-90"
           >
-            Fazer upgrade para o Pro →
+            Ver planos e fazer upgrade →
           </Link>
           <p className="mt-3 text-sm text-ink/40">
             Plano atual: {dados?.plano_display}
