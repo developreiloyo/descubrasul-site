@@ -1,6 +1,6 @@
 "use client";
 
-import { Share2, MapPin, Star, MessageCircle, Phone } from "lucide-react";
+import { Share2, MapPin, MessageCircle, Phone } from "lucide-react";
 import { CategoriaIcon } from "@/lib/categoria-icons";
 import { linkWhatsApp } from "@/lib/utils";
 import { registrarClique } from "@/hooks/useTracking";
@@ -59,26 +59,6 @@ export function StickyActionBar({ negocio }: Props) {
               {cidade}, SC
             </span>
           </div>
-          {negocio.total_avaliacoes > 0 && (
-            <>
-              <div
-                className="w-px h-8"
-                style={{ backgroundColor: "#becabc" }}
-              />
-              <div className="flex flex-col">
-                <span className="text-xs" style={{ color: "#6f7a6e" }}>
-                  Avaliação
-                </span>
-                <span
-                  className="font-bold flex items-center gap-1"
-                  style={{ color: "#0b1c30" }}
-                >
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  {negocio.media_nota} ({negocio.total_avaliacoes})
-                </span>
-              </div>
-            </>
-          )}
         </div>
 
         {/* Action buttons */}

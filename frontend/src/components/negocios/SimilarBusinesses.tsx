@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
 import { CategoriaIcon } from "@/lib/categoria-icons";
 import { mediaUrl } from "@/lib/utils";
 import type { Negocio } from "@/types";
@@ -67,15 +66,6 @@ export function SimilarBusinesses({ negocios }: Props) {
                 <span className="text-xs" style={{ color: "#6f7a6e" }}>
                   {n.categoria?.nome}
                 </span>
-                {Number(n.media_nota) > 0 && (
-                  <span
-                    className="mt-1 inline-flex items-center gap-1 text-xs font-medium"
-                    style={{ color: "#0b1c30" }}
-                  >
-                    <Star className="size-3.5 fill-amber-400 text-amber-400" />
-                    {n.media_nota}
-                  </span>
-                )}
               </div>
             </Link>
           ))}

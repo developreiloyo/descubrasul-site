@@ -25,6 +25,10 @@ export function QuickActionsBar({ negocio }: Props) {
     }
   }
 
+  const btnClass = "rounded-xl h-16 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all";
+  const shadow = { boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)" };
+  const labelStyle = { color: "#6f7a6e" };
+
   return (
     <div
       className="px-4 -mt-6 relative z-10 grid gap-3 mb-6"
@@ -35,20 +39,22 @@ export function QuickActionsBar({ negocio }: Props) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => registrarClique(negocio.slug, "maps")}
-        className="bg-white rounded-xl h-14 flex items-center justify-center active:scale-95 transition-all"
-        style={{ boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)" }}
+        className={`bg-white ${btnClass}`}
+        style={shadow}
         aria-label="Como chegar"
       >
-        <MapPin className="w-6 h-6" style={{ color: "#00602a" }} />
+        <MapPin className="w-5 h-5" style={{ color: "#00602a" }} />
+        <span className="text-[10px] font-semibold" style={labelStyle}>Mapa</span>
       </a>
 
       <a
         href={`tel:${(negocio.whatsapp ?? "").replace(/\D/g, "")}`}
-        className="bg-white rounded-xl h-14 flex items-center justify-center active:scale-95 transition-all"
-        style={{ boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)" }}
+        className={`bg-white ${btnClass}`}
+        style={shadow}
         aria-label="Ligar"
       >
-        <Phone className="w-6 h-6" style={{ color: "#00602a" }} />
+        <Phone className="w-5 h-5" style={{ color: "#00602a" }} />
+        <span className="text-[10px] font-semibold" style={labelStyle}>Ligar</span>
       </a>
 
       <button
@@ -56,11 +62,12 @@ export function QuickActionsBar({ negocio }: Props) {
           handleShare();
           registrarClique(negocio.slug, "share");
         }}
-        className="bg-white rounded-xl h-14 flex items-center justify-center active:scale-95 transition-all"
-        style={{ boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)" }}
+        className={`bg-white ${btnClass}`}
+        style={shadow}
         aria-label="Compartilhar"
       >
-        <Share2 className="w-6 h-6" style={{ color: "#00602a" }} />
+        <Share2 className="w-5 h-5" style={{ color: "#00602a" }} />
+        <span className="text-[10px] font-semibold" style={labelStyle}>Compartilhar</span>
       </button>
 
       <a
@@ -68,14 +75,12 @@ export function QuickActionsBar({ negocio }: Props) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => registrarClique(negocio.slug, "whatsapp")}
-        className="rounded-xl h-14 flex items-center justify-center active:scale-95 transition-all text-white"
-        style={{
-          backgroundColor: "#25D366",
-          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
-        }}
+        className={`${btnClass} text-white`}
+        style={{ backgroundColor: "#25D366", ...shadow }}
         aria-label="WhatsApp"
       >
-        <MessageCircle className="w-6 h-6 fill-white" />
+        <MessageCircle className="w-5 h-5 fill-white" />
+        <span className="text-[10px] font-semibold text-white/90">WhatsApp</span>
       </a>
     </div>
   );

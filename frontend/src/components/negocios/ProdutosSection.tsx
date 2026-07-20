@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, MessageCircle, ArrowRight } from "lucide-react";
 import { formatarPreco, mediaUrl } from "@/lib/utils";
 import { CategoriaIcon } from "@/lib/categoria-icons";
 import type { Negocio, Produto } from "@/types";
@@ -157,10 +157,13 @@ function CardDestaque({
   return (
     <article
       onClick={onClick}
-      className="group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm hover:shadow-lg transition-all cursor-pointer"
-      style={{ borderColor: "#becabc" }}
+      className="group flex flex-col overflow-hidden rounded-2xl bg-white cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+      style={{
+        border: "1px solid #becabc",
+        boxShadow: "0 2px 8px rgba(11,28,48,0.06), 0 1px 3px rgba(11,28,48,0.04)",
+      }}
     >
-      {/* Imagem: 16/9 em mobile, 4/3 em desktop */}
+      {/* Imagem */}
       <div
         className="relative w-full aspect-[16/9] md:aspect-[4/3] overflow-hidden flex-shrink-0"
         style={{ backgroundColor: "#e5eeff" }}
@@ -171,7 +174,7 @@ function CardDestaque({
             alt={produto.alt_foto || produto.nome}
             fill
             sizes="(max-width: 768px) 100vw, 60vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             priority
           />
         ) : (
@@ -180,43 +183,46 @@ function CardDestaque({
           </div>
         )}
 
-        {/* Badge Destaque */}
+        {/* Badge Destaque — amber/gold */}
         <span
-          className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold text-white"
-          style={{ backgroundColor: "#00602a" }}
+          className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1"
+          style={{ backgroundColor: "rgba(245,158,11,0.92)", color: "#fff", backdropFilter: "blur(4px)" }}
         >
           ★ Destaque
         </span>
+
+        {/* Preço sobreposto no canto (se tiver) */}
+        {produto.preco && (
+          <span
+            className="absolute bottom-3 right-3 px-3 py-1.5 rounded-xl text-sm font-extrabold"
+            style={{ backgroundColor: "rgba(26,122,60,0.92)", color: "#fff", backdropFilter: "blur(4px)" }}
+          >
+            {formatarPreco(produto.preco)}
+          </span>
+        )}
       </div>
 
       {/* Conteúdo */}
-      <div className="flex flex-col flex-1 p-5 md:p-6">
-        <h3 className="text-lg md:text-xl font-bold leading-snug" style={{ color: "#0b1c30" }}>
+      <div className="flex flex-col flex-1 p-4 md:p-5 gap-3">
+        <h3 className="text-base md:text-lg font-bold leading-snug" style={{ color: "#0b1c30" }}>
           {produto.nome}
         </h3>
 
         {produto.descricao && (
           <p
-            className="mt-2 text-sm leading-relaxed line-clamp-2 md:line-clamp-4 flex-1"
-            style={{ color: "#3f493f" }}
+            className="text-sm leading-relaxed line-clamp-2 md:line-clamp-3 flex-1"
+            style={{ color: "#6f7a6e" }}
           >
             {produto.descricao}
           </p>
         )}
 
-        <div className="mt-auto pt-4 flex items-center justify-between gap-3">
-          {produto.preco && (
-            <span className="text-lg md:text-xl font-extrabold" style={{ color: "#1a7a3c" }}>
-              {formatarPreco(produto.preco)}
-            </span>
-          )}
-          <button
-            className="flex-1 max-w-[180px] py-2.5 px-4 rounded-xl text-sm font-semibold text-white transition-colors"
-            style={{ backgroundColor: "#2b3fd4" }}
-          >
-            Ver detalhes
-          </button>
-        </div>
+        <button
+          className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90"
+          style={{ backgroundColor: "#2b3fd4" }}
+        >
+          Ver detalhes
+        </button>
       </div>
     </article>
   );
@@ -239,8 +245,11 @@ function CardPequeno({
   return (
     <article
       onClick={onClick}
-      className="group flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all cursor-pointer"
-      style={{ borderColor: "#becabc" }}
+      className="group flex flex-col overflow-hidden rounded-xl bg-white cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
+      style={{
+        border: "1px solid #becabc",
+        boxShadow: "0 1px 4px rgba(11,28,48,0.05)",
+      }}
     >
       {/* Imagem quadrada */}
       <div
@@ -253,38 +262,38 @@ function CardPequeno({
             alt={produto.alt_foto || produto.nome}
             fill
             sizes="(max-width: 768px) 50vw, 20vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            className="object-cover transition-transform duration-400 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center" style={{ color: "#6f7a6e" }}>
             <CategoriaIcon icone={negocio.categoria?.icone ?? ""} size={36} />
           </div>
         )}
+
+        {produto.preco && (
+          <span
+            className="absolute bottom-2 right-2 px-2 py-0.5 rounded-lg text-[10px] font-bold"
+            style={{ backgroundColor: "rgba(26,122,60,0.88)", color: "#fff" }}
+          >
+            {formatarPreco(produto.preco)}
+          </span>
+        )}
       </div>
 
       {/* Conteúdo */}
-      <div className="flex flex-col flex-1 p-3">
+      <div className="flex flex-col flex-1 p-3 gap-1.5">
         <h3
           className="text-xs md:text-sm font-semibold leading-snug line-clamp-2 flex-1"
           style={{ color: "#0b1c30" }}
         >
           {produto.nome}
         </h3>
-        <div className="mt-2 flex items-center justify-between gap-1">
-          {produto.preco ? (
-            <span className="text-xs font-bold" style={{ color: "#1a7a3c" }}>
-              {formatarPreco(produto.preco)}
-            </span>
-          ) : (
-            <span />
-          )}
-          <span
-            className="text-[10px] font-semibold px-2 py-1 rounded-md"
-            style={{ backgroundColor: "#eff4ff", color: "#2b3fd4" }}
-          >
-            Ver
-          </span>
-        </div>
+        <span
+          className="text-[10px] font-semibold self-start px-2 py-0.5 rounded-md"
+          style={{ backgroundColor: "#eff4ff", color: "#2b3fd4" }}
+        >
+          Ver →
+        </span>
       </div>
     </article>
   );
@@ -313,19 +322,25 @@ export function ProdutosSection({ negocio, produtos }: Props) {
     <>
       <section id="produtos-destaque" className="flex flex-col gap-6">
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold" style={{ color: "#0b1c30" }}>
-            {titulo} em destaque
-          </h2>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold" style={{ color: "#0b1c30" }}>
+              {titulo} em destaque
+            </h2>
+            <p className="text-sm mt-1" style={{ color: "#6f7a6e" }}>
+              {produtos.length} {produtos.length === 1 ? "item" : "itens"} disponíveis
+            </p>
+          </div>
           {negocio.whatsapp && (
             <a
               href={`https://wa.me/${negocio.whatsapp.replace(/\D/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-bold hover:underline"
+              className="flex items-center gap-1 text-sm font-bold hover:underline shrink-0"
               style={{ color: "#00602a" }}
             >
               {linkLabel}
+              <ArrowRight className="w-4 h-4" />
             </a>
           )}
         </div>

@@ -169,7 +169,7 @@ export function EspacoEspecial({ negocio }: Props) {
   return (
     <section
       aria-label="Destaque especial"
-      className="overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-teal-700 p-6 shadow-md"
+      className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a7a3c] to-[#0a4e2c] p-6 shadow-md"
     >
       {conteudo}
     </section>

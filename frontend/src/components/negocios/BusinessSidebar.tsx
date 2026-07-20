@@ -1,7 +1,23 @@
-import { Clock, MapPin, Phone, Globe, ShieldCheck, ExternalLink } from "lucide-react";
+import { Clock, MapPin, Phone, Globe, ShieldCheck, ExternalLink, Calendar } from "lucide-react";
 import type { Negocio } from "@/types";
 import { isAberto, linkWhatsApp } from "@/lib/utils";
 import { SocialIcon } from "@/components/ui/SocialIcon";
+
+const ORDEM_DIAS = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
+const LABELS_DIAS: Record<string, string> = {
+  seg: "Seg", ter: "Ter", qua: "Qua", qui: "Qui",
+  sex: "Sex", sab: "Sáb", dom: "Dom",
+};
+
+function formatarDias(dias: string[]): string {
+  if (!dias?.length) return "";
+  if (dias.length === 7) return "Todos os dias";
+  const tem = new Set(dias);
+  if (dias.length === 5 && !tem.has("sab") && !tem.has("dom")) return "Seg – Sex";
+  if (dias.length === 6 && !tem.has("dom")) return "Seg – Sáb";
+  const sorted = ORDEM_DIAS.filter((d) => tem.has(d));
+  return sorted.map((d) => LABELS_DIAS[d]).join(", ");
+}
 
 function mapaEmbed(negocio: Negocio): string {
   if (negocio.localizacao?.lat) {
@@ -26,8 +42,11 @@ function mapaUrl(negocio: Negocio): string {
   )}`;
 }
 
-const cardClass = "bg-white rounded-xl border p-6 shadow-sm space-y-4";
-const cardStyle = { borderColor: "#becabc" };
+const cardClass = "bg-white rounded-2xl border p-5 space-y-4";
+const cardStyle = {
+  borderColor: "#becabc",
+  boxShadow: "0 1px 4px rgba(11,28,48,0.05), 0 1px 2px rgba(11,28,48,0.03)",
+};
 const headingStyle = { color: "#0b1c30" };
 const mutedStyle = { color: "#6f7a6e" };
 
@@ -53,48 +72,42 @@ export function BusinessSidebar({ negocio }: Props) {
       {abreAs && fechaAs && (
         <div className={cardClass} style={cardStyle}>
           <h3
-            className="text-lg font-semibold flex items-center gap-2"
-            style={headingStyle}
+            className="text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+            style={{ color: "#6f7a6e" }}
           >
-            <Clock className="w-5 h-5" style={{ color: "#1a7a3c" }} />
+            <Clock className="w-4 h-4" style={{ color: "#1a7a3c" }} />
             Horários
           </h3>
           <div className="space-y-3">
             <div
               className="flex justify-between items-center p-3 rounded-lg border"
               style={{
-                backgroundColor: aberto
-                  ? "rgba(26,122,60,0.06)"
-                  : "#f3f4f6",
-                borderColor: aberto
-                  ? "rgba(0,96,42,0.2)"
-                  : "#e5e7eb",
+                backgroundColor: aberto ? "rgba(26,122,60,0.06)" : "#f3f4f6",
+                borderColor: aberto ? "rgba(0,96,42,0.2)" : "#e5e7eb",
               }}
             >
-              <span
-                className="font-bold"
-                style={{ color: aberto ? "#00602a" : "#6f7a6e" }}
-              >
+              <span className="font-bold" style={{ color: aberto ? "#00602a" : "#6f7a6e" }}>
                 Hoje
               </span>
-              <span
-                className="font-bold"
-                style={{ color: aberto ? "#00602a" : "#6f7a6e" }}
-              >
-                {aberto
-                  ? `ABERTO · Fecha às ${fechaAs}`
-                  : `Abre às ${abreAs}`}
+              <span className="font-bold" style={{ color: aberto ? "#00602a" : "#6f7a6e" }}>
+                {aberto ? `ABERTO · Fecha às ${fechaAs}` : `Abre às ${abreAs}`}
               </span>
             </div>
-            <div
-              className="flex justify-between text-sm px-3"
-              style={mutedStyle}
-            >
+            <div className="flex justify-between text-sm px-3" style={mutedStyle}>
               <span>Horário</span>
-              <span>
-                {abreAs} – {fechaAs}
-              </span>
+              <span>{abreAs} – {fechaAs}</span>
             </div>
+            {negocio.dias_funcionamento?.length > 0 && (
+              <div className="flex justify-between items-center text-sm px-3" style={mutedStyle}>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" />
+                  Dias
+                </span>
+                <span className="font-medium text-right" style={{ color: "#3f493f" }}>
+                  {formatarDias(negocio.dias_funcionamento)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -103,10 +116,10 @@ export function BusinessSidebar({ negocio }: Props) {
       {(negocio.whatsapp || negocio.website) && (
         <div className={cardClass} style={cardStyle}>
           <h3
-            className="text-lg font-semibold flex items-center gap-2"
-            style={headingStyle}
+            className="text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+            style={{ color: "#6f7a6e" }}
           >
-            <Phone className="w-5 h-5" style={{ color: "#1a7a3c" }} />
+            <Phone className="w-4 h-4" style={{ color: "#1a7a3c" }} />
             Contato
           </h3>
           <div className="space-y-4">
@@ -168,8 +181,8 @@ export function BusinessSidebar({ negocio }: Props) {
       {/* Redes sociais */}
       {negocio.redes_sociais && Object.values(negocio.redes_sociais).some(Boolean) && (
         <div className={cardClass} style={cardStyle}>
-          <h3 className="text-lg font-semibold flex items-center gap-2" style={headingStyle}>
-            <Globe className="w-5 h-5" style={{ color: "#1a7a3c" }} />
+          <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: "#6f7a6e" }}>
+            <Globe className="w-4 h-4" style={{ color: "#1a7a3c" }} />
             Redes sociais
           </h3>
           <div className="flex flex-wrap gap-3">
@@ -221,15 +234,17 @@ export function BusinessSidebar({ negocio }: Props) {
       {negocio.localizacao && (
         <div className={cardClass} style={cardStyle}>
           <h3
-            className="text-lg font-semibold flex items-center gap-2"
-            style={headingStyle}
+            className="text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+            style={{ color: "#6f7a6e" }}
           >
-            <MapPin className="w-5 h-5" style={{ color: "#1a7a3c" }} />
+            <MapPin className="w-4 h-4" style={{ color: "#1a7a3c" }} />
             Endereço
           </h3>
           {negocio.localizacao.direccao_fmt && (
             <p className="text-sm" style={mutedStyle}>
-              {negocio.localizacao.direccao_fmt} — {cidade}, SC
+              {negocio.localizacao.direccao_fmt}
+              {negocio.localizacao.bairro && `, ${negocio.localizacao.bairro}`}
+              {" "}— {cidade}, SC
             </p>
           )}
           <div
@@ -264,30 +279,28 @@ export function BusinessSidebar({ negocio }: Props) {
 
       {/* Trust card */}
       <div
-        className="rounded-xl border p-6 flex items-center gap-4"
+        className="rounded-2xl border p-4 flex items-center gap-4"
         style={{
-          backgroundColor: "#eff4ff",
-          borderColor: "rgba(0,96,42,0.15)",
+          background: "linear-gradient(135deg, #f0fdf4 0%, #eff4ff 100%)",
+          borderColor: "rgba(26,122,60,0.2)",
+          boxShadow: "0 1px 4px rgba(11,28,48,0.04)",
         }}
       >
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center text-white flex-shrink-0"
-          style={{ backgroundColor: "#00602a" }}
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, #1a7a3c 0%, #00602a 100%)" }}
         >
-          <ShieldCheck className="w-6 h-6" />
+          <ShieldCheck className="w-5 h-5" />
         </div>
         <div>
-          <p
-            className="text-xs font-bold uppercase tracking-wide"
-            style={{ color: "#00602a" }}
-          >
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#00602a" }}>
             Membro Certificado
           </p>
-          <p className="text-sm font-medium" style={{ color: "#0b1c30" }}>
+          <p className="text-sm font-semibold mt-0.5" style={{ color: "#0b1c30" }}>
             Perfil verificado DescubraSul
           </p>
-          <p className="text-xs mt-1" style={mutedStyle}>
-            Identidade e localização verificadas
+          <p className="text-xs mt-0.5" style={mutedStyle}>
+            Identidade e localização confirmadas
           </p>
         </div>
       </div>
