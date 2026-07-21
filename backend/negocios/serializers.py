@@ -77,7 +77,7 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
             "categoria", "categoria_tipo", "cidade", "bairro",
             "whatsapp", "website", "verificado", "plano",
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
-            "media_nota", "total_avaliacoes", "atualizado_em",
+            "atualizado_em",
             "seo_title", "seo_description", "og_image", "palavras_chave",
             "redes_sociais", "localizacao", "videos", "espaco_especial",
         ]
@@ -110,11 +110,11 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
             "plano", "status", "verificado",
             "seo_title", "seo_description", "og_image", "palavras_chave",
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
-            "media_nota", "total_avaliacoes", "criado_em", "atualizado_em",
+            "criado_em", "atualizado_em",
             "localizacao", "redes_sociais", "espaco_especial",
         ]
         read_only_fields = ["slug", "plano", "status", "verificado", "bairro",
-                            "media_nota", "total_avaliacoes", "criado_em", "atualizado_em"]
+                            "criado_em", "atualizado_em"]
 
     def validate_descricao(self, value):
         validar_texto_seo_completo(value, campo="descricao do negocio")

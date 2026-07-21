@@ -1,12 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Store, Package, BarChart3, LayoutDashboard } from 'lucide-react';
+import { Store, Package, BarChart3, LayoutDashboard, Tag } from 'lucide-react';
 
 const ITEMS = [
   { href: '/painel', label: 'Painel', icon: LayoutDashboard },
   { href: '/painel/meu-negocio', label: 'Negócio', icon: Store },
   { href: '/painel/produtos', label: 'Produtos', icon: Package },
+  { href: '/painel/ofertas', label: 'Ofertas', icon: Tag },
   { href: '/painel/metricas', label: 'Analytics', icon: BarChart3 },
 ];
 

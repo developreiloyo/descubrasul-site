@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Search, BadgeCheck, Star, SlidersHorizontal } from "lucide-react";
+import { MapPin, Search, BadgeCheck, SlidersHorizontal } from "lucide-react";
 import { CategoriaIcon } from "@/lib/categoria-icons";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -77,14 +77,7 @@ function NegocioCard({ negocio }: { negocio: Negocio }) {
             <p className="text-sm text-ink/60 mt-2 line-clamp-2 leading-snug">{negocio.descricao}</p>
           )}
         </div>
-        <div className="flex items-center justify-between mt-3">
-          {negocio.total_avaliacoes > 0 ? (
-            <span className="flex items-center gap-1 text-xs">
-              <Star className="size-3.5 text-accent fill-accent" />
-              <span className="font-semibold text-ink">{negocio.media_nota}</span>
-              <span className="text-sec">({negocio.total_avaliacoes})</span>
-            </span>
-          ) : <span />}
+        <div className="flex items-center justify-end mt-3">
           <span className="text-xs font-semibold text-primary hover:text-accent transition-colors">
             Ver negócio →
           </span>

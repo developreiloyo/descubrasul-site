@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MapPin, BadgeCheck, Star } from "lucide-react";
+import { MapPin, BadgeCheck } from "lucide-react";
 import { CategoriaIcon } from "@/lib/categoria-icons";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
@@ -55,12 +55,6 @@ function NegocioCard({ negocio }: { negocio: Negocio }) {
         <p className="text-xs text-sec mt-0.5">{negocio.categoria?.nome}</p>
         <div className="flex items-center justify-between mt-3 text-xs text-sec">
           <span className="flex items-center gap-1"><MapPin className="size-3.5" />{negocio.cidade}</span>
-          {negocio.total_avaliacoes > 0 && (
-            <span className="flex items-center gap-1 font-semibold text-ink">
-              <Star className="size-3.5 text-accent fill-accent" />
-              {negocio.media_nota}
-            </span>
-          )}
         </div>
       </div>
     </Link>

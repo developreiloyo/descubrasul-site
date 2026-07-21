@@ -64,6 +64,57 @@ def criar_subscricao_mp(negocio, plano_slug, back_url):
         raise
 
 
+def criar_preferencia_oferta(negocio, oferta_id, back_url):
+    """
+    Creates a MercadoPago one-time payment preference for R$20 Oferta da Semana.
+    Returns the full MP response dict. Raises requests.RequestException on failure.
+    """
+    payload = {
+        "items": [{
+            "title":      "Oferta da Semana — DescubraSul",
+            "quantity":   1,
+            "unit_price": 20.00,
+            "currency_id": "BRL",
+        }],
+        "back_urls": {
+            "success": f"{back_url}?oferta_status=success&oferta_id={oferta_id}",
+            "failure": f"{back_url}?oferta_status=failure&oferta_id={oferta_id}",
+            "pending": f"{back_url}?oferta_status=pending&oferta_id={oferta_id}",
+        },
+        "auto_return":        "approved",
+        "external_reference": f"oferta-{oferta_id}",
+        "payer": {"email": negocio.usuario.email},
+    }
+    idempotency_key = f"oferta-{oferta_id}"
+    try:
+        resp = requests.post(
+            f"{MP_API_BASE}/checkout/preferences",
+            json=payload,
+            headers=_mp_headers(idempotency_key),
+            timeout=10,
+        )
+        resp.raise_for_status()
+        return resp.json()
+    except requests.RequestException as exc:
+        logger.error("MP create preference failed oferta=%s: %s", oferta_id, exc)
+        raise
+
+
+def buscar_pagamento_mp(payment_id):
+    """Fetch a single payment from MP. Returns dict or None on failure."""
+    try:
+        resp = requests.get(
+            f"{MP_API_BASE}/v1/payments/{payment_id}",
+            headers=_mp_headers(),
+            timeout=10,
+        )
+        resp.raise_for_status()
+        return resp.json()
+    except requests.RequestException as exc:
+        logger.error("MP get payment failed id=%s: %s", payment_id, exc)
+        return None
+
+
 def buscar_subscricao_mp(mp_subscription_id):
     """Fetch current subscription state from MP. Returns dict or None on failure."""
     try:

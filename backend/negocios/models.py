@@ -84,9 +84,6 @@ class Negocio(models.Model):
     horario_fechamento = models.TimeField(null=True, blank=True)
     dias_funcionamento = models.JSONField(default=list, blank=True)
 
-    media_nota       = models.DecimalField(max_digits=3, decimal_places=2, default=0)
-    total_avaliacoes = models.IntegerField(default=0)
-
     class Meta:
         verbose_name        = "Negócio"
         verbose_name_plural = "Negócios"

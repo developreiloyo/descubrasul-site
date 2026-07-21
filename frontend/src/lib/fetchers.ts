@@ -1,4 +1,4 @@
-import type { Negocio, Produto, Categoria } from "@/types";
+import type { Negocio, Produto, Categoria, Oferta } from "@/types";
 
 const API = process.env.API_URL_INTERNAL || "http://backend:8000/api";
 const REVALIDATE = process.env.NODE_ENV === "production" ? 300 : 0;
@@ -44,7 +44,7 @@ export async function getCategorias(): Promise<Categoria[]> {
 export async function getNegociosDestaque(limit = 8): Promise<Negocio[]> {
   try {
     const res = await fetch(
-      `${API}/negocios/?destaque=true&ordering=plan_order`,
+      `${API}/negocios/?destaque=true`,
       { next: { revalidate: REVALIDATE } }
     );
     if (!res.ok) return [];
@@ -59,6 +59,19 @@ export async function getNegociosDestaque(limit = 8): Promise<Negocio[]> {
 export async function getProdutosDestaque(limit = 10): Promise<Produto[]> {
   try {
     const res = await fetch(`${API}/negocios/produtos/destaque/?limit=${limit}`, {
+      next: { revalidate: REVALIDATE },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.results ?? []);
+  } catch {
+    return [];
+  }
+}
+
+export async function getOfertasAtivas(limit = 3): Promise<Oferta[]> {
+  try {
+    const res = await fetch(`${API}/ofertas/ativas/?limit=${limit}`, {
       next: { revalidate: REVALIDATE },
     });
     if (!res.ok) return [];

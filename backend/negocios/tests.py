@@ -5,7 +5,7 @@ Regra crítica: um comerciante NUNCA pode ler ou modificar dados de outro.
 Cada teste cria dois usuários (user_a, user_b) com negócios distintos e
 verifica que user_a não acessa recursos de user_b.
 """
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 from rest_framework import status
 
@@ -235,3 +235,121 @@ class StatusPlanoIsolamentoTests(TestCase):
         self.client.force_authenticate(user=self.user_a)
         response = self.client.get(self.url)
         self.assertNotEqual(response.data["plano"], "gratuito")
+
+
+@override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}})
+class ProdutosDestaqueTests(TestCase):
+    """GET /api/negocios/produtos/destaque/ — priorização e filtragem dos produtos em destaque."""
+
+    URL = "/api/negocios/produtos/destaque/"
+
+    def setUp(self):
+        self.client = APIClient()
+        _, self.neg_fundador = criar_usuario_com_negocio("f@dest.com",   plano="fundador")
+        _, self.neg_pro      = criar_usuario_com_negocio("pro@dest.com", plano="pro")
+        _, self.neg_basico   = criar_usuario_com_negocio("b@dest.com",   plano="basico")
+        _, self.neg_gratuito = criar_usuario_com_negocio("g@dest.com",   plano="gratuito")
+
+        self.prod_fundador = criar_produto(self.neg_fundador, "Produto Fundador")
+        self.prod_pro      = criar_produto(self.neg_pro,      "Produto Pro")
+        self.prod_basico   = criar_produto(self.neg_basico,   "Produto Basico")
+        self.prod_gratuito = criar_produto(self.neg_gratuito, "Produto Gratuito")
+
+    # ── Acesso público ────────────────────────────────────────────────────
+    def test_publico_sem_autenticacao(self):
+        response = self.client.get(self.URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    # ── Filtros de elegibilidade ──────────────────────────────────────────
+    def test_gratuito_excluido(self):
+        response = self.client.get(self.URL)
+        slugs_negocios = [p["negocio"]["slug"] for p in response.data]
+        self.assertNotIn(self.neg_gratuito.slug, slugs_negocios)
+
+    def test_planos_pagos_incluidos(self):
+        response = self.client.get(self.URL)
+        slugs_negocios = [p["negocio"]["slug"] for p in response.data]
+        self.assertIn(self.neg_fundador.slug, slugs_negocios)
+        self.assertIn(self.neg_pro.slug,      slugs_negocios)
+        self.assertIn(self.neg_basico.slug,   slugs_negocios)
+
+    def test_negocio_inativo_excluido(self):
+        _, neg_inativo = criar_usuario_com_negocio("i@dest.com", plano="pro")
+        neg_inativo.status = Negocio.Status.INATIVO
+        neg_inativo.save()
+        criar_produto(neg_inativo, "Produto Inativo")
+
+        response = self.client.get(self.URL)
+        slugs = [p["negocio"]["slug"] for p in response.data]
+        self.assertNotIn(neg_inativo.slug, slugs)
+
+    def test_negocio_sem_produto_disponivel_excluido(self):
+        _, neg_vazio = criar_usuario_com_negocio("v@dest.com", plano="pro")
+        Produto.objects.create(negocio=neg_vazio, nome="Indisponível", disponivel=False)
+
+        response = self.client.get(self.URL)
+        slugs = [p["negocio"]["slug"] for p in response.data]
+        self.assertNotIn(neg_vazio.slug, slugs)
+
+    # ── Um produto por negócio ────────────────────────────────────────────
+    def test_um_produto_por_negocio(self):
+        criar_produto(self.neg_fundador, "Produto Fundador 2")
+        criar_produto(self.neg_fundador, "Produto Fundador 3")
+
+        response = self.client.get(self.URL)
+        slugs_negocios = [p["negocio"]["slug"] for p in response.data]
+        self.assertEqual(
+            len(slugs_negocios), len(set(slugs_negocios)),
+            "Negócio duplicado — deveria retornar apenas um produto por negócio",
+        )
+
+    # ── Ordenação por plano ───────────────────────────────────────────────
+    def test_fundador_antes_de_basico(self):
+        response = self.client.get(self.URL)
+        slugs = [p["negocio"]["slug"] for p in response.data]
+        self.assertLess(
+            slugs.index(self.neg_fundador.slug),
+            slugs.index(self.neg_basico.slug),
+        )
+
+    def test_pro_antes_de_basico(self):
+        response = self.client.get(self.URL)
+        slugs = [p["negocio"]["slug"] for p in response.data]
+        self.assertLess(
+            slugs.index(self.neg_pro.slug),
+            slugs.index(self.neg_basico.slug),
+        )
+
+    # ── Priorização de foto dentro do negócio ────────────────────────────
+    def test_produto_com_foto_priorizado_sobre_sem_foto(self):
+        """O produto com foto deve ser retornado, mesmo que venha depois na ordenação por `ordem`."""
+        _, neg = criar_usuario_com_negocio("foto@dest.com", plano="basico")
+        prod_sem_foto = criar_produto(neg, "Sem Foto")   # ordem=0 por padrão → viria primeiro sem foto-priorização
+        prod_com_foto = Produto.objects.create(
+            negocio=neg, nome="Com Foto", disponivel=True,
+            foto="uploads/produto/test.jpg", ordem=99,
+        )
+
+        response = self.client.get(self.URL)
+        slugs_produtos = [p["slug"] for p in response.data]
+        self.assertIn(prod_com_foto.slug, slugs_produtos)
+        self.assertNotIn(prod_sem_foto.slug, slugs_produtos)
+
+    # ── Parâmetro limit ───────────────────────────────────────────────────
+    def test_limit_padrao_retorna_ate_dez(self):
+        for i in range(10):
+            _, neg = criar_usuario_com_negocio(f"lim{i}@dest.com", plano="basico")
+            criar_produto(neg)
+        response = self.client.get(self.URL)
+        self.assertLessEqual(len(response.data), 10)
+
+    def test_limit_personalizado(self):
+        response = self.client.get(self.URL + "?limit=2")
+        self.assertEqual(len(response.data), 2)
+
+    def test_limit_maximo_20(self):
+        for i in range(22):
+            _, neg = criar_usuario_com_negocio(f"m{i:03d}@d.com", plano="basico")
+            criar_produto(neg)
+        response = self.client.get(self.URL + "?limit=999")
+        self.assertLessEqual(len(response.data), 20)

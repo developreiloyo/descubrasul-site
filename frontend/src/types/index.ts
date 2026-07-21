@@ -1,3 +1,23 @@
+// ─── Oferta da Semana ────────────────────────────────────────────────
+export interface Oferta {
+  id: number;
+  titulo: string;
+  descricao: string;
+  desconto_pct: number | null;
+  preco_original: string | null;
+  preco_novo: string | null;
+  imagem: string | null;
+  expira_em: string;
+  dias_restantes: number;
+  negocio_slug: string;
+  negocio_nome: string;
+  negocio_logo: string | null;
+  negocio_cidade: string;
+  negocio_categoria: string;
+  negocio_cat_slug: string;
+  negocio_whatsapp: string;
+}
+
 // ─── Negócio ────────────────────────────────────────────────────────
 export interface Negocio {
   id: number;
@@ -19,8 +39,6 @@ export interface Negocio {
   seo_title: string;
   seo_description: string;
   og_image: string | null;
-  media_nota: string;
-  total_avaliacoes: number;
   horario_abertura: string | null;
   horario_fechamento: string | null;
   dias_funcionamento: string[];

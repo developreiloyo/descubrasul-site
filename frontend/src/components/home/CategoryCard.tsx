@@ -31,9 +31,9 @@ export function CategoryCard({ slug, nome, icone, numero, count }: CategoryCardP
       {/* Ícone da categoria */}
       <span
         aria-hidden="true"
-        className="leading-none select-none transition-transform duration-200 group-hover:scale-110 text-[#1a1a1a] group-hover:text-[#FAF6EF]"
+        className="flex justify-center leading-none select-none transition-transform duration-200 group-hover:scale-110 text-[#1a7a3c] group-hover:text-[#FAF6EF]"
       >
-        <CategoriaIcon icone={icone} size={28} />
+        <CategoriaIcon icone={icone} size={40} />
       </span>
 
       {/* Nome da categoria */}

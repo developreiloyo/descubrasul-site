@@ -74,8 +74,6 @@ class Command(BaseCommand):
                 "plano":     Negocio.Plano.PRO,
                 "status":    Negocio.Status.ATIVO,
                 "verificado": True,
-                "media_nota": 4.8,
-                "total_avaliacoes": 143,
                 "horario_abertura":   "11:00:00",
                 "horario_fechamento": "23:00:00",
                 "dias_funcionamento": ["seg", "ter", "qua", "qui", "sex", "sab"],

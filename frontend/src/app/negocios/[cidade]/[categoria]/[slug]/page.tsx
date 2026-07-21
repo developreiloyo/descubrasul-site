@@ -56,13 +56,6 @@ function schemaLocalBusiness(
         streetAddress: negocio.localizacao.direccao_fmt,
       }),
     },
-    ...(negocio.total_avaliacoes > 0 && {
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: negocio.media_nota,
-        reviewCount: negocio.total_avaliacoes,
-      },
-    }),
     sameAs: [
       negocio.redes_sociais?.instagram_url,
       negocio.redes_sociais?.facebook_url,

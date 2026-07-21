@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
-import { ArrowLeft, ArrowRight, BadgeCheck, MapPin, Star } from "lucide-react";
+import { ArrowLeft, ArrowRight, BadgeCheck, MapPin } from "lucide-react";
 import { CategoriaIcon } from "@/lib/categoria-icons";
 import { mediaUrl, isAberto } from "@/lib/utils";
 import type { Negocio } from "@/types";
@@ -156,13 +156,6 @@ export function NegociosDestaque({ negocios }: { negocios: Negocio[] }) {
 
                 <div className="flex items-center justify-between pt-1 border-t border-black/5">
                   <div className="flex items-center gap-2">
-                    {negocio.total_avaliacoes > 0 && (
-                      <span className="flex items-center gap-1 text-xs">
-                        <Star className="size-3.5 fill-accent text-accent" />
-                        <span className="font-semibold text-ink">{negocio.media_nota}</span>
-                        <span className="text-sec">({negocio.total_avaliacoes})</span>
-                      </span>
-                    )}
                     {temHorario && (
                       aberto ? (
                         <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">

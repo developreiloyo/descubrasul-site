@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, BadgeCheck, Star, ArrowRight } from "lucide-react";
+import { MapPin, BadgeCheck, ArrowRight } from "lucide-react";
 import { CategoriaIcon } from "@/lib/categoria-icons";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -70,13 +70,6 @@ function NegocioCard({ negocio }: { negocio: Negocio }) {
         <div className="flex items-center gap-1 mt-1 text-xs text-sec">
           <MapPin className="size-3.5" />{negocio.cidade}
         </div>
-        {negocio.total_avaliacoes > 0 && (
-          <div className="flex items-center gap-1 mt-3 text-xs">
-            <Star className="size-3.5 text-accent fill-accent" />
-            <span className="font-semibold text-ink">{negocio.media_nota}</span>
-            <span className="text-sec">({negocio.total_avaliacoes})</span>
-          </div>
-        )}
         <span className="mt-3 block text-center text-sm font-semibold text-primary border border-primary/25 rounded-full py-2 hover:bg-primary hover:text-white transition-colors">
           Ver negócio
         </span>

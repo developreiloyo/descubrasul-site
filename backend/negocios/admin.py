@@ -39,4 +39,4 @@ class NegocioAdmin(admin.ModelAdmin):
     list_filter     = ["status", "plano", "verificado", "cidade"]
     search_fields   = ["nome", "cidade", "usuario__email"]
     inlines         = [RedesSociaisInline, LocalizacaoInline, ProdutoInline]
-    readonly_fields = ["criado_em", "atualizado_em", "media_nota", "total_avaliacoes"]
+    readonly_fields = ["criado_em", "atualizado_em"]

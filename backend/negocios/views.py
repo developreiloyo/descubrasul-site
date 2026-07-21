@@ -35,7 +35,7 @@ class NegocioListView(generics.ListAPIView):
     filter_backends    = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields   = ["verificado"]
     search_fields      = ["nome", "descricao", "palavras_chave"]
-    ordering_fields    = ["atualizado_em", "media_nota"]
+    ordering_fields    = ["atualizado_em"]
 
     def get_queryset(self):
         qs = Negocio.objects.filter(status=Negocio.Status.ATIVO).select_related(

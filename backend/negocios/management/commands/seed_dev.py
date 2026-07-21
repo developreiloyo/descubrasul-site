@@ -186,8 +186,6 @@ class Command(BaseCommand):
                     "plano":     plano,
                     "status":    Negocio.Status.ATIVO,
                     "verificado": plano in ("pro", "producao", "fundador"),
-                    "media_nota": round(random.uniform(4.3, 5.0), 1),
-                    "total_avaliacoes": random.randint(12, 280),
                     "horario_abertura":   "08:00:00",
                     "horario_fechamento": "18:00:00",
                     "dias_funcionamento": ["seg", "ter", "qua", "qui", "sex"],

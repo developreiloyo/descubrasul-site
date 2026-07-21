@@ -7,6 +7,7 @@ import { Bell, Settings } from 'lucide-react';
 const NAV_LINKS = [
   { href: '/painel/meu-negocio', label: 'Meu Negócio' },
   { href: '/painel/produtos', label: 'Produtos' },
+  { href: '/painel/ofertas', label: 'Ofertas' },
   { href: '/painel/metricas', label: 'Analytics' },
 ];
 

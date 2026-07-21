@@ -32,6 +32,7 @@ urlpatterns = [
     path("api/analytics/", include("analytics.urls")),
     path("api/ia/", include("ia.urls")),
     path("api/categorias/", include("categorias.urls")),
+    path("api/ofertas/",   include("ofertas.urls")),
 ]
 
 # Servir media em desenvolvimento

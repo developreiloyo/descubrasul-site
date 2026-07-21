@@ -8,14 +8,14 @@ import {
 } from "lucide-react";
 import { CategoryCard } from "@/components/home/CategoryCard";
 import { CityCard } from "@/components/home/CityCard";
-import { PromoCard } from "@/components/home/PromoCard";
+import { OfertaCard } from "@/components/home/OfertaCard";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { HeroSearch } from "@/components/home/HeroSearch";
 import { NegociosDestaque } from "@/components/home/NegociosDestaque";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
-import { getCategorias, getProdutosDestaque, getNegociosDestaque } from "@/lib/fetchers";
+import { getCategorias, getProdutosDestaque, getNegociosDestaque, getOfertasAtivas } from "@/lib/fetchers";
 import { mediaUrl, linkWhatsApp } from "@/lib/utils";
 import type { Produto } from "@/types";
 
@@ -71,41 +71,6 @@ const CAT_PILLS = [
 ];
 
 
-const MOCK_PROMOS = [
-  {
-    nome: "Cantina Nonna Rosa",
-    categoria: "Restaurante",
-    cidade: "Criciúma",
-    descricao: "Jantar para dois com entrada, prato principal e vinho da casa.",
-    precoOriginal: 180,
-    precoNovo: 126,
-    validade: "Válido até 30 de junho de 2026",
-    desconto: 30,
-    colorVariant: "verde" as const,
-  },
-  {
-    nome: "Sports Zone",
-    categoria: "Esporte",
-    cidade: "Içara",
-    descricao: "20% off em toda a linha de tênis de corrida da nova coleção 2026.",
-    precoOriginal: 350,
-    precoNovo: 280,
-    validade: "Válido até 15 de julho de 2026",
-    desconto: 20,
-    colorVariant: "azul" as const,
-  },
-  {
-    nome: "Studio Élite",
-    categoria: "Beleza",
-    cidade: "Criciúma",
-    descricao: "Pacote de tratamento capilar completo com hidratação e escova.",
-    precoOriginal: 220,
-    precoNovo: 187,
-    validade: "Válido até 20 de julho de 2026",
-    desconto: 15,
-    colorVariant: "dourado" as const,
-  },
-];
 
 const BENEFICIOS = [
   "Vitrine de produtos","WhatsApp integrado","Sem comissão",
@@ -169,10 +134,11 @@ function ProductCard({ produto }: { produto: Produto }) {
 
 /* ── PAGE ── */
 export default async function Home() {
-  const [categorias, produtosDestaque, negociosDestaque] = await Promise.all([
+  const [categorias, produtosDestaque, negociosDestaque, ofertasAtivas] = await Promise.all([
     getCategorias(),
     getProdutosDestaque(10),
     getNegociosDestaque(12),
+    getOfertasAtivas(3),
   ]);
 
   return (
@@ -433,13 +399,20 @@ export default async function Home() {
             </div>
           </ScrollReveal>
 
-          <div className="grid sm:grid-cols-3 gap-5">
-            {MOCK_PROMOS.map((p, i) => (
-              <ScrollReveal key={p.nome} delay={i * 80}>
-                <PromoCard {...p} />
-              </ScrollReveal>
-            ))}
-          </div>
+          {ofertasAtivas.length > 0 ? (
+            <div className="grid sm:grid-cols-3 gap-5">
+              {ofertasAtivas.map((o, i) => (
+                <ScrollReveal key={o.id} delay={i * 80}>
+                  <OfertaCard oferta={o} />
+                </ScrollReveal>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 text-[#6b6561]/60">
+              <p className="font-display text-xl mb-2">Nenhuma oferta ativa no momento.</p>
+              <p className="text-sm">Em breve, negócios locais publicarão suas melhores ofertas aqui.</p>
+            </div>
+          )}
 
         </div>
       </section>
