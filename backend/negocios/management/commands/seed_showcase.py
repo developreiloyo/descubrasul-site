@@ -18,6 +18,7 @@ SHOWCASE = [
     {
         "email":   "showcase_gratuito@descubrasul.dev",
         "plano":   "gratuito",
+        "google_place_id": "",
         "nome":    "Papelaria Arco-Íris",
         "descricao": "Material escolar, papelaria criativa e artigos de escritório. Os melhores preços de Criciúma para estudantes e profissionais.",
         "cidade":  "Criciúma",
@@ -40,6 +41,7 @@ SHOWCASE = [
     {
         "email":   "showcase_basico@descubrasul.dev",
         "plano":   "basico",
+        "google_place_id": "",
         "nome":    "Pizzaria Bella Vista",
         "descricao": "As melhores pizzas artesanais do sul catarinense, assadas em forno a lenha com ingredientes selecionados. Delivery e salão.",
         "cidade":  "Içara",
@@ -63,6 +65,7 @@ SHOWCASE = [
     {
         "email":   "showcase_pro@descubrasul.dev",
         "plano":   "pro",
+        "google_place_id": "showcase_pro_place_id",
         "nome":    "Studio Élite Beleza",
         "descricao": "Salão de beleza completo em Criciúma especializado em coloração, tratamentos capilares e estética avançada. Profissionais certificados e produtos premium.",
         "cidade":  "Criciúma",
@@ -97,6 +100,7 @@ SHOWCASE = [
     {
         "email":   "showcase_producao@descubrasul.dev",
         "plano":   "producao",
+        "google_place_id": "",
         "nome":    "Boutique Liz Fashion",
         "descricao": "Moda feminina contemporânea com peças exclusivas e atendimento personalizado. Coleções nacionais e importadas com curadoria especial para a mulher do Sul.",
         "cidade":  "Tubarão",
@@ -132,6 +136,7 @@ SHOWCASE = [
     {
         "email":   "showcase_fundador@descubrasul.dev",
         "plano":   "fundador",
+        "google_place_id": "showcase_fundador_place_id",
         "nome":    "Cantina Nonna Rosa",
         "descricao": "Culinária italiana artesanal desde 1998. Massas frescas feitas diariamente, molhos da nonna e ambiente acolhedor no coração de Criciúma.",
         "cidade":  "Criciúma",
@@ -257,8 +262,12 @@ class Command(BaseCommand):
                     "dias_funcionamento": s["dias"],
                     "espaco_especial":    s.get("espaco_especial"),
                     "palavras_chave":     s["nome"],
+                    "google_place_id":    s.get("google_place_id", ""),
                 },
             )
+            if not neg_criado and s.get("google_place_id"):
+                negocio.google_place_id = s["google_place_id"]
+                negocio.save(update_fields=["google_place_id"])
             negocio_por_email[s["email"]] = negocio
 
             if neg_criado:
@@ -329,6 +338,73 @@ class Command(BaseCommand):
             )
             oferta.ativar(mp_payment_id="showcase_demo")
             self.stdout.write(f"  ✓ '{o['titulo']}' — {negocio.nome} ({negocio.plano})")
+
+        # ── Mock reviews no Redis (showcase sem chave real de Places API) ──
+        from django.core.cache import cache
+
+        MOCK_REVIEWS: dict[str, dict] = {
+            "showcase_pro_place_id": {
+                "rating": 4.8,
+                "total": 127,
+                "url": "https://maps.google.com/",
+                "reviews": [
+                    {
+                        "autor": "Ana Paula S.",
+                        "foto": None,
+                        "nota": 5,
+                        "texto": "Atendimento impecável! Saí completamente transformada. A coloração ficou exatamente como eu queria, super natural. Já agendei o retorno!",
+                        "tempo": "há 2 dias",
+                    },
+                    {
+                        "autor": "Mariana C.",
+                        "foto": None,
+                        "nota": 5,
+                        "texto": "Melhor salão de Criciúma! A coloração ficou perfeita e o ambiente é muito aconchegante. Profissionais super atenciosos. Super recomendo!",
+                        "tempo": "há 1 semana",
+                    },
+                    {
+                        "autor": "Fernanda L.",
+                        "foto": None,
+                        "nota": 4,
+                        "texto": "Ótimo serviço, ambiente agradável e equipe qualificada. A hidratação deixou meu cabelo com muito mais brilho. Recomendo!",
+                        "tempo": "há 2 semanas",
+                    },
+                ],
+            },
+            "showcase_fundador_place_id": {
+                "rating": 4.9,
+                "total": 312,
+                "url": "https://maps.google.com/",
+                "reviews": [
+                    {
+                        "autor": "Roberto M.",
+                        "foto": None,
+                        "nota": 5,
+                        "texto": "A melhor massa fresca que já comi na vida! O fettuccine al tartufo é simplesmente incrível. Ambiente acolhedor que remete à Itália. Voltarei sempre!",
+                        "tempo": "há 3 dias",
+                    },
+                    {
+                        "autor": "Carla F.",
+                        "foto": None,
+                        "nota": 5,
+                        "texto": "Uma experiência gastronômica única! O ossobuco alla milanese derrete na boca. Serviço impecável e a história da família Bianchi é muito emocionante.",
+                        "tempo": "há 5 dias",
+                    },
+                    {
+                        "autor": "Paulo H.",
+                        "foto": None,
+                        "nota": 5,
+                        "texto": "Tradição e sabor incomparáveis. O tiramisù da Nonna Rosa é o melhor que já provei fora da Itália. Ambiente perfeito para jantares especiais.",
+                        "tempo": "há 1 semana",
+                    },
+                ],
+            },
+        }
+
+        ttl = 60 * 60 * 6  # 6h — alinhado com REVIEWS_CACHE_TTL em services.py
+        for place_id, data in MOCK_REVIEWS.items():
+            cache.set(f"google_reviews_{place_id}", data, ttl)
+        self.stdout.write(f"\n  ✓ Mock reviews injetados no Redis ({len(MOCK_REVIEWS)} perfis)\n")
 
         # ── Resumo ─────────────────────────────────────────────────────
         total_neg    = Negocio.objects.filter(usuario__email__in=emails).count()
