@@ -48,6 +48,23 @@ export interface Negocio {
   videos?: VideoDestaque[];
   espaco_especial?: EspacoEspecial | null;
   palavras_chave?: string | null;
+  google_place_id?: string;
+}
+
+// ─── Google Reviews ──────────────────────────────────────────────────
+export interface GoogleReview {
+  autor: string;
+  foto: string | null;
+  nota: number;
+  texto: string;
+  tempo: string;
+}
+
+export interface GoogleReviewData {
+  rating: number;
+  total: number;
+  url: string;
+  reviews: GoogleReview[];
 }
 
 // ─── Produto ────────────────────────────────────────────────────────

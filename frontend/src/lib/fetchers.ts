@@ -1,4 +1,4 @@
-import type { Negocio, Produto, Categoria, Oferta } from "@/types";
+import type { Negocio, Produto, Categoria, Oferta, GoogleReviewData } from "@/types";
 
 const API = process.env.API_URL_INTERNAL || "http://backend:8000/api";
 const REVALIDATE = process.env.NODE_ENV === "production" ? 300 : 0;
@@ -66,6 +66,19 @@ export async function getProdutosDestaque(limit = 10): Promise<Produto[]> {
     return Array.isArray(data) ? data : (data.results ?? []);
   } catch {
     return [];
+  }
+}
+
+export async function getGoogleReviews(slug: string): Promise<GoogleReviewData | null> {
+  try {
+    const res = await fetch(`${API}/negocios/${slug}/reviews-google/`, {
+      next: { revalidate: 21600 }, // 6 horas — alinhado com cache Redis
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data ?? null;
+  } catch {
+    return null;
   }
 }
 

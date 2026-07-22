@@ -11,6 +11,7 @@ import { SeoCard } from '@/components/merchant/meu-negocio/SeoCard';
 import { StatusCard } from '@/components/merchant/meu-negocio/StatusCard';
 import { LogoCapaCard } from '@/components/merchant/meu-negocio/LogoCapaCard';
 import { DicasCard } from '@/components/merchant/meu-negocio/DicasCard';
+import { GooglePlacesCard } from '@/components/merchant/meu-negocio/GooglePlacesCard';
 import { QRCodeCard } from '@/components/ui/QRCodeCard';
 import type { EspacoEspecialForm } from '@/components/merchant/meu-negocio/EspacoEspecialCard';
 
@@ -96,6 +97,7 @@ export default function MeuNegocioPage() {
   const [capaFile, setCapaFile] = useState<File | null>(null);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState(false);
+  const [googlePlaceId, setGooglePlaceId] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const sucessoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -136,6 +138,7 @@ export default function MeuNegocioPage() {
       youtube_url: d.redes_sociais?.youtube_url ?? '',
       linkedin_url: d.redes_sociais?.linkedin_url ?? '',
     });
+    setGooglePlaceId(d.google_place_id ?? '');
     const ee = d.espaco_especial;
     if (ee) {
       setEspaco({
@@ -382,6 +385,18 @@ export default function MeuNegocioPage() {
             seo_description={form.seo_description}
             palavras_chave={form.palavras_chave}
             onChange={set}
+          />
+          <GooglePlacesCard
+            placeIdAtual={googlePlaceId}
+            onSave={async (place_id) => {
+              const res = await fetch('/api/proxy/negocios/painel/meu-negocio', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ google_place_id: place_id }),
+              });
+              if (!res.ok) throw new Error('Erro ao salvar place_id');
+              setGooglePlaceId(place_id);
+            }}
           />
         </div>
 

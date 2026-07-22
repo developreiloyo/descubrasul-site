@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getNegocio, getProdutosDoNegocio, getNegocios } from "@/lib/fetchers";
+import { getNegocio, getProdutosDoNegocio, getNegocios, getGoogleReviews } from "@/lib/fetchers";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { TrackerView } from "@/components/negocios/TrackerView";
 import { Navbar } from "@/components/layout/Navbar";
@@ -12,6 +12,7 @@ import { BusinessMobileBottomNav } from "@/components/negocios/BusinessMobileBot
 import { PaginaNegocioClient } from "@/components/negocios/PaginaNegocioClient";
 import { BusinessSidebar } from "@/components/negocios/BusinessSidebar";
 import { SimilarBusinesses } from "@/components/negocios/SimilarBusinesses";
+import { GoogleReviews } from "@/components/negocios/GoogleReviews";
 
 interface Props {
   params: Promise<{ cidade: string; categoria: string; slug: string }>;
@@ -35,9 +36,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+import type { GoogleReviewData } from "@/types";
+
 function schemaLocalBusiness(
   negocio: NonNullable<Awaited<ReturnType<typeof getNegocio>>>,
-  url: string
+  url: string,
+  googleReviews: GoogleReviewData | null = null,
 ) {
   return {
     "@context": "https://schema.org",
@@ -62,6 +66,15 @@ function schemaLocalBusiness(
       negocio.redes_sociais?.tiktok_url,
       negocio.redes_sociais?.linkedin_url,
     ].filter(Boolean),
+    ...(googleReviews && googleReviews.total > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: googleReviews.rating.toFixed(1),
+        reviewCount: googleReviews.total,
+        bestRating: "5",
+        worstRating: "1",
+      },
+    }),
   };
 }
 
@@ -70,9 +83,10 @@ export default async function PaginaNegocio({ params }: Props) {
   const negocio = await getNegocio(slug);
   if (!negocio) notFound();
 
-  const [produtos, similares] = await Promise.all([
+  const [produtos, similares, googleReviews] = await Promise.all([
     getProdutosDoNegocio(slug),
     getNegocios({ categoria, cidade }),
+    negocio.google_place_id ? getGoogleReviews(slug) : Promise.resolve(null),
   ]);
 
   const similaresFiltrados = similares
@@ -83,7 +97,7 @@ export default async function PaginaNegocio({ params }: Props) {
 
   return (
     <div className="min-h-screen pb-20 md:pb-0" style={{ backgroundColor: "#f8f9ff" }}>
-      <JsonLd data={schemaLocalBusiness(negocio, url)} />
+      <JsonLd data={schemaLocalBusiness(negocio, url, googleReviews)} />
       <TrackerView negocioSlug={negocio.slug} />
       <Navbar />
 
@@ -109,6 +123,9 @@ export default async function PaginaNegocio({ params }: Props) {
             produtos={produtos}
             similares={similaresFiltrados}
           />
+          {googleReviews && googleReviews.total > 0 && (
+            <GoogleReviews data={googleReviews} nomeNegocio={negocio.nome} />
+          )}
         </div>
 
         {/* Sidebar */}

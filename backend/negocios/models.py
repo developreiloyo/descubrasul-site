@@ -73,8 +73,9 @@ class Negocio(models.Model):
     og_image        = models.ImageField(upload_to=gerar_caminho_seguro, null=True, blank=True)
     alt_logo        = models.CharField(max_length=125, blank=True)
     categoria_tipo  = models.CharField(max_length=50, blank=True)
-    palavras_chave  = models.CharField(max_length=300, blank=True)
-    atualizado_em   = models.DateTimeField(auto_now=True)
+    palavras_chave   = models.CharField(max_length=300, blank=True)
+    google_place_id  = models.CharField(max_length=200, blank=True, default="")
+    atualizado_em    = models.DateTimeField(auto_now=True)
 
     # Espaço especial (plano Pro+): tipo + conteúdo configurável pelo comerciante
     # Tipos válidos: "texto" | "oferta" | "cupom" | "banner" | "video"

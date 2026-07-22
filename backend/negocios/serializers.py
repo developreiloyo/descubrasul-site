@@ -79,6 +79,7 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
             "atualizado_em",
             "seo_title", "seo_description", "og_image", "palavras_chave",
+            "google_place_id",
             "redes_sociais", "localizacao", "videos", "espaco_especial",
         ]
 
@@ -110,6 +111,7 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
             "plano", "status", "verificado",
             "seo_title", "seo_description", "og_image", "palavras_chave",
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
+            "google_place_id",
             "criado_em", "atualizado_em",
             "localizacao", "redes_sociais", "espaco_especial",
         ]

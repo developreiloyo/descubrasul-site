@@ -17,6 +17,7 @@ from .serializers import (
     ProdutoPublicoSerializer, ProdutoPainelSerializer,
 )
 from .permissions import IsDonoDoNegocio, IsPlanoPro, PodicionarProduto
+from .services import buscar_places_por_nome, buscar_reviews_google
 
 PLAN_PRIORITY = Case(
     When(plano="fundador",  then=Value(1)),
@@ -156,6 +157,38 @@ class MeuNegocioView(generics.RetrieveUpdateAPIView):
             .select_related("categoria", "localizacao", "redes_sociais")
             .get(usuario=self.request.user)
         )
+
+
+@api_view(["POST"])
+@deco_permissions([IsAuthenticated])
+def buscar_google(request):
+    """Busca candidatos no Google Places pelo nome + cidade do negócio."""
+    negocio = request.user.negocio
+    query   = request.data.get("query", "").strip()
+    nome    = query or negocio.nome
+    cidade  = negocio.cidade
+    candidatos = buscar_places_por_nome(nome, cidade)
+    if not candidatos:
+        return Response({"detail": "Nenhum resultado encontrado."}, status=404)
+    return Response(candidatos)
+
+
+@api_view(["GET"])
+@deco_permissions([AllowAny])
+def reviews_google(request, slug):
+    """Retorna rating e reviews do Google Places para um negócio. Cache 6h."""
+    try:
+        negocio = Negocio.objects.only("google_place_id", "status").get(
+            slug=slug, status=Negocio.Status.ATIVO
+        )
+    except Negocio.DoesNotExist:
+        return Response({"detail": "Negócio não encontrado."}, status=404)
+
+    if not negocio.google_place_id:
+        return Response(None)
+
+    data = buscar_reviews_google(negocio.google_place_id)
+    return Response(data)
 
 
 class MeusProdutosViewSet(viewsets.ModelViewSet):
