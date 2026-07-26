@@ -20,11 +20,9 @@ from .permissions import IsDonoDoNegocio, IsPlanoPro, PodicionarProduto
 from .services import buscar_places_por_nome, buscar_reviews_google
 
 PLAN_PRIORITY = Case(
-    When(plano="fundador",  then=Value(1)),
-    When(plano="producao",  then=Value(2)),
-    When(plano="pro",       then=Value(3)),
-    When(plano="basico",    then=Value(4)),
-    default=Value(5),
+    When(plano="producao",  then=Value(1)),
+    When(plano="pro",       then=Value(2)),
+    default=Value(3),
     output_field=IntegerField(),
 )
 
@@ -103,7 +101,7 @@ class ProdutoListView(generics.ListAPIView):
 @deco_permissions([AllowAny])
 def produtos_destaque(request):
     """
-    Retorna um produto por negócio, priorizando planos pagos (fundador > producao > pro > basico).
+    Retorna um produto por negócio, priorizando planos pagos (producao > pro).
     Apenas produtos com foto e negócios ativos de plano pago.
     """
     try:
@@ -111,7 +109,7 @@ def produtos_destaque(request):
     except (ValueError, TypeError):
         limit = 10
 
-    PLANOS_PAGOS = [Negocio.Plano.FUNDADOR, Negocio.Plano.PRODUCAO, Negocio.Plano.PRO, Negocio.Plano.BASICO]
+    PLANOS_PAGOS = [Negocio.Plano.PRODUCAO, Negocio.Plano.PRO]
 
     negocios = (
         Negocio.objects.filter(status=Negocio.Status.ATIVO, plano__in=PLANOS_PAGOS)

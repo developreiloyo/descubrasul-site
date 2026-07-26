@@ -245,14 +245,12 @@ class ProdutosDestaqueTests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        _, self.neg_fundador = criar_usuario_com_negocio("f@dest.com",   plano="fundador")
+        _, self.neg_producao = criar_usuario_com_negocio("p@dest.com",   plano="producao")
         _, self.neg_pro      = criar_usuario_com_negocio("pro@dest.com", plano="pro")
-        _, self.neg_basico   = criar_usuario_com_negocio("b@dest.com",   plano="basico")
         _, self.neg_gratuito = criar_usuario_com_negocio("g@dest.com",   plano="gratuito")
 
-        self.prod_fundador = criar_produto(self.neg_fundador, "Produto Fundador")
+        self.prod_producao = criar_produto(self.neg_producao, "Produto Producao")
         self.prod_pro      = criar_produto(self.neg_pro,      "Produto Pro")
-        self.prod_basico   = criar_produto(self.neg_basico,   "Produto Basico")
         self.prod_gratuito = criar_produto(self.neg_gratuito, "Produto Gratuito")
 
     # ── Acesso público ────────────────────────────────────────────────────
@@ -269,9 +267,8 @@ class ProdutosDestaqueTests(TestCase):
     def test_planos_pagos_incluidos(self):
         response = self.client.get(self.URL)
         slugs_negocios = [p["negocio"]["slug"] for p in response.data]
-        self.assertIn(self.neg_fundador.slug, slugs_negocios)
+        self.assertIn(self.neg_producao.slug, slugs_negocios)
         self.assertIn(self.neg_pro.slug,      slugs_negocios)
-        self.assertIn(self.neg_basico.slug,   slugs_negocios)
 
     def test_negocio_inativo_excluido(self):
         _, neg_inativo = criar_usuario_com_negocio("i@dest.com", plano="pro")
@@ -293,8 +290,8 @@ class ProdutosDestaqueTests(TestCase):
 
     # ── Um produto por negócio ────────────────────────────────────────────
     def test_um_produto_por_negocio(self):
-        criar_produto(self.neg_fundador, "Produto Fundador 2")
-        criar_produto(self.neg_fundador, "Produto Fundador 3")
+        criar_produto(self.neg_producao, "Produto Producao 2")
+        criar_produto(self.neg_producao, "Produto Producao 3")
 
         response = self.client.get(self.URL)
         slugs_negocios = [p["negocio"]["slug"] for p in response.data]
@@ -304,26 +301,18 @@ class ProdutosDestaqueTests(TestCase):
         )
 
     # ── Ordenação por plano ───────────────────────────────────────────────
-    def test_fundador_antes_de_basico(self):
+    def test_producao_antes_de_pro(self):
         response = self.client.get(self.URL)
         slugs = [p["negocio"]["slug"] for p in response.data]
         self.assertLess(
-            slugs.index(self.neg_fundador.slug),
-            slugs.index(self.neg_basico.slug),
-        )
-
-    def test_pro_antes_de_basico(self):
-        response = self.client.get(self.URL)
-        slugs = [p["negocio"]["slug"] for p in response.data]
-        self.assertLess(
+            slugs.index(self.neg_producao.slug),
             slugs.index(self.neg_pro.slug),
-            slugs.index(self.neg_basico.slug),
         )
 
     # ── Priorização de foto dentro do negócio ────────────────────────────
     def test_produto_com_foto_priorizado_sobre_sem_foto(self):
         """O produto com foto deve ser retornado, mesmo que venha depois na ordenação por `ordem`."""
-        _, neg = criar_usuario_com_negocio("foto@dest.com", plano="basico")
+        _, neg = criar_usuario_com_negocio("foto@dest.com", plano="pro")
         prod_sem_foto = criar_produto(neg, "Sem Foto")   # ordem=0 por padrão → viria primeiro sem foto-priorização
         prod_com_foto = Produto.objects.create(
             negocio=neg, nome="Com Foto", disponivel=True,
@@ -338,7 +327,7 @@ class ProdutosDestaqueTests(TestCase):
     # ── Parâmetro limit ───────────────────────────────────────────────────
     def test_limit_padrao_retorna_ate_dez(self):
         for i in range(10):
-            _, neg = criar_usuario_com_negocio(f"lim{i}@dest.com", plano="basico")
+            _, neg = criar_usuario_com_negocio(f"lim{i}@dest.com", plano="pro")
             criar_produto(neg)
         response = self.client.get(self.URL)
         self.assertLessEqual(len(response.data), 10)
@@ -349,7 +338,7 @@ class ProdutosDestaqueTests(TestCase):
 
     def test_limit_maximo_20(self):
         for i in range(22):
-            _, neg = criar_usuario_com_negocio(f"m{i:03d}@d.com", plano="basico")
+            _, neg = criar_usuario_com_negocio(f"m{i:03d}@d.com", plano="pro")
             criar_produto(neg)
         response = self.client.get(self.URL + "?limit=999")
         self.assertLessEqual(len(response.data), 20)

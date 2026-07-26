@@ -71,7 +71,7 @@ class TipoProdutoRetrocompatibilidadeTests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user, self.negocio = criar_usuario_com_negocio("retro@test.com", plano="basico")
+        self.user, self.negocio = criar_usuario_com_negocio("retro@test.com", plano="pro")
         # Produto sem tipo_produto (NULL — cenário pré-migração)
         self.produto_null = Produto.objects.create(
             negocio=self.negocio,
