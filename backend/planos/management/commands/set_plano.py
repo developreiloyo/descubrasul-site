@@ -10,7 +10,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "plano",
             type=str,
-            help="Plan slug: gratuito | basico | pro | producao | fundador",
+            help="Plan slug: gratuito | pro (Conexão Sul) | producao (Destaque Sul)",
         )
 
     def handle(self, *args, **options):

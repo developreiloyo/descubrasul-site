@@ -3,33 +3,19 @@ from django.db import models
 
 
 CATALOGO_PLANOS = {
-    "basico": {
-        "nome":       "Básico",
-        "valor":      Decimal("79.00"),
-        "periodo":    "mensal",
-        "frequencia": 1,
-        "descricao":  "Até 20 produtos, endereço no mapa, redes sociais",
-    },
     "pro": {
-        "nome":       "Pro",
+        "nome":       "Conexão Sul",
         "valor":      Decimal("197.00"),
-        "periodo":    "mensal",
-        "frequencia": 1,
-        "descricao":  "Produtos ilimitados, analytics, IA, destaque nas buscas",
-    },
-    "producao": {
-        "nome":       "Produção",
-        "valor":      Decimal("397.00"),
-        "periodo":    "mensal",
-        "frequencia": 1,
-        "descricao":  "Tudo do Pro + fotos profissionais + vídeo destaque",
-    },
-    "fundador": {
-        "nome":       "Fundador",
-        "valor":      Decimal("599.00"),
         "periodo":    "anual",
         "frequencia": 12,
-        "descricao":  "Tudo do Pro por 1 ano · Preço fixo garantido para sempre",
+        "descricao":  "Produtos ilimitados, analytics, IA, destaque nas buscas, Google Shopping",
+    },
+    "producao": {
+        "nome":       "Destaque Sul",
+        "valor":      Decimal("397.00"),
+        "periodo":    "anual",
+        "frequencia": 12,
+        "descricao":  "Tudo do Conexão Sul + fotos profissionais + vídeo destaque + gestão GBP mensal",
     },
 }
 

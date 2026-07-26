@@ -22,21 +22,17 @@ def gerar_caminho_seguro(instance, filename):
 # ─── Limites por plano ────────────────────────────────────────────────
 LIMITES_PRODUTOS = {
     "gratuito": 5,
-    "basico":   20,
     "pro":      None,
     "producao": None,
-    "fundador": None,
 }
 
 
 class Negocio(models.Model):
 
     class Plano(models.TextChoices):
-        GRATUITO = "gratuito", "Gratuito"
-        BASICO   = "basico",   "Básico — R$ 79/mês"
-        PRO      = "pro",      "Pro — R$ 197/mês"
-        PRODUCAO = "producao", "Produção — R$ 397/mês"
-        FUNDADOR = "fundador", "Fundador — R$ 599/ano"
+        GRATUITO = "gratuito", "Presença Sul — Gratuito"
+        PRO      = "pro",      "Conexão Sul — R$ 197/ano"
+        PRODUCAO = "producao", "Destaque Sul — R$ 397/ano"
 
     class Status(models.TextChoices):
         ATIVO    = "ativo",    "Ativo"
@@ -105,7 +101,7 @@ class Negocio(models.Model):
 
     @property
     def is_pro(self):
-        return self.plano in [self.Plano.PRO, self.Plano.PRODUCAO, self.Plano.FUNDADOR]
+        return self.plano in [self.Plano.PRO, self.Plano.PRODUCAO]
 
     @property
     def is_producao(self):
@@ -150,6 +146,7 @@ class Produto(models.Model):
     slug            = models.SlugField(max_length=220, blank=True)
     alt_foto        = models.CharField(max_length=125, blank=True)
     descricao_longa = models.TextField(blank=True)
+    tipo_produto    = models.CharField(max_length=120, blank=True, null=True)
     atualizado_em   = models.DateTimeField(auto_now=True)
 
     class Meta:
