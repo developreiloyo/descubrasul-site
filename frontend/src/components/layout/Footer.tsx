@@ -59,7 +59,7 @@ export function Footer() {
           <p className="text-sm font-semibold mb-4 text-white/90">Navegação</p>
           <ul className="space-y-2.5 text-sm text-white/55">
             <li><Link href="/"              className="hover:text-accent transition-colors">Início</Link></li>
-            <li><Link href="/marketplace"   className="hover:text-accent transition-colors">Marketplace</Link></li>
+            <li><Link href="/marketplace"   className="hover:text-accent transition-colors">Vitrina</Link></li>
             <li><Link href="/food"          className="hover:text-accent transition-colors">DescubraSul Food</Link></li>
             <li><Link href="/para-empresas" className="hover:text-accent transition-colors">Para Empresas</Link></li>
             <li><Link href="/para-empresas#planos-detalhes" className="hover:text-accent transition-colors">Planos e preços</Link></li>
