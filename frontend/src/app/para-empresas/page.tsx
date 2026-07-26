@@ -301,19 +301,13 @@ export default function ParaEmpresasPage() {
             </div>
           ))}
         </div>
-        <div className="flex flex-col sm:flex-row justify-center gap-3 mt-7">
+        <div className="flex justify-center mt-7">
           <a
             href="#planos-detalhes"
             className="border border-primary text-primary font-semibold rounded-full px-7 py-3 text-sm hover:bg-primary hover:text-white transition-all text-center flex items-center justify-center gap-2"
           >
             Ver detalhes dos planos <ArrowRight className="size-4" />
           </a>
-          <Link
-            href="/painel/cadastro"
-            className="badge-gold text-white font-semibold rounded-full px-7 py-3 text-sm hover:brightness-105 transition-all text-center"
-          >
-            Cadastrar grátis
-          </Link>
         </div>
       </section>
 

@@ -334,7 +334,7 @@ export default async function Home() {
                     id="cats-title"
                     className="font-playfair text-[clamp(2rem,3.5vw,3.2rem)] font-bold leading-[1.08] tracking-[-0.02em] text-[#1a1a1a]"
                   >
-                    Do que você<br />
+                    O que você<br />
                     <em>está procurando?</em>
                   </h2>
                 </div>
@@ -496,19 +496,52 @@ export default async function Home() {
             </div>
           </div>
           {/* Benefícios visuais — planos */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
             {[
-              { titulo: "Plano Básico", preco: "R$ 79", periodo: "/mês", desc: "Até 20 produtos · Vitrine digital" },
-              { titulo: "Plano Pro",    preco: "R$ 197", periodo: "/mês", desc: "Ilimitado · Métricas · IA" },
-              { titulo: "Produção",     preco: "R$ 397", periodo: "/mês", desc: "Fotos · Vídeos · Destaque" },
-              { titulo: "Fundador",     preco: "R$ 599", periodo: "/ano", desc: "50 vagas · Acesso total" },
+              {
+                titulo: "Presença Sul",
+                preco: "R$ 0",
+                periodo: "gratuito",
+                sub: null,
+                desc: "Para começar na DescubraSul",
+                destaque: false,
+              },
+              {
+                titulo: "Conexão Sul",
+                preco: "R$ 197",
+                periodo: "/ano",
+                sub: "R$ 16,42/mês",
+                desc: "Para receber mais contatos",
+                destaque: false,
+              },
+              {
+                titulo: "Destaque Sul",
+                preco: "R$ 397",
+                periodo: "/ano",
+                sub: "R$ 33,08/mês",
+                desc: "Para um canal contínuo de vendas",
+                destaque: true,
+              },
             ].map((p) => (
-              <div key={p.titulo} className="bg-white/8 hover:bg-white/12 transition-colors duration-200 rounded-2xl p-3.5 lg:p-5 border border-white/10 backdrop-blur-sm cursor-pointer">
+              <div
+                key={p.titulo}
+                className={`relative rounded-2xl p-4 lg:p-5 border backdrop-blur-sm transition-colors duration-200 ${
+                  p.destaque
+                    ? "bg-accent/15 border-accent/35 hover:bg-accent/20"
+                    : "bg-white/8 border-white/10 hover:bg-white/12"
+                }`}
+              >
+                {p.destaque && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-[#16201B] text-[10px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wide whitespace-nowrap">
+                    Mais completo
+                  </span>
+                )}
                 <p className="text-white/60 text-[11px] font-medium uppercase tracking-wide">{p.titulo}</p>
-                <p className="mt-1">
+                <p className="mt-2">
                   <span className="font-display text-accent text-2xl">{p.preco}</span>
                   <span className="text-white/40 text-xs ml-1">{p.periodo}</span>
                 </p>
+                {p.sub && <p className="text-white/35 text-[11px] mt-0.5">{p.sub}</p>}
                 <p className="text-white/50 text-xs mt-2 leading-snug">{p.desc}</p>
               </div>
             ))}
