@@ -21,55 +21,78 @@ export default function PoliticaDevolucoes() {
 
       <Section titulo="1. O que é o DescubraSul">
         <p>
-          O <strong>DescubraSul</strong> é uma vitrina digital de negócios
-          locais do Sul de Santa Catarina. A plataforma conecta consumidores com
-          comerciantes da região, exibindo informações de contato, produtos e
-          serviços de cada estabelecimento.
+          O <strong>DescubraSul</strong> é uma vitrina digital — uma plataforma
+          que reúne negócios locais do Sul de Santa Catarina em um só lugar,
+          permitindo que consumidores encontrem e entrem em contato com
+          comerciantes da região.
         </p>
         <p>
-          O DescubraSul <strong>não realiza vendas, não processa pagamentos
-          e não intermedeia transações comerciais</strong> entre consumidores e
-          comerciantes.
+          O DescubraSul <strong>não vende produtos, não processa pagamentos e
+          não participa de nenhuma etapa da transação comercial</strong> entre
+          consumidor e comerciante. Funciona como um espaço de divulgação —
+          cada negócio cadastrado é responsável por suas próprias vendas,
+          entregas e atendimento ao cliente.
         </p>
       </Section>
 
-      <Section titulo="2. Como funciona a compra">
+      <Section titulo="2. De quem é a responsabilidade pela venda">
         <p>
-          Toda negociação — preço, disponibilidade, forma de pagamento e
-          entrega — acontece <strong>diretamente entre o consumidor e o
-          comerciante</strong>, por WhatsApp ou telefone.
+          A responsabilidade pela venda, pelo produto entregue e pelo
+          cumprimento de qualquer acordo (preço, prazo, condição) é
+          exclusivamente do <strong>comerciante cadastrado</strong> na
+          plataforma — não do DescubraSul.
         </p>
         <p>
-          O DescubraSul disponibiliza as informações de contato do negócio para
-          facilitar essa conexão, mas não participa da transação em nenhuma
-          etapa.
+          Toda negociação acontece diretamente entre consumidor e comerciante,
+          por WhatsApp ou telefone. O DescubraSul apenas exibe as informações
+          de contato e o catálogo do negócio.
         </p>
       </Section>
 
       <Section titulo="3. Devoluções e trocas">
         <p>
-          Como o DescubraSul não é parte de nenhuma transação comercial:
+          Como o DescubraSul não realiza vendas nem recebe pagamentos, a
+          plataforma <strong>não aceita devoluções nem trocas</strong>.
+        </p>
+        <p>
+          Caso você precise solicitar uma devolução, troca ou reembolso:
         </p>
         <ul>
           <li>
-            O DescubraSul <strong>não aceita devoluções nem trocas</strong> como
-            plataforma.
+            Entre em contato <strong>diretamente com o comerciante</strong>{" "}
+            pelo mesmo canal (WhatsApp ou telefone) usado na compra.
           </li>
           <li>
-            Eventuais solicitações de devolução ou troca devem ser tratadas{" "}
-            <strong>diretamente com o comerciante</strong> pelo mesmo canal
-            (WhatsApp ou telefone) usado para realizar a compra.
+            Cada negócio define sua própria política de trocas e devoluções —
+            consulte o comerciante antes de finalizar a compra.
           </li>
           <li>
-            Cada comerciante pode ter sua própria política de trocas e
-            devoluções — recomenda-se consultá-la antes de finalizar a compra.
+            Os direitos do consumidor previstos no{" "}
+            <strong>Código de Defesa do Consumidor (Lei 8.078/1990)</strong>{" "}
+            se aplicam à relação entre você e o comerciante, não à relação
+            com o DescubraSul.
           </li>
         </ul>
       </Section>
 
-      <Section titulo="4. Contato">
+      <Section titulo="4. Responsabilidade dos comerciantes cadastrados">
         <p>
-          Para dúvidas sobre esta política:{" "}
+          Ao cadastrar seu negócio no DescubraSul, o comerciante concorda em
+          ser o único responsável pelas transações realizadas com seus clientes,
+          incluindo:
+        </p>
+        <ul>
+          <li>Qualidade e conformidade dos produtos ou serviços oferecidos.</li>
+          <li>Cumprimento dos prazos e condições acordados com o consumidor.</li>
+          <li>Atendimento a solicitações de devolução, troca ou reembolso.</li>
+          <li>Observ��ncia do Código de Defesa do Consumidor.</li>
+        </ul>
+      </Section>
+
+      <Section titulo="5. Contato">
+        <p>
+          Para dúvidas sobre esta política ou sobre o funcionamento da
+          plataforma:{" "}
           <a
             href="mailto:contato@descubrasul.com"
             className="text-primary underline"
