@@ -31,6 +31,9 @@ export const metadata: Metadata = {
   description:
     "Descubra os melhores negócios locais de Criciúma, Içara, Tubarão e região. Restaurantes, lojas, serviços e muito mais no Sul de Santa Catarina.",
   metadataBase: new URL("https://descubrasul.com"),
+  verification: {
+    google: "FTPtRoy9DYk8pXjJYC6xZeDRpBiRh4KRx5nIFwFqnYI",
+  },
   openGraph: {
     siteName: "DescubraSul",
     type: "website",
