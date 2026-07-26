@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  MapPin, Star, BarChart3, Zap, ShieldCheck, Users,
-  CheckCircle2, ArrowRight, MessageCircle
+  Search, Eye, MessageCircle, ShieldCheck, BarChart3, Heart,
+  CheckCircle2, ArrowRight, Zap,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -21,48 +21,146 @@ export const metadata: Metadata = {
 
 const BENEFICIOS = [
   {
-    icon: <MapPin className="size-6" />,
-    titulo: "Visibilidade local real",
-    desc: "Clientes buscando exatamente o que você oferece, na sua cidade, aparecem no seu perfil.",
+    icon: <Search className="size-6" />,
+    titulo: "Seja encontrado",
+    desc: "Apareça para pessoas que procuram empresas e serviços na região.",
   },
   {
-    icon: <Star className="size-6" />,
-    titulo: "Avaliações que vendem",
-    desc: "Depoimentos reais de clientes constroem confiança e aumentam sua conversão.",
+    icon: <Eye className="size-6" />,
+    titulo: "Mais visibilidade",
+    desc: "Destaque sua empresa para conquistar novos clientes.",
   },
   {
-    icon: <BarChart3 className="size-6" />,
-    titulo: "Métricas de desempenho",
-    desc: "Acompanhe cliques, visualizações e buscas que levam ao seu negócio.",
-  },
-  {
-    icon: <Zap className="size-6" />,
-    titulo: "IA para seus textos",
-    desc: "Descrições profissionais geradas por IA para produtos e serviços. Planos Pro e acima.",
+    icon: <MessageCircle className="size-6" />,
+    titulo: "Contato rápido",
+    desc: "WhatsApp, telefone, localização e redes sociais em um só lugar.",
   },
   {
     icon: <ShieldCheck className="size-6" />,
-    titulo: "Perfil verificado",
-    desc: "O badge de verificado aumenta a credibilidade e o destaque nos resultados.",
+    titulo: "Credibilidade",
+    desc: "Um perfil completo transmite mais confiança ao cliente.",
   },
   {
-    icon: <Users className="size-6" />,
-    titulo: "Sem comissão por venda",
-    desc: "Você paga apenas o plano mensal. Nenhuma comissão sobre pedidos ou contatos.",
+    icon: <BarChart3 className="size-6" />,
+    titulo: "Divulgação contínua",
+    desc: "Promova ofertas, novidades e diferenciais da sua empresa.",
+  },
+  {
+    icon: <Heart className="size-6" />,
+    titulo: "Valorize o comércio local",
+    desc: "Faça parte da vitrine digital do Sul Catarinense.",
   },
 ];
 
 const ETAPAS = [
-  { num: "1", titulo: "Crie sua conta", desc: "Cadastro gratuito. Nenhum cartão necessário para começar." },
-  { num: "2", titulo: "Monte seu perfil", desc: "Adicione logo, fotos, produtos, endereço e redes sociais." },
-  { num: "3", titulo: "Seja encontrado", desc: "Seu negócio aparece imediatamente nas buscas do Sul de SC." },
+  {
+    num: "1",
+    titulo: "Cadastre sua empresa",
+    desc: "Crie seu perfil gratuitamente e comece a fazer parte da DescubraSul.",
+  },
+  {
+    num: "2",
+    titulo: "Complete seu perfil",
+    desc: "Adicione informações do negócio, imagem, localização, contatos.",
+  },
+  {
+    num: "3",
+    titulo: "Seja encontrado",
+    desc: "Seu negócio ganha mais visibilidade nas buscas por serviços e empresas do Sul de SC.",
+  },
 ];
 
 const PLANOS_RAPIDOS = [
-  { nome: "Gratuito", preco: "R$ 0", periodo: "para sempre", cor: "bg-black/5 text-ink" },
-  { nome: "Básico",   preco: "R$ 79",  periodo: "/mês", cor: "bg-primary/10 text-primary" },
-  { nome: "Pro",      preco: "R$ 197", periodo: "/mês", cor: "bg-primary text-white" },
-  { nome: "Produção", preco: "R$ 397", periodo: "/mês", cor: "bg-accent/90 text-white" },
+  {
+    nome: "Presença Sul",
+    preco: "R$ 0",
+    periodo: "gratuito",
+    descricao: "Para começar na DescubraSul.",
+    cor: "bg-black/5 text-ink",
+  },
+  {
+    nome: "Conexão Sul",
+    preco: "R$ 197",
+    periodo: "/ano  ·  R$ 16,42/mês",
+    descricao: "Para receber mais contatos.",
+    cor: "bg-primary/10 text-primary",
+  },
+  {
+    nome: "Destaque Sul",
+    preco: "R$ 397",
+    periodo: "/ano  ·  R$ 33,08/mês",
+    descricao: "Para um canal contínuo de vendas.",
+    cor: "bg-primary text-white",
+  },
+];
+
+const PLANOS_DETALHES = [
+  {
+    slug: "presenca",
+    nome: "Presença Sul",
+    badge: null,
+    preco: "Grátis",
+    periodo: "para sempre",
+    descricao:
+      "Para empresas que querem começar a fazer parte da DescubraSul e fortalecer sua presença digital.",
+    inclui: [
+      "Perfil básico da empresa",
+      "Nome comercial",
+      "Categoria",
+      "Endereço e localização",
+      "Telefone e WhatsApp",
+      "Descrição dos serviços",
+      "Horário de atendimento",
+      "1 imagem de capa",
+      "Presença nas buscas da plataforma",
+    ],
+    nota: "Comece gratuitamente e evolua quando sua empresa precisar de mais visibilidade.",
+    cta: "Cadastrar meu negócio",
+    destaque: false,
+  },
+  {
+    slug: "conexao",
+    nome: "Conexão Sul",
+    badge: null,
+    preco: "R$ 197",
+    periodo: "/ano  ·  R$ 16,42/mês",
+    descricao:
+      "Para empresas que querem aumentar sua visibilidade e facilitar o contato com novos clientes.",
+    inclui: [
+      "Tudo do Presença Sul",
+      "Perfil empresarial completo",
+      "Até 10 fotos",
+      "Redes sociais",
+      "Site da empresa",
+      "Botão WhatsApp em destaque",
+      "Google Maps integrado",
+      "Estatísticas básicas de visitas",
+    ],
+    nota: null,
+    cta: "Quero mais visibilidade",
+    destaque: false,
+  },
+  {
+    slug: "destaque",
+    nome: "Destaque Sul",
+    badge: "Mais completo",
+    preco: "R$ 397",
+    periodo: "/ano  ·  R$ 33,08/mês",
+    descricao:
+      "Para empresas que querem transformar a DescubraSul em um canal contínuo de divulgação e crescimento.",
+    inclui: [
+      "Tudo do Conexão Sul",
+      "Até 20 fotos",
+      "Vídeo institucional",
+      "Maior prioridade nas buscas",
+      "Selo Empresa Referência",
+      "Estatísticas avançadas",
+      "Novos recursos premium incluídos durante a vigência",
+    ],
+    nota: null,
+    cta: "Impulsionar meu negócio",
+    destaque: true,
+  },
 ];
 
 export default function ParaEmpresasPage() {
@@ -103,12 +201,12 @@ export default function ParaEmpresasPage() {
               >
                 Cadastre grátis agora
               </Link>
-              <Link
-                href="/planos"
+              <a
+                href="#planos"
                 className="border border-white/25 text-white/90 font-semibold rounded-full px-8 py-4 text-sm hover:bg-white/10 transition-all text-center flex items-center justify-center gap-2"
               >
                 Ver planos <ArrowRight className="size-4" />
-              </Link>
+              </a>
             </div>
             <p className="text-white/40 text-xs mt-4">
               Sem cartão de crédito · Perfil ativo imediatamente
@@ -137,13 +235,38 @@ export default function ParaEmpresasPage() {
         </div>
       </section>
 
-      {/* ── Benefícios ────────────────────────────── */}
+      {/* ── Por que DescubraSul ───────────────────── */}
       <section className="bg-white border-y border-black/[0.06]">
         <div className="max-w-[1100px] mx-auto px-4 py-14">
           <div className="text-center mb-10">
             <p className="eyebrow inline-flex mb-3">Por que DescubraSul</p>
-            <h2 className="font-display text-3xl text-ink">O que você ganha</h2>
+            <h2 className="font-display text-3xl text-ink">
+              Por que sua empresa deve estar na DescubraSul?
+            </h2>
           </div>
+
+          {/* Bloco de perguntas dos clientes */}
+          <div className="bg-cream rounded-2xl border border-black/[0.06] p-7 mb-10 max-w-[700px] mx-auto text-center">
+            <p className="text-sm font-semibold text-sec uppercase tracking-wide mb-4">
+              Porque seus clientes já procuram:
+            </p>
+            <ul className="space-y-2">
+              {[
+                '"Onde encontro um profissional perto de mim?"',
+                '"Qual empresa atende minha região?"',
+                '"Quais negócios são recomendados?"',
+              ].map((q) => (
+                <li key={q} className="font-display text-ink text-lg leading-snug">
+                  {q}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-primary font-semibold text-sm">
+              A DescubraSul conecta pessoas com empresas locais.
+            </p>
+          </div>
+
+          {/* Cards de benefícios */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {BENEFICIOS.map((b) => (
               <div key={b.titulo} className="card-hover rounded-2xl border border-black/[0.06] p-6 bg-cream">
@@ -158,29 +281,33 @@ export default function ParaEmpresasPage() {
         </div>
       </section>
 
-      {/* ── Planos rápidos ────────────────────────── */}
-      <section className="max-w-[1100px] mx-auto px-4 py-14">
+      {/* ── Planos resumo ─────────────────────────── */}
+      <section id="planos" className="max-w-[1100px] mx-auto px-4 py-14">
         <div className="text-center mb-8">
           <p className="eyebrow inline-flex mb-3">Planos</p>
           <h2 className="font-display text-3xl text-ink">Comece grátis, cresça quando quiser</h2>
-          <p className="text-sec text-sm mt-3">Sem comissão por venda. Cancele quando quiser.</p>
+          <p className="text-sec text-sm mt-3 max-w-[640px] mx-auto leading-relaxed">
+            Escolha o plano ideal para acompanhar o crescimento do seu negócio. Aumente sua
+            visibilidade, conquiste novos clientes e fortaleça sua presença digital no Sul Catarinense.
+          </p>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-[900px] mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[800px] mx-auto">
           {PLANOS_RAPIDOS.map((p) => (
             <div key={p.nome} className={`rounded-2xl p-5 text-center ${p.cor}`}>
               <p className="text-xs font-semibold uppercase tracking-wide opacity-70">{p.nome}</p>
               <p className="font-display text-3xl mt-2">{p.preco}</p>
               <p className="text-xs opacity-60 mt-0.5">{p.periodo}</p>
+              <p className="text-xs opacity-75 mt-2 leading-snug">{p.descricao}</p>
             </div>
           ))}
         </div>
         <div className="flex flex-col sm:flex-row justify-center gap-3 mt-7">
-          <Link
-            href="/planos"
+          <a
+            href="#planos-detalhes"
             className="border border-primary text-primary font-semibold rounded-full px-7 py-3 text-sm hover:bg-primary hover:text-white transition-all text-center flex items-center justify-center gap-2"
           >
-            Ver todos os planos <ArrowRight className="size-4" />
-          </Link>
+            Ver detalhes dos planos <ArrowRight className="size-4" />
+          </a>
           <Link
             href="/painel/cadastro"
             className="badge-gold text-white font-semibold rounded-full px-7 py-3 text-sm hover:brightness-105 transition-all text-center"
@@ -190,14 +317,116 @@ export default function ParaEmpresasPage() {
         </div>
       </section>
 
+      {/* ── Planos detalhados ─────────────────────── */}
+      <section id="planos-detalhes" className="bg-white border-y border-black/[0.06]">
+        <div className="max-w-[1100px] mx-auto px-4 py-16">
+          <div className="text-center mb-12">
+            <p className="eyebrow inline-flex mb-3">Detalhes dos planos</p>
+            <h2 className="font-display text-3xl text-ink">
+              Escolha como sua empresa quer crescer na DescubraSul
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {PLANOS_DETALHES.map((p) => (
+              <div
+                key={p.slug}
+                className={`rounded-2xl p-7 flex flex-col relative ${
+                  p.destaque
+                    ? "bg-primary text-white"
+                    : "bg-cream border border-black/[0.06]"
+                }`}
+              >
+                {p.badge && (
+                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-accent text-[#16201B] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
+                    {p.badge}
+                  </span>
+                )}
+
+                <div className="mb-5">
+                  <p
+                    className={`text-xs font-semibold uppercase tracking-wide mb-1 ${
+                      p.destaque ? "text-white/60" : "text-sec"
+                    }`}
+                  >
+                    Plano
+                  </p>
+                  <h3
+                    className={`font-display text-2xl ${
+                      p.destaque ? "text-white" : "text-ink"
+                    }`}
+                  >
+                    {p.nome}
+                  </h3>
+                </div>
+
+                <p
+                  className={`text-sm leading-relaxed mb-6 ${
+                    p.destaque ? "text-white/80" : "text-sec"
+                  }`}
+                >
+                  {p.descricao}
+                </p>
+
+                <ul className="space-y-2.5 mb-0">
+                  {p.inclui.map((f, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-sm">
+                      <CheckCircle2
+                        className={`size-4 flex-shrink-0 mt-0.5 ${
+                          p.destaque ? "text-accent" : "text-primary"
+                        }`}
+                      />
+                      <span
+                        className={
+                          p.destaque
+                            ? i === 0
+                              ? "text-white/60 font-medium"
+                              : "text-white/90"
+                            : i === 0
+                            ? "text-sec font-medium"
+                            : "text-ink"
+                        }
+                      >
+                        {f}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-auto pt-6">
+                  {p.nota && (
+                    <p
+                      className={`text-xs italic mb-4 leading-relaxed ${
+                        p.destaque ? "text-white/50" : "text-sec"
+                      }`}
+                    >
+                      &ldquo;{p.nota}&rdquo;
+                    </p>
+                  )}
+                  <Link
+                    href="/painel/cadastro"
+                    className={`font-semibold rounded-full px-6 py-3 text-sm text-center transition-all flex items-center justify-center gap-2 ${
+                      p.destaque
+                        ? "badge-gold text-white hover:brightness-105"
+                        : "border border-primary text-primary hover:bg-primary hover:text-white"
+                    }`}
+                  >
+                    {p.cta} <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Depoimento ────────────────────────────── */}
       <section className="bg-primary hero-grid relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary-light/60" />
         <div className="max-w-[700px] mx-auto px-4 py-16 relative z-10 text-center">
           <MessageCircle className="size-10 text-accent mx-auto mb-6 opacity-80" />
           <p className="font-display text-white text-xl lg:text-2xl leading-snug">
-            "Antes ninguém me achava pelo Google. Hoje recebo clientes novos toda semana
-            só porque aparece na busca do DescubraSul."
+            &ldquo;Antes ninguém me achava pelo Google. Hoje recebo clientes novos toda semana
+            só porque aparece na busca do DescubraSul.&rdquo;
           </p>
           <div className="mt-6 flex items-center justify-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-display text-white text-lg">
@@ -226,7 +455,7 @@ export default function ParaEmpresasPage() {
           </Link>
         </div>
         <div className="mt-6 flex items-center justify-center gap-5 text-xs text-sec">
-          {["Grátis para começar","Sem comissão","Cancele quando quiser"].map(t => (
+          {["Grátis para começar", "Sem comissão", "Cancele quando quiser"].map((t) => (
             <span key={t} className="flex items-center gap-1.5">
               <CheckCircle2 className="size-3.5 text-primary" /> {t}
             </span>

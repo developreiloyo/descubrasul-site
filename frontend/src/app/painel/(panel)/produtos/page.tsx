@@ -142,7 +142,7 @@ export default function ProdutosPage() {
             {!plano.pode_adicionar && (
               <span className="ml-2 font-semibold text-secondary">
                 Limite atingido —{' '}
-                <Link href="/planos" className="underline hover:opacity-80">
+                <Link href="/para-empresas#planos-detalhes" className="underline hover:opacity-80">
                   faça upgrade para adicionar mais
                 </Link>
               </span>

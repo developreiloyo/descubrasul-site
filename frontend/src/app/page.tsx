@@ -490,7 +490,7 @@ export default async function Home() {
                 className="btn-primary badge-gold text-white font-semibold text-sm rounded-full px-7 py-3.5 shadow-lg hover:brightness-110 transition-all duration-200">
                 Cadastre sua loja grátis
               </Link>
-              <Link href="/planos" className="text-white/70 text-sm font-medium hover:text-accent transition-colors duration-200 flex items-center gap-1.5">
+              <Link href="/para-empresas#planos-detalhes" className="text-white/70 text-sm font-medium hover:text-accent transition-colors duration-200 flex items-center gap-1.5">
                 Ver planos <ArrowRight className="size-4" />
               </Link>
             </div>

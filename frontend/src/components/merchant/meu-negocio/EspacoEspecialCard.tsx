@@ -65,7 +65,7 @@ export function EspacoEspecialCard({ isPro, plano, espaco, onChange }: Props) {
             Disponível nos planos Pro, Produção e Fundador.
           </p>
           <a
-            href="/planos"
+            href="/para-empresas#planos-detalhes"
             className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark"
           >
             Fazer upgrade

@@ -62,7 +62,7 @@ export function Footer() {
             <li><Link href="/marketplace"   className="hover:text-accent transition-colors">Marketplace</Link></li>
             <li><Link href="/food"          className="hover:text-accent transition-colors">DescubraSul Food</Link></li>
             <li><Link href="/para-empresas" className="hover:text-accent transition-colors">Para Empresas</Link></li>
-            <li><Link href="/planos"        className="hover:text-accent transition-colors">Planos e preços</Link></li>
+            <li><Link href="/para-empresas#planos-detalhes" className="hover:text-accent transition-colors">Planos e preços</Link></li>
           </ul>
         </div>
 

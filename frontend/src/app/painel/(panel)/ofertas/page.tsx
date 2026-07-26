@@ -150,7 +150,7 @@ export default function OfertasPainelPage() {
             <p className="text-sm text-amber-800">
               Ofertas da Semana estão disponíveis a partir do Plano Básico. Faça o upgrade para publicar sua oferta na página inicial e alcançar mais clientes.
             </p>
-            <a href="/planos" className="inline-flex items-center gap-1 text-sm font-semibold text-[#1a7a3c] mt-3 hover:underline">
+            <a href="/para-empresas#planos-detalhes" className="inline-flex items-center gap-1 text-sm font-semibold text-[#1a7a3c] mt-3 hover:underline">
               Ver planos <ExternalLink className="size-3.5" />
             </a>
           </div>

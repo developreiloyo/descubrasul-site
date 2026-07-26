@@ -108,7 +108,7 @@ export default function MetricasPage() {
             </div>
           </div>
           <Link
-            href="/planos"
+            href="/para-empresas#planos-detalhes"
             className="mt-6 inline-block rounded-full bg-secondary px-8 py-3 font-bold text-white hover:opacity-90"
           >
             Ver planos e fazer upgrade →
