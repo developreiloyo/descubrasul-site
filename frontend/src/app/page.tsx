@@ -160,7 +160,7 @@ export default async function Home() {
             </p>
             <h1 className="animate-fade-up delay-100 font-display text-white text-[2rem] sm:text-[2.6rem] lg:text-[3.6rem] leading-[1.08] tracking-tight">
               <span className="text-gradient">Conectando</span> pessoas,{" "}
-              <span className="text-gradient">Fortalecendo</span> negócios locais.
+              Fortalecendo <span className="text-gradient">negócios</span> locais.
             </h1>
             <p className="animate-fade-up delay-200 text-white/65 text-sm lg:text-[1.1rem] mt-3 lg:mt-5 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               Atualmente disponível para Içara e Criciúma. Em breve, novas cidades.
