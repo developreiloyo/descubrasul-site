@@ -50,12 +50,21 @@ Tres planes anuales permanentes. El diferenciador clave es el onboarding manual 
 
 ## Estado actual (referencia — actualizar conforme avance)
 
+*Última revisión: 26/07/2026*
+
 - Producción activa en el VPS. Ocho bugs de producción resueltos y desplegados.
 - Rediseño visual completado en `feat/redesign-visual-v1` (Playfair Display, CategoryCard/CityCard/PromoCard, scroll reveal).
 - **Pendiente crítico**: reconciliar `main` con `stable/etapa1-producao` — ramas divergidas.
 - Panel de merchant funcional: alta atómica de User+Negocio, auto-login, formulario "Meu Negócio" con autocomplete ViaCEP, CRUD de productos con validación python-magic, ordenamiento/destacar productos, reset de password vía email (Resend SMTP).
 - Analíticas: modelos Clique y MetricaDiaria, endpoint de tracking con rate limiting, agregación nocturna vía Celery Beat.
 - Páginas públicas: `/cidades/{slug}` con schema ItemList, sitemap dinámico, URL corta `/p/{slug}`, perfil público con carrusel de productos.
+- **Google Merchant Center — configuración manual completada (26/07/2026):**
+  - Cuenta creada y dominio `descubrasul.com` verificado vía DNS TXT
+  - Merchant ID obtenido
+  - Cuenta de servicio de Google Cloud creada e invitada con acceso Estándar + Rendimiento y estadísticas
+  - Credenciales (Merchant ID + JSON de service account en base64) generadas y almacenadas de forma segura fuera del repositorio
+  - Página pública `/politica-devolucoes` publicada y registrada en Merchant Center (devoluciones y cambios: no aceptados — modelo vitrina sin checkout)
+  - **Implementación técnica pendiente:** servicio de serialización, campo `tipo_produto`, tarea Celery de sincronización — ver `specs/05-merchant-center-integration.md`
 
 ## Criterio de lanzamiento mínimo viable (por ciudad/categoría)
 
@@ -109,6 +118,12 @@ Antes de construir algo nuevo, preguntar: ¿esto ayuda a un merchant a mostrar m
 - `04-password-reset.md` — pendiente pre-lanzamiento (ya implementado en merchant panel — verificar si esto sigue pendiente o si el pendiente real es otro flujo)
 
 ## Pendientes
+
+### Pendientes generales del proyecto
+
+- Definir las 2 ciudades restantes del lanzamiento inicial (actualmente confirmadas: Içara, Criciúma, Tubarão, Cerro de Fumaça — faltan 3 para completar las 7 del objetivo inicial; 2 de ellas pendientes de decisión)
+
+---
 
 ### Integración con Odoo para administración interna
 
