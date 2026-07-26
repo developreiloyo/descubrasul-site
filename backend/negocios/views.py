@@ -230,6 +230,34 @@ class MeusProdutosViewSet(viewsets.ModelViewSet):
             "aparece_em_destaque": negocio.aparece_em_destaque,
         })
     
+    @action(detail=False, methods=["get"], permission_classes=[AllowAny])
+    def tipos_sugeridos(self, request):
+        """
+        Retorna até 30 valores distintos de tipo_produto já cadastrados
+        para a categoria informada, usados como autocomplete no painel.
+
+        GET /api/negocios/painel/produtos/tipos_sugeridos/?categoria=<slug>
+
+        Não expõe PII — devolve apenas strings de tipo_produto que já
+        passaram por validar_texto_seo_completo ao serem salvas.
+        Endpoint público: sugestões não contêm dados sensíveis.
+        """
+        categoria_slug = request.query_params.get("categoria", "").strip()
+        if not categoria_slug:
+            return Response({"sugerencias": []})
+
+        sugerencias = list(
+            Produto.objects.filter(
+                tipo_produto__isnull=False,
+                negocio__categoria__slug=categoria_slug,
+            )
+            .exclude(tipo_produto="")
+            .values_list("tipo_produto", flat=True)
+            .distinct()
+            .order_by("tipo_produto")[:30]
+        )
+        return Response({"sugerencias": sugerencias})
+
     @action(detail=True, methods=["post"], url_path="fotos")
     def adicionar_foto(self, request, pk=None):
         """Adiciona foto ao produto — máximo 3."""

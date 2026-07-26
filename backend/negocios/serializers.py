@@ -225,7 +225,7 @@ class ProdutoPublicoSerializer(serializers.ModelSerializer):
         model  = Produto
         fields = [
             "slug", "nome", "foto", "alt_foto", "descricao",
-            "descricao_longa", "categoria", "preco", "disponivel",
+            "descricao_longa", "categoria", "tipo_produto", "preco", "disponivel",
             "atualizado_em", "negocio", "fotos",
         ]
 
@@ -248,7 +248,7 @@ class ProdutoPainelSerializer(serializers.ModelSerializer):
         model  = Produto
         fields = [
             "id", "slug", "nome", "foto", "alt_foto", "descricao",
-            "descricao_longa", "categoria", "preco", "disponivel",
+            "descricao_longa", "categoria", "tipo_produto", "preco", "disponivel",
             "confirmado_em", "criado_em", "atualizado_em", "fotos",
         ]
         read_only_fields = ["slug", "criado_em", "atualizado_em"]
@@ -260,4 +260,9 @@ class ProdutoPainelSerializer(serializers.ModelSerializer):
 
     def validate_descricao(self, value):
         validar_texto_seo_completo(value, campo="descricao do produto")
+        return value
+
+    def validate_tipo_produto(self, value):
+        if value:
+            validar_texto_seo_completo(value, campo="tipo do produto")
         return value

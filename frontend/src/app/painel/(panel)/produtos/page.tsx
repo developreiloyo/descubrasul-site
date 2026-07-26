@@ -13,6 +13,7 @@ interface Foto {
 interface Produto {
   id: number;
   nome: string;
+  tipo_produto: string | null;
   descricao: string;
   preco: string | null;
   foto: string | null;
@@ -35,9 +36,12 @@ export default function ProdutosPage() {
   const [salvando, setSalvando] = useState(false);
 
   const [nome, setNome] = useState('');
+  const [tipoProduto, setTipoProduto] = useState('');
   const [descricao, setDescricao] = useState('');
   const [preco, setPreco] = useState('');
   const [foto, setFoto] = useState<File | null>(null);
+
+  const [sugestoesTipo, setSugestoesTipo] = useState<string[]>([]);
 
   async function carregar() {
     const [resP, resS] = await Promise.all([
@@ -51,8 +55,28 @@ export default function ProdutosPage() {
     if (resS.ok) setPlano(await resS.json());
   }
 
+  async function carregarSugestoes() {
+    try {
+      const resN = await fetch('/api/proxy/negocios/painel/meu-negocio');
+      if (!resN.ok) return;
+      const negocio = await resN.json();
+      const categoriaSlug: string = negocio?.categoria?.slug ?? '';
+      if (!categoriaSlug) return;
+
+      const resT = await fetch(
+        `/api/proxy/negocios/painel/produtos/tipos_sugeridos/?categoria=${categoriaSlug}`
+      );
+      if (!resT.ok) return;
+      const data = await resT.json();
+      setSugestoesTipo(data.sugerencias ?? []);
+    } catch {
+      // falha silenciosa — sugestoes são opcionais
+    }
+  }
+
   useEffect(() => {
     carregar();
+    carregarSugestoes();
   }, []);
 
   async function criar() {
@@ -61,6 +85,7 @@ export default function ProdutosPage() {
     try {
       const fd = new FormData();
       fd.append('nome', nome);
+      if (tipoProduto.trim()) fd.append('tipo_produto', tipoProduto.trim());
       fd.append('descricao', descricao);
       if (preco) fd.append('preco', preco);
       if (foto) fd.append('foto', foto);
@@ -78,6 +103,7 @@ export default function ProdutosPage() {
       }
 
       setNome('');
+      setTipoProduto('');
       setDescricao('');
       setPreco('');
       setFoto(null);
@@ -168,13 +194,41 @@ export default function ProdutosPage() {
               onChange={(e) => setNome(e.target.value)}
             />
           </div>
-          <textarea
-            className={inputCls}
-            placeholder="Descrição (natural, sem repetir palavras)"
-            rows={3}
-            value={descricao}
-            onChange={(e) => setDescricao(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label htmlFor="prod-tipo" className="text-xs font-semibold text-ink/50 uppercase tracking-wide">
+              Tipo de produto
+            </label>
+            <input
+              id="prod-tipo"
+              type="text"
+              list="tipos-sugeridos"
+              className={inputCls}
+              placeholder="Ex: Pizza, Corte de cabelo, Prato executivo..."
+              value={tipoProduto}
+              onChange={(e) => setTipoProduto(e.target.value)}
+              maxLength={120}
+            />
+            {sugestoesTipo.length > 0 && (
+              <datalist id="tipos-sugeridos">
+                {sugestoesTipo.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="prod-descricao" className="text-xs font-semibold text-ink/50 uppercase tracking-wide">
+              Descrição
+            </label>
+            <textarea
+              id="prod-descricao"
+              className={inputCls}
+              placeholder="Descrição (natural, sem repetir palavras)"
+              rows={3}
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+            />
+          </div>
           <input
             className={inputCls}
             type="number"
@@ -244,6 +298,9 @@ export default function ProdutosPage() {
                       <span className="ml-2 text-sm text-red-500">(oculto)</span>
                     )}
                   </p>
+                  {p.tipo_produto && (
+                    <p className="text-xs text-ink/50">{p.tipo_produto}</p>
+                  )}
                   {p.preco && (
                     <p className="text-sm text-primary">{formatarPreco(p.preco)}</p>
                   )}
