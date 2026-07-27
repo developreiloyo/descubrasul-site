@@ -30,7 +30,8 @@ Foco exclusivo: Vitrina de negócios locais. A Etapa 2 (jogos) foi cancelada por
 backend/
 ├── negocios/        # Negocio, Produto, FotoProduto, Localizacao, RedesSociais, VideoDestaque
 ├── usuarios/        # User customizado (email auth), roles
-├── planos/          # Plano, Assinatura, integração Mercado Pago  ← PENDENTE
+├── planos/          # Assinatura, CATALOGO_PLANOS, integração Mercado Pago (backend completo)
+├── ofertas/         # Oferta, webhook MP, task expiração (backend completo)
 ├── analytics/       # Clique (eventos crus), MetricaDiaria (agregados diários)
 ├── ia/              # Gerador de descrição, alt text, insights AARRR  ← PENDENTE
 ├── categorias/      # Categoria com slug, ícone, schema_tipo
@@ -88,8 +89,24 @@ backend/
 - `GET /health/ready/` → readiness probe (verifica DB com `SELECT 1`, retorna 503 se falhar)
 - Ambas com `@never_cache` — Dockerfile.prod aponta healthcheck para `/health/`
 
-#### planos/ e ia/
-- Apps criados mas **completamente vazios** — apenas arquivos stub gerados pelo Django
+#### planos/
+- `CATALOGO_PLANOS` dict — configs: basico (R$79/mês), pro (R$197/mês), producao (R$397/mês), fundador (R$599/ano)
+- `Assinatura` model — OneToOne com Negocio, status choices (pendente/ativa/pausada/cancelada/encerrada), mp_subscription_id, proximo_vencimento
+- `services.py` → `criar_subscricao_mp(negocio, plano_slug, back_url)` — cria preapproval MP; `validar_assinatura_webhook(sig, req_id, data_id)` — valida HMAC
+- Views: `listar_planos` (público), `minha_assinatura`, `assinar_plano/{slug}` → retorna `init_point`, `webhook_mp` — atualiza status
+- Migration: `0001_initial`
+- **Pendente frontend**: não existe UI de checkout no painel — botões de upgrade apontam para `/para-empresas#planos-detalhes`
+
+#### ofertas/
+- `Oferta` model — negocio, titulo, descricao, preco_original, preco_oferta, imagem, status (pendente/ativa/expirada/cancelada), validade, mp_preference_id
+- `ativar()` → cria MP Preference de compra única; `dias_restantes` property
+- Views: `listar_ativas` (público), `minhas_ofertas`, `criar_oferta`, `webhook_mp_oferta`
+- Task Celery: `expirar_ofertas` — expira ofertas vencidas (agendado via Celery Beat)
+- Frontend: `painel/ofertas/page.tsx` — lista + criar oferta com checkout MP
+- Migration: `0001_initial`
+
+#### ia/
+- App criado mas **vazio** — apenas arquivos stub
 
 ### Frontend — Painel do comerciante
 
@@ -151,8 +168,19 @@ GET    /health/ready/                   # Readiness — DB OK (retorna 503 se fa
 # Categorias — público
 GET    /api/categorias/                 # Lista categorias ativas ordenadas por `ordem`
 
-# Stubs vazios
-/api/planos/
+# Planos (assinaturas Mercado Pago)
+GET    /api/planos/                          # Lista planos públicos com preços
+GET    /api/planos/minha-assinatura/         # Status da assinatura do merchant (JWT)
+POST   /api/planos/assinar/{slug}/           # Inicia assinatura MP → retorna init_point (JWT)
+POST   /api/planos/webhook/                  # Webhook MP — atualiza status da assinatura
+
+# Ofertas da Semana
+GET    /api/ofertas/                         # Lista ofertas ativas (público)
+GET    /api/ofertas/minhas/                  # Minhas ofertas (JWT)
+POST   /api/ofertas/criar/                   # Criar oferta → inicia pagamento MP (JWT)
+POST   /api/ofertas/webhook/                 # Webhook MP para ofertas
+
+# Stub vazio
 /api/ia/
 ```
 
@@ -167,11 +195,10 @@ GET    /api/categorias/                 # Lista categorias ativas ordenadas por 
 /{categoria}                               # Listagem por categoria
 /{categoria}/{cidade}                      # Categoria + cidade
 /busca                                     # Busca geral
-/marketplace                               # Marketplace
+/marketplace                               # Vitrina (rota /marketplace, label "Vitrina" no footer/nav)
 /food                                      # Página de food
 /p/{slug}                                  # URL curta (redirect)
-/planos                                    # Página de planos
-/para-empresas                             # Landing para comerciantes
+/para-empresas                             # Landing para comerciantes + 3 planos detalhados
 /painel/login                              # Login comerciante (fora do route group)
 /painel/cadastro                           # Cadastro (fora do route group)
 /painel/esqueci-senha                      # Recuperação de senha (fora do route group)
@@ -180,6 +207,7 @@ GET    /api/categorias/                 # Lista categorias ativas ordenadas por 
 /painel/meu-negocio                        # Editar negócio + EspacoEspecial (Pro+) ← route group (panel)
 /painel/produtos                           # Gerenciar produtos ← route group (panel)
 /painel/metricas                           # Métricas AARRR (Pro+) ← route group (panel)
+/painel/ofertas                            # Ofertas da Semana ← route group (panel)
 /privacidade                               # Política de Privacidade (LGPD)
 /termos                                    # Termos de Uso
 
@@ -276,16 +304,15 @@ Tokens aplicados em `src/app/globals.css` via `@theme`. Sistema MD3-inspired com
 
 ## O que NÃO está implementado ainda
 
-| Feature                            | App responsável | Observação                                         |
-|------------------------------------|-----------------|---------------------------------------------------|
-| Assinaturas + cobrança recorrente  | `planos/`       | Mercado Pago Subscriptions — previsto 2026-06-22  |
-| Promoções especiais + pagamento MP | `promocoes/` (novo) | Compra única via MP Preference               |
-| Geração de texto com IA            | `ia/`           | Claude Haiku 4.5 — só plano Pro+                  |
-| CTAs upgrade de plano              | `planos/`       | Botões em /planos e /painel/ apontam para /cadastro em vez de fluxo de upgrade |
-| pgvector busca semântica           | `core/`         | MiniLM-L12-v2 pendente de setup                  |
-| Geocodificação automática Maps     | `negocios/`     | **Implementado**: `geocodificar_localizacao` task + `geocodificar_endereco` service. Requer `GOOGLE_MAPS_API_KEY` no `.env` — sem a chave retorna `None` silenciosamente |
-| Razão social + CNPJ legais         | —               | `[PENDENTE]` em /privacidade e /termos — aguarda confirmação do dono |
-| SMTP produção                      | `.env`          | `EMAIL_BACKEND=console` em dev; vars SMTP comentadas para prod |
+| Feature                                  | App responsável | Observação                                                                 |
+|------------------------------------------|-----------------|----------------------------------------------------------------------------|
+| Checkout de upgrade de plano (frontend)  | `planos/`       | Backend MP pronto (`POST /api/planos/assinar/{slug}`). Falta UI no painel — botões apontam para `/para-empresas#planos-detalhes` |
+| Sincronização nomes de planos            | `planos/`       | Backend usa `gratuito/basico/pro/producao/fundador`; frontend mostra `Presença Sul / Conexão Sul / Destaque Sul` — falta mapeamento no painel |
+| SMTP produção                            | `.env`          | Resend configurado no VPS mas propagação DNS pendente. Sem isso, password reset não entrega emails |
+| Razão social + CNPJ legais               | —               | Texto "CNPJ em processo de registro" em `/privacidade` e `/termos` — aguarda confirmação do dono |
+| Geração de texto com IA                  | `ia/`           | Claude Haiku 4.5 — ativar somente Fase 3 (mês 3+), só plano Pro+          |
+| pgvector busca semântica                 | `core/`         | MiniLM-L12-v2 pendente de setup                                            |
+| OAuth Google                             | `usuarios/`     | Spec existe (`specs/03-oauth-google.md`), não iniciado — não bloquea lançamento |
 
 ---
 
@@ -515,15 +542,20 @@ Commit + deploy
 
 ## Planos de assinatura
 
-| Plano      | Preço         | Limite de produtos (público) | Limite (painel) | Features IA/Pro     |
-|------------|---------------|------------------------------|-----------------|---------------------|
-| Gratuito   | R$ 0          | 10                           | 5               | Não                 |
-| Básico     | R$ 79/mês     | 10                           | 20              | Não                 |
-| Pro        | R$ 197/mês    | Ilimitado                    | Ilimitado       | Sim                 |
-| Produção   | R$ 397/mês    | Ilimitado                    | Ilimitado       | Sim + fotos/vídeos  |
-| Fundador   | R$ 599/ano    | Ilimitado                    | Ilimitado       | Sim (primeiros 50)  |
+> **Atenção — dois sistemas de nomes coexistem:**
+> - **Backend** (`Negocio.Plano`): `gratuito / basico / pro / producao / fundador` — valores no banco de dados
+> - **Frontend marketing** (`/para-empresas`, `/home`): `Presença Sul / Conexão Sul / Destaque Sul` — nomes comerciais
+> Pendente: mapear nomes comerciais no painel do comerciante.
 
-> Nota: `LIMITES_PRODUTOS_PUBLICO` no `views.py` limita a exibição pública a 10 para gratuito e básico.
+| Slug backend | Nome comercial  | Preço          | Limite produtos (público) | Limite (painel) | IA/Pro |
+|--------------|-----------------|----------------|---------------------------|-----------------|--------|
+| `gratuito`   | Presença Sul    | R$ 0           | 10                        | 5               | Não    |
+| `basico`     | —               | R$ 79/mês      | 10                        | 20              | Não    |
+| `pro`        | Conexão Sul     | R$ 197/ano     | Ilimitado                 | Ilimitado       | Sim    |
+| `producao`   | Destaque Sul    | R$ 397/ano     | Ilimitado                 | Ilimitado       | Sim    |
+| `fundador`   | Fundador        | R$ 599/ano     | Ilimitado                 | Ilimitado       | Sim (50 vagas) |
+
+> `LIMITES_PRODUTOS_PUBLICO` no `views.py` limita a exibição pública a 10 para gratuito e básico.
 > `LIMITES_PRODUTOS` no `models.py` é o limite de cadastro no painel: gratuito=5, basico=20, pro/producao/fundador=None.
 
 ---

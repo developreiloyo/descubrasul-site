@@ -1,6 +1,6 @@
 # DescubraSul — Arquitectura del Sistema
 
-*Última actualización: 2026-07-12. Fuente de verdad: `CLAUDE.md` + `specs/`. Si hay discrepancia, el código gana.*
+*Última actualización: 2026-07-26. Fuente de verdad: `CLAUDE.md` + `specs/`. Si hay discrepancia, el código gana.*
 
 ---
 
@@ -15,29 +15,35 @@
 - **Consumidor / usuario final** — persona buscando negocios locales por cidade/categoria.
 - **Operador (Reinaldo)** — onboarding de merchants, analíticas agregadas, modelo de monetización.
 
-**Modelo de negocio:** cuatro planes + plan "Fundador" (50 cupos, R$599/año). Diferenciador: onboarding manual de Google Business Profile — algo que la competencia automatizada no ofrece.
+**Modelo de negocio:** tres planes comerciales (Presença Sul gratis · Conexão Sul R$197/año · Destaque Sul R$397/año) + plan Fundador (50 cupos, R$599/año). Diferenciador: onboarding manual de Google Business Profile — algo que la competencia automatizada no ofrece.
 
 **Principio filtro de features:** ¿esto ayuda al merchant a mostrar mejor su negocio, o al usuario a encontrarlo más rápido? Si la respuesta no es clara, no es prioridad para el MVP.
 
 ---
 
-## Estado actual (2026-07-12)
+## Estado actual (2026-07-26)
 
 | Área | Estado |
 |------|--------|
-| Producción | ✅ Activo en www.descubrasul.com (PMV para validar apariencia/usabilidad) |
-| Backend Django | ✅ Funcional — negocios, usuarios, analytics, categorias, CRUD de produtos |
-| Panel del merchant | ✅ Alta atómica User+Negocio, auto-login, formulario completo, CRUD produtos |
-| Password reset | ✅ Implementado y verificado (49 tests en verde, 3 bugs corregidos 2026-07-12) |
-| Analíticas | ✅ Clique + MetricaDiaria, tracking, agregación nocturna Celery Beat |
-| Páginas públicas | ✅ Minisite, cidades, categorías, busca, sitemap dinámico, URL corta /p/{slug} |
-| Rediseño visual | ✅ Completado en `feat/redesign-visual-v1` (Playfair Display, CategoryCard, CityCard, PromoCard, scroll reveal) |
+| Producción | ✅ Activo en www.descubrasul.com |
+| Backend Django | ✅ negocios, usuarios, analytics, categorias, planos, ofertas, CRUD produtos |
+| Panel del merchant | ✅ meu-negocio, produtos, metricas, ofertas |
+| Password reset | ✅ Implementado — 49 tests en verde |
+| Analíticas | ✅ Clique + MetricaDiaria, tracking, Celery Beat nocturno |
+| app `planos/` backend | ✅ Assinatura model + MP preapproval + webhook — falta UI de checkout en frontend |
+| app `ofertas/` backend + frontend | ✅ Oferta model + MP Preference + painel/ofertas |
+| LGPD compliance | ✅ CookieBanner, /privacidade, /termos, consent_date en User model |
+| Token GitHub expuesto | ✅ Resuelto — remote URL limpia sin PAT embebido |
+| `/para-empresas` | ✅ Redesign completo — 3 planes anuales con sección detallada |
+| `/planos` (página) | ✅ Eliminada — referencias actualizadas a `/para-empresas#planos-detalhes` |
+| Google Business Profile | ✅ Integración Places API + seed_showcase con reviews mock |
 | IA (Claude Haiku) | ⏳ Pendiente — activar en mes 3+ solo para plan Pro |
-| Assinaturas MP | ⏳ Pendiente — Mercado Pago Subscriptions |
-| OAuth Google | ⏳ Pendiente — spec existe, scope sin definir |
-| Token GitHub expuesto | 🔴 Bloqueante — revocar PAT `ghp_yLMV...` antes del lanzamiento |
-| LGPD compliance | 🔴 Bloqueante — checkbox consentimiento, /privacidade, /termos, cookie banner |
-| Ramas divergidas | 🔴 Pendiente — reconciliar `main` con `stable/etapa1-producao` |
+| Checkout upgrade frontend | 🔴 Bloqueante monetización — falta UI en painel para POST /api/planos/assinar/{slug} |
+| SMTP producción | 🔴 Bloqueante — Resend configurado, DNS pendiente de propagación |
+| Razón social + CNPJ legales | 🟡 "CNPJ em processo de registro" en /privacidade y /termos |
+| Nombres planes (sync backend↔frontend) | 🟡 Backend: `gratuito/basico/pro/producao` · Frontend: Presença/Conexão/Destaque Sul |
+| OAuth Google | ⏳ Spec existe (`specs/03-oauth-google.md`) — no iniciado |
+| Ramas divergidas | 🟡 `main` y `stable/etapa1-producao` sin reconciliar |
 
 ---
 
