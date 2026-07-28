@@ -110,6 +110,7 @@ export default function MeuNegocioPage() {
   const [googlePlaceId, setGooglePlaceId] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [categoriaOriginal, setCategoriaOriginal] = useState('');
   const sucessoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isPro = PLANOS_PRO.includes(plano);
@@ -123,9 +124,11 @@ export default function MeuNegocioPage() {
     }
     if (d.logo) setLogoUrl(d.logo);
     if (d.og_image) setCapaUrl(d.og_image);
+    const catSlug = d.categoria?.slug ?? '';
+    setCategoriaOriginal(catSlug);
     setForm({
       nome: d.nome ?? '',
-      categoria_slug: d.categoria?.slug ?? '',
+      categoria_slug: catSlug,
       cidade: d.cidade ?? '',
       whatsapp: maskPhone(d.whatsapp ?? ''),
       nome_responsavel: d.nome_responsavel ?? '',
@@ -227,6 +230,7 @@ export default function MeuNegocioPage() {
         linkedin_url,
         historia,
         dias_funcionamento,
+        categoria_slug,
         ...resto
       } = form;
 
@@ -260,6 +264,8 @@ export default function MeuNegocioPage() {
         ...resto,
         whatsapp: whatsappDigits,
         telefone: telefoneDigits,
+        // só envia categoria_slug se o usuário mudou a seleção (evita erro com categorias inativas)
+        ...(categoria_slug && categoria_slug !== categoriaOriginal ? { categoria_slug } : {}),
         ...horario,
         historia,
         dias_funcionamento,
@@ -267,8 +273,6 @@ export default function MeuNegocioPage() {
         redes_sociais: { instagram_url, tiktok_url, facebook_url, youtube_url, linkedin_url },
         espaco_especial: espacoPayload,
       };
-
-      console.log('payload antes do PATCH:', JSON.stringify(body, null, 2));
 
       const res = await fetch('/api/proxy/negocios/painel/meu-negocio', {
         method: 'PATCH',
