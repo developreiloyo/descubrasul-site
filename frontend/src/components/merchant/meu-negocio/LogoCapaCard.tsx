@@ -7,11 +7,23 @@ interface Props {
   capaUrl?: string;
   onLogoChange: (file: File) => void;
   onCapaChange: (file: File) => void;
+  plano: string;
+  isPro: boolean;
 }
 
-export function LogoCapaCard({ logoUrl, capaUrl, onLogoChange, onCapaChange }: Props) {
+export function LogoCapaCard({ logoUrl, capaUrl, onLogoChange, onCapaChange, plano, isPro: _isPro }: Props) {
   return (
-    <Card title="Logo e capa">
+    <Card title="Fotos e vídeos (conforme o seu plano)">
+      <div className="mb-4 p-3 rounded-lg bg-surface-muted text-sm text-ink-muted">
+        <p className="mb-2">Adicione fotos e vídeos para destacar sua empresa. Quanto mais completo for o seu perfil, maior será o interesse dos clientes.</p>
+        {(plano === 'pro' || plano === 'producao' || plano === 'fundador') ? (
+          <p className="text-xs font-medium text-brand-green">🥇 Plano Premium · Até 10 fotos · 1 vídeo</p>
+        ) : plano === 'basico' ? (
+          <p className="text-xs font-medium text-ink">🥈 Plano Intermediário · Até 5 fotos</p>
+        ) : (
+          <p className="text-xs font-medium text-ink-subtle">🥉 Plano Básico · Apenas logo e foto de capa</p>
+        )}
+      </div>
       <div className="flex flex-col items-center gap-4">
         {/* Logo */}
         <label className="cursor-pointer">

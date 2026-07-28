@@ -25,21 +25,21 @@ export default async function PainelPage() {
       href: '/painel/meu-negocio',
       icon: Store,
       title: 'Meu Negócio',
-      desc: 'Edite informações, SEO, espaço especial e redes sociais.',
+      desc: 'Gerencie as informações, fotos, redes sociais e a apresentação do seu negócio.',
       cta: 'Editar negócio',
     },
     {
       href: '/painel/produtos',
       icon: Package,
-      title: 'Produtos',
-      desc: 'Gerencie produtos, fotos e disponibilidade.',
-      cta: 'Gerenciar produtos',
+      title: 'Serviços e Produtos',
+      desc: 'Cadastre seus serviços, experiências e produtos e mostre ao público o que você oferece.',
+      cta: 'Gerenciar',
     },
     {
       href: '/painel/metricas',
       icon: BarChart3,
-      title: 'Analytics',
-      desc: 'Veja visualizações, conversões e origens de tráfego.',
+      title: 'Desempenho',
+      desc: 'Acompanhe as visualizações e o interesse do público pelo seu negócio.',
       cta: 'Ver métricas',
     },
   ];
@@ -49,10 +49,13 @@ export default async function PainelPage() {
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-ink">
-          Bem-vindo, <span className="text-brand-green">{user.nome || user.email}</span>!
+          Bem-vindo à DescubraSul, <span className="text-brand-green">{user.nome || user.email}</span>!
         </h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Painel do comerciante · {user.role}
+          Área do Negócio
+        </p>
+        <p className="mt-2 text-sm text-ink-muted max-w-xl">
+          Gerencie todas as informações do seu negócio, mantenha seu perfil atualizado e aumente sua visibilidade na vitrine digital do Sul Catarinense.
         </p>
       </header>
 

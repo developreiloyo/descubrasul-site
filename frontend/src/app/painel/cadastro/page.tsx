@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import type { Categoria } from "@/types";
 import { maskPhone } from "@/lib/masks";
 
@@ -17,13 +18,16 @@ export default function CadastroPage() {
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [form, setForm] = useState({
-    nome: "",
-    email: "",
-    password: "",
     negocio_nome: "",
     categoria_slug: "",
     cidade: "",
+    email: "",
+    password: "",
+    nome: "",
     whatsapp: "",
   });
 
@@ -44,13 +48,26 @@ export default function CadastroPage() {
   }
 
   const [aceitouTermos, setAceitouTermos] = useState(false);
-  const completo = Object.values(form).every((v) => v.trim() !== "") && aceitouTermos;
+  const completo =
+    Object.values(form).every((v) => v.trim() !== "") &&
+    aceitouTermos &&
+    (passwordConfirm === "" || form.password === passwordConfirm);
 
   async function handleSubmit() {
     setErro("");
+
+    if (form.password !== passwordConfirm) {
+      setErro("As senhas não coincidem.");
+      return;
+    }
+
     setCarregando(true);
     try {
-      const payload = { ...form, whatsapp: form.whatsapp.replace(/\D/g, ""), lgpd_consent: aceitouTermos };
+      const payload = {
+        ...form,
+        whatsapp: form.whatsapp.replace(/\D/g, ""),
+        lgpd_consent: aceitouTermos,
+      };
       const res = await fetch("/api/proxy/usuarios/cadastro/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,54 +115,9 @@ export default function CadastroPage() {
         Gratis para comecar — apareca no Google hoje mesmo
       </p>
       <div className="mt-8 flex flex-col gap-3">
-        <p className={`mt-2 ${labelCls}`}>SEUS DADOS</p>
+        <p className={`mt-2 ${labelCls}`}>Dados do negócio ou perfil profissional</p>
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="nome" className={labelCls}>
-            Nome completo <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="nome"
-            required
-            className={inputCls}
-            placeholder="Seu nome completo"
-            value={form.nome}
-            onChange={(e) => set("nome", e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label htmlFor="email" className={labelCls}>
-            E-mail <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="email"
-            required
-            type="email"
-            className={inputCls}
-            placeholder="Seu e-mail"
-            value={form.email}
-            onChange={(e) => set("email", e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label htmlFor="password" className={labelCls}>
-            Senha <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="password"
-            required
-            type="password"
-            className={inputCls}
-            placeholder="Senha (minimo 8 caracteres)"
-            value={form.password}
-            onChange={(e) => set("password", e.target.value)}
-          />
-        </div>
-
-        <p className={`mt-2 ${labelCls}`}>SEU NEGOCIO</p>
-
+        {/* Nome do negócio */}
         <div className="flex flex-col gap-1">
           <label htmlFor="negocio_nome" className={labelCls}>
             Nome do negócio <span className="text-red-500">*</span>
@@ -160,6 +132,7 @@ export default function CadastroPage() {
           />
         </div>
 
+        {/* Categoria */}
         <div className="flex flex-col gap-1">
           <label htmlFor="categoria_slug" className={labelCls}>
             Categoria <span className="text-red-500">*</span>
@@ -180,6 +153,7 @@ export default function CadastroPage() {
           </select>
         </div>
 
+        {/* Cidade */}
         <div className="flex flex-col gap-1">
           <label htmlFor="cidade" className={labelCls}>
             Cidade <span className="text-red-500">*</span>
@@ -200,6 +174,95 @@ export default function CadastroPage() {
           </select>
         </div>
 
+        {/* E-mail */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="email" className={labelCls}>
+            E-mail <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="email"
+            required
+            type="email"
+            className={inputCls}
+            placeholder="Seu e-mail"
+            value={form.email}
+            onChange={(e) => set("email", e.target.value)}
+          />
+        </div>
+
+        {/* Senha */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="password" className={labelCls}>
+            Senha <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <input
+              id="password"
+              required
+              type={showPassword ? "text" : "password"}
+              className={`${inputCls} pr-12`}
+              placeholder="Senha (minimo 8 caracteres)"
+              value={form.password}
+              onChange={(e) => set("password", e.target.value)}
+            />
+            <button
+              type="button"
+              tabIndex={-1}
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/60"
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Repetir senha */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="password_confirm" className={labelCls}>
+            Repetir senha <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <input
+              id="password_confirm"
+              required
+              type={showPasswordConfirm ? "text" : "password"}
+              className={`${inputCls} pr-12`}
+              placeholder="Repita a senha"
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+            />
+            <button
+              type="button"
+              tabIndex={-1}
+              onClick={() => setShowPasswordConfirm((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/60"
+              aria-label={showPasswordConfirm ? "Ocultar senha" : "Mostrar senha"}
+            >
+              {showPasswordConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          {passwordConfirm !== "" && form.password !== passwordConfirm && (
+            <p className="text-xs text-red-500">As senhas não coincidem.</p>
+          )}
+        </div>
+
+        {/* Nome do responsável */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="nome" className={labelCls}>
+            Nome do responsável <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="nome"
+            required
+            className={inputCls}
+            placeholder="Seu nome completo"
+            value={form.nome}
+            onChange={(e) => set("nome", e.target.value)}
+          />
+        </div>
+
+        {/* WhatsApp */}
         <div className="flex flex-col gap-1">
           <label htmlFor="whatsapp" className={labelCls}>
             WhatsApp <span className="text-red-500">*</span>
@@ -209,7 +272,7 @@ export default function CadastroPage() {
             required
             type="tel"
             className={inputCls}
-            placeholder="+55 (48) 99999-0000"
+            placeholder="(48) 99999-0000"
             value={form.whatsapp}
             onChange={(e) => set("whatsapp", maskPhone(e.target.value))}
           />

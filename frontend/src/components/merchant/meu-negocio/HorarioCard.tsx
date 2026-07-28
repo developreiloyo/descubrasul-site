@@ -37,7 +37,7 @@ export function HorarioCard({
   }
 
   return (
-    <Card title="Horário de funcionamento" icon={Clock}>
+    <Card title="Horário de atendimento" icon={Clock}>
       <div className="flex flex-col gap-4">
         <div>
           <p className="text-sm font-medium text-ink-muted mb-2">Dias de atendimento</p>

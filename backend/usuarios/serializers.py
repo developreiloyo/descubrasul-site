@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
 class CadastroCompletoSerializer(serializers.Serializer):
     """
     Cria User + Negocio em uma unica transacao.
-    Fluxo de cadastro do comerciante — plano gratuito, status pendente.
+    Fluxo de cadastro do comerciante — plano gratuito, publicado imediatamente.
     """
     # Dados do usuario
     email    = serializers.EmailField()
@@ -88,7 +88,7 @@ class CadastroCompletoSerializer(serializers.Serializer):
             cidade=validated_data["cidade"].strip().lower(),
             whatsapp=validated_data["whatsapp"],
             plano=Negocio.Plano.GRATUITO,
-            status=Negocio.Status.PENDENTE,
+            status=Negocio.Status.ATIVO,
         )
 
         return user

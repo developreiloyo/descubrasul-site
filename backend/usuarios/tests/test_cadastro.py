@@ -67,7 +67,7 @@ class CadastroCompletoTests(TestCase):
         negocio = Negocio.objects.get(usuario=user)
         self.assertEqual(negocio.nome, "Padaria do João")
         self.assertEqual(negocio.plano, Negocio.Plano.GRATUITO)
-        self.assertEqual(negocio.status, Negocio.Status.PENDENTE)
+        self.assertEqual(negocio.status, Negocio.Status.ATIVO)
 
     def test_whatsapp_10_digitos_aceito(self):
         res = self._post({"email": "w10@example.com", "whatsapp": "4888880000"})

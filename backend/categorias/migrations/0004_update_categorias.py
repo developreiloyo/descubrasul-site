@@ -36,7 +36,7 @@ CATEGORIAS_NOVAS = [
     {"nome": "Segurança e Chaveiros",                         "icone": "Key",                "schema_tipo": "LocalBusiness",               "ordem": 18},
     {"nome": "Serviços Gerais",                               "icone": "RectangleStack",     "schema_tipo": "LocalBusiness",               "ordem": 19},
     {"nome": "Serviços Jurídicos",                            "icone": "Scale",              "schema_tipo": "LegalService",                "ordem": 20},
-    {"nome": "Serviços Vehiculares",                          "icone": "Truck",              "schema_tipo": "AutoDealer",                  "ordem": 21},
+    {"nome": "Serviços Veiculares",                           "icone": "Truck",              "schema_tipo": "AutomotiveBusiness",          "ordem": 21},
     {"nome": "Tecnologia, Informática e Marketing",           "icone": "ComputerDesktop",    "schema_tipo": "LocalBusiness",               "ordem": 22},
     {"nome": "Transporte e Logística",                        "icone": "GlobeAlt",           "schema_tipo": "LocalBusiness",               "ordem": 23},
     {"nome": "Turismo e Hospedagem",                          "icone": "MapPin",             "schema_tipo": "TouristInformationCenter",    "ordem": 24},

@@ -14,7 +14,7 @@ export function SobreNegocioCard({ descricao, historia, onChange }: Props) {
     <Card title="Sobre o negócio" icon={FileText}>
       <div className="flex flex-col gap-4">
         <FormField
-          label="Descrição curta"
+          label="Apresentação"
           htmlFor="descricao"
           hint={`${descricao.length} / 300 caracteres — aparece nos resultados de busca`}
           required
@@ -24,13 +24,13 @@ export function SobreNegocioCard({ descricao, historia, onChange }: Props) {
             rows={3}
             value={descricao}
             onChange={(e) => onChange('descricao', e.target.value)}
-            placeholder="Frase de impacto sobre o negócio — aparece nos resultados de busca."
+            placeholder="Escreva uma breve apresentação da sua empresa."
             className={`${inputClass} resize-none`}
           />
         </FormField>
 
         <FormField
-          label="História do negócio (opcional)"
+          label="Sobre a empresa (opcional)"
           htmlFor="historia"
           hint={`${historia.length} caracteres · Pode usar parágrafos`}
         >
@@ -39,7 +39,7 @@ export function SobreNegocioCard({ descricao, historia, onChange }: Props) {
             rows={6}
             value={historia}
             onChange={(e) => onChange('historia', e.target.value)}
-            placeholder="Conte a história do seu negócio. Quando surgiu? O que o torna especial?"
+            placeholder="Conte mais sobre sua empresa, seus serviços, experiência e diferenciais."
             className={`${inputClass} resize-none`}
           />
         </FormField>

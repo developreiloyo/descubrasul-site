@@ -436,7 +436,7 @@ export default function MeuNegocioPage() {
             cidade={negocioMeta?.cidade}
             categoriaSlug={negocioMeta?.categoriaSlug}
           />
-          <LogoCapaCard logoUrl={logoUrl} capaUrl={capaUrl} onLogoChange={handleLogo} onCapaChange={handleCapa} />
+          <LogoCapaCard logoUrl={logoUrl} capaUrl={capaUrl} onLogoChange={handleLogo} onCapaChange={handleCapa} plano={plano} isPro={isPro} />
           <DicasCard />
           {negocioMeta && (
             <QRCodeCard
