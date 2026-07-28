@@ -20,7 +20,7 @@ Foco exclusivo: Vitrina de negócios locais. A Etapa 2 (jogos) foi cancelada por
 | IA textos     | API Claude Haiku 4.5 (somente Plano Pro)        |
 | IA busca      | pgvector + MiniLM-L12-v2 (grátis, no VPS)      |
 | Imagens       | S3-compatible                                   |
-| Deploy        | Docker Compose + Traefik (Hostinger VPS Ubuntu 24.04)           |
+| Deploy        | Docker Compose + Traefik (Hostinger VPS Ubuntu 24.04) |
 
 ---
 
@@ -42,89 +42,9 @@ backend/
 
 ## O que já está implementado
 
-### Backend
-
-#### usuarios/
-- `User` customizado com email como USERNAME_FIELD
-- Roles: `comerciante` | `admin` | `superadmin`
-- Propriedades: `is_comerciante`, `is_admin_or_above`, `plano` (atalho para negocio.plano)
-- `UserManager` com `create_user` e `create_superuser`
-- Migration: `0001_initial`
-
-#### categorias/
-- `Categoria`: slug auto-gerado, nome, icone, schema_tipo, ativo, ordem
-- Migrations: `0001_initial`, `0002_seed_categorias` (idempotente via `get_or_create`)
-- 10 categorias base seedadas: Restaurantes, Moda, Estetica, Academias, Pet Shop, Clinicas, Educacao, Lojas Gerais, Servicos, Alimentacao
-- `CategoriaListView` — `GET /api/categorias/` retorna apenas ativas ordenadas por `ordem`
-
-#### negocios/
-- `Negocio`: todos os campos (nome, descricao, historia, logo, categoria, cidade, bairro, whatsapp, website, plano, status, verificado, slug auto, seo_title/description, og_image, alt_logo, palavras_chave, espaco_especial JSONField, horario, dias_funcionamento, media_nota)
-- `Produto`: nome, foto, descricao, descricao_longa, categoria, preco, disponivel, ordem, confirmado_em, slug auto, alt_foto, fotos (ForeignKey)
-- `FotoProduto`: máximo 3 por produto, validado no serializer
-- `Localizacao`: endereco, lat/lng, direccao_fmt auto-gerada, cidade, estado, cep, bairro, area_servico
-- `RedesSociais`: instagram, tiktok, facebook, youtube, x
-- `VideoDestaque`: url_original, plataforma, oembed_html (cache)
-- Signals: `normalizar_cidade_negocio`, `gerar_slug_negocio`, `gerar_slug_produto`, `preencher_direccao_fmt`, `disparar_geocodificacao` (post_save de Localizacao — dispara task async se lat/lng ausentes)
-- Permissões: `IsDonoDoNegocio`, `IsPlanoPro`, `IsPlanoBasicoOuSuperior`, `PodicionarProduto`
-- Validações: `validar_imagem` (magic bytes, 5MB max, jpg/png/webp)
-- Migration: até `0006_unaccent_normalizar_cidade`
-
-#### analytics/
-- `Clique`: tipo (view, whatsapp, produto, share, instagram, tiktok, facebook, youtube, maps), origem (google, instagram, facebook, whatsapp, direto, outro), negocio, produto FK opcional
-- `MetricaDiaria`: agregados pré-computados por negócio por data — views, whatsapp, shares, origens, redes sociais, taxa_conversao
-- Tasks Celery: `agregar_metricas_diarias` (00:30h diário), `purgar_cliques_antigos` (03:00h domingos)
-- Management command: `setup_celery_beat` — seed dos agendamentos no banco
-- Migration: `0001_initial`
-
-#### negocios/ — tasks e services
-- Task Celery: `ocultar_produtos_vencidos` (02:00h diário) — oculta produtos sem confirmação há +30 dias
-- Task Celery: `geocodificar_localizacao(localizacao_id)` — chama Google Maps API, preenche lat/lng, max_retries=3, countdown=60s
-- `negocios/services.py` → `geocodificar_endereco(endereco)` — HTTP call ao Google Maps Geocoding API; retorna `(Decimal lat, Decimal lng)` ou `None`
-
-#### core/celery.py
-- `app.conf.beat_schedule` configurado com as 3 tasks e horários
-
-#### core/health.py
-- `GET /health/` → liveness probe (processo Django respondendo, sem checar deps)
-- `GET /health/ready/` → readiness probe (verifica DB com `SELECT 1`, retorna 503 se falhar)
-- Ambas com `@never_cache` — Dockerfile.prod aponta healthcheck para `/health/`
-
-#### planos/
-- `CATALOGO_PLANOS` dict — configs: basico (R$79/mês), pro (R$197/mês), producao (R$397/mês), fundador (R$599/ano)
-- `Assinatura` model — OneToOne com Negocio, status choices (pendente/ativa/pausada/cancelada/encerrada), mp_subscription_id, proximo_vencimento
-- `services.py` → `criar_subscricao_mp(negocio, plano_slug, back_url)` — cria preapproval MP; `validar_assinatura_webhook(sig, req_id, data_id)` — valida HMAC
-- Views: `listar_planos` (público), `minha_assinatura`, `assinar_plano/{slug}` → retorna `init_point`, `webhook_mp` — atualiza status
-- Migration: `0001_initial`
-- **Pendente frontend**: não existe UI de checkout no painel — botões de upgrade apontam para `/para-empresas#planos-detalhes`
-
-#### ofertas/
-- `Oferta` model — negocio, titulo, descricao, preco_original, preco_oferta, imagem, status (pendente/ativa/expirada/cancelada), validade, mp_preference_id
-- `ativar()` → cria MP Preference de compra única; `dias_restantes` property
-- Views: `listar_ativas` (público), `minhas_ofertas`, `criar_oferta`, `webhook_mp_oferta`
-- Task Celery: `expirar_ofertas` — expira ofertas vencidas (agendado via Celery Beat)
-- Frontend: `painel/ofertas/page.tsx` — lista + criar oferta com checkout MP
-- Migration: `0001_initial`
-
-#### ia/
-- App criado mas **vazio** — apenas arquivos stub
-
-### Frontend — Painel do comerciante
-
-#### Route group `src/app/painel/(panel)/`
-- `layout.tsx` — injeta `MerchantNavbar` + `MobileBottomNav`, bg `#f8f9ff`, max-w 1280px
-- `meu-negocio/page.tsx` — grid 8+4 col; fetch GET + PATCH `/api/proxy/negocios/painel/meu-negocio/`
-  - Payload PATCH: `{ ...campos, historia, localizacao: {cep, direccao, bairro, cidade, estado}, redes_sociais: {instagram_url, tiktok_url, facebook_url, youtube_url, x_url}, espaco_especial: null | {tipo, ...} }`
-- `produtos/page.tsx` — CRUD de produtos com upload de foto (max 3/produto)
-- `metricas/page.tsx` — Dashboard AARRR (bloqueado para não-Pro)
-
-#### `MerchantNavbar`
-- Logo: `<Image src="/logo.png">` — mesmo logo do Navbar público
-- Links: `/painel/meu-negocio`, `/painel/produtos`, `/painel/metricas`
-
-#### `QRCodeCard` (`components/ui/QRCodeCard.tsx`)
-- Lib: `react-qr-code` (NÃO `qrcode.react`)
-- Gera URL: `/negocios/{cidade}/{categoriaSlug}/{slug}`
-- Download disponível em PNG e SVG
+> Detalhes de models, fields, signals, migrations, tasks, componentes e design system completo:
+> ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+> Diagrama de arquitetura e estado de produção: ver [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
 ### Backend — Endpoints da API
 
@@ -222,83 +142,15 @@ POST   /api/ofertas/webhook/                 # Webhook MP para ofertas
 
 > **Proxy BFF (`/api/proxy/[...path]/route.ts`)**: injeta `Authorization: Bearer` automaticamente a partir dos cookies httpOnly. `PUBLIC_PATHS` (sem auth): `categorias`, `planos`, `usuarios/cadastro`. Token expirado → tenta refresh silencioso antes de retornar 401.
 
-> **Route group `painel/(panel)/`**: as páginas autenticadas do painel (dashboard, meu-negocio, produtos, metricas) ficam dentro do grupo `(panel)` que injeta `MerchantNavbar` + `MobileBottomNav` via `layout.tsx`. As páginas de auth (login, cadastro, esqueci-senha, nova-senha) ficam **fora** do grupo e não recebem esse layout.
+> **Route group `painel/(panel)/`**: as páginas autenticadas do painel ficam dentro do grupo `(panel)` que injeta `MerchantNavbar` + `MobileBottomNav` via `layout.tsx`. As páginas de auth (login, cadastro, esqueci-senha, nova-senha) ficam **fora** do grupo e não recebem esse layout.
 
-### Frontend — Componentes principais
-
-```
-components/
-├── layout/         Navbar, Footer
-├── home/           HeroSearch, NegociosDestaque
-├── negocios/       # Minisite público (/negocios/{cidade}/{categoria}/{slug})
-│   ├── BusinessHero           # Hero full-width responsivo (h-80 mobile / 480px desktop)
-│   │                          # Logo 80px mobile / 128px desktop, badge ABERTO/FECHADO animado
-│   ├── StickyActionBar        # Barra sticky desktop: categoria | localização | avaliação + CTAs
-│   ├── QuickActionsBar        # 4 ícones flutuantes mobile (-mt-6 abaixo do hero)
-│   ├── BusinessMobileBottomNav # Nav fixo mobile: Início (verde pill) + Contato (WhatsApp)
-│   ├── PaginaNegocioClient    # Container client: Sobre+tags, Historia, Produtos, AdSlot, EspacoEspecial
-│   ├── ProdutosSection        # Grid 2×2 (max 4) — título dinâmico por categoria:
-│   │                          #   restaurantes/alimentacao → "Cardápio em destaque"
-│   │                          #   servicos/estetica/clinicas → "Serviços em destaque"
-│   │                          #   academias → "Planos e serviços em destaque"
-│   │                          #   (outros) → "Produtos em destaque"
-│   ├── BusinessSidebar        # Cards sticky desktop: Horários, Contato, Endereço+Mapa, Trust
-│   ├── SimilarBusinesses      # Seção full-width (#eff4ff): grid 2 mobile / 4 desktop
-│   ├── HistoriaSection        # Card Nossa história (se preenchida)
-│   ├── EspacoEspecial         # Pro+: texto/oferta/cupom/banner/video. Lock UI para não-Pro
-│   └── TrackerView            # Registra evento "view" no analytics ao montar
-├── merchant/       # Painel do comerciante — route group (panel)
-~/Documentos/Desarrollos/Descubrasul/repo/CLAUDE.md│   ├── Navbar                 # MerchantNavbar: logo /logo.png + links (meu-negocio, produtos, metricas)
-│   ├── MobileBottomNav        # Nav inferior mobile do painel
-│   └── meu-negocio/
-│       ├── InformacoesBasicasCard
-│       ├── EnderecoCard
-│       ├── HorarioCard
-│       ├── RedesSociaisCard
-│       ├── EspacoEspecialCard # Pro+ com lock UI para planos inferiores
-│       ├── SeoCard
-│       ├── StatusCard         # "Visualizar página pública" (botão azul #2b3fd4)
-│       ├── LogoCapaCard       # Upload logo (128×128) + capa (16:9) com bg slate-100
-│       ├── DicasCard
-│       └── (QRCodeCard via @/components/ui/QRCodeCard)
-├── seo/            JsonLd (Schema.org), GoogleAnalytics
-├── ui/             button, carousel, AdSlot, CookieBanner, QRCodeCard (react-qr-code, PNG+SVG download)
-└── blocks/         gallery4
-```
-
-### Frontend — Lib e tipos
-
-- `lib/api.ts` — Axios com interceptor JWT (401 → redirect /painel/login)
-- `lib/fetchers.ts` — Fetchers SSR: `getNegocio`, `getProdutosDoNegocio`, `getCategorias`, `getNegociosDestaque`, `getProdutosDestaque`, `getNegocios`
-- `lib/utils.ts` — Utilitários gerais; inclui `isAberto(abertura, fechamento, dias[])` — verifica horário de funcionamento em timezone America/Sao_Paulo, normaliza dias pt-BR (remove acentos e ponto)
-- `hooks/useTracking.ts` — `registrarClique(slug, tipo)` — registra eventos no endpoint de analytics
-- `types/index.ts` — Interfaces TypeScript: `Negocio`, `Produto`, `FotoProduto`, `RedesSociais`, `Localizacao`, `Categoria`, `VideoDestaque`, `EspacoEspecial`, `MetricaDiaria`
-  - `Negocio` inclui `palavras_chave?: string | null` (usado para chips na seção Sobre)
-
-### Frontend — Design System (Lumina SaaS Console)
-
-Tokens aplicados em `src/app/globals.css` via `@theme`. Sistema MD3-inspired com Inter exclusivo.
-
-| Token / Valor     | Uso                                              |
-|-------------------|--------------------------------------------------|
-| `#f8f9ff`         | Background do canvas (`body`, páginas)           |
-| `#ffffff`         | Cards (surface raised)                           |
-| `#0b1c30`         | Texto principal (on-surface)                     |
-| `#3f493f`         | Texto secundário (on-surface-variant)            |
-| `#6f7a6e`         | Labels de metadados (outline)                    |
-| `#becabc`         | Bordas de cards e dividers (outline-variant)     |
-| `#00602a`         | Primary — links, texto de CTA                   |
-| `#1a7a3c`         | Primary container — fundo de botões primários    |
-| `#2b3fd4`         | Secondary — links inline, botão "Visualizar"     |
-| `#eff4ff`         | Surface container low — seções alternadas, chips |
-| `#e5eeff`         | Surface container — hover, placeholders          |
-| `#25D366`         | WhatsApp (fixo — não faz parte da paleta MD3)    |
-
-**Shadow card**: `0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)`
+### Design System — regras ativas
 
 **⚠️ Caveat Tailwind v4**: tokens `@theme` nem sempre geram classes utilitárias. Usar sempre hex direto para elementos críticos: `bg-[#1a7a3c]`, `border-[#2b3fd4]`, `text-[#0b1c30]`. Classes Tailwind padrão (`bg-slate-100`, `border-slate-300`) como fallback seguro.
 
 **Container**: `max-w-[1280px] mx-auto` | Gutter: `px-4 md:px-8` | Espaçamento: ritmo 8px
+
+> Paleta completa de cores e tokens: `src/app/globals.css` ou [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#frontend--design-system-lumina-saas-console).
 
 ---
 
@@ -334,6 +186,7 @@ Tokens aplicados em `src/app/globals.css` via `@theme`. Sistema MD3-inspired com
 ## Padrões de segurança obrigatórios
 
 ### Arquitetura por camadas (Django)
+
 | Camada | Onde | Regra |
 |--------|------|-------|
 | Controller | `ViewSet` / `APIView` | Só HTTP: parse de request, delegar para serializer/service, retornar Response |
@@ -344,13 +197,14 @@ Tokens aplicados em `src/app/globals.css` via `@theme`. Sistema MD3-inspired com
 
 > Lógica de negócio NUNCA fica em `views.py`. Se a função faz mais que validar/serializar/responder, mover para `services.py`.
 
-### Autenticação e senhas
-- JWT: access 30min + refresh 7d com rotação e blacklist (SimpleJWT) ✓
-- Hasher: **Argon2** (primário) + PBKDF2 como fallback para senhas antigas ✓
-- HTTPS obrigatório em prod + HSTS 1 ano ✓
-- Cookies de sessão e CSRF marcados `Secure` em prod ✓
+### Configurações ativas
 
-### Rate limiting — escopos configurados em `DEFAULT_THROTTLE_RATES`
+- **Auth**: Argon2 (primário) + PBKDF2 fallback; JWT access 30min + refresh 7d com rotação e blacklist. Ver `settings/base.py`.
+- **Headers (prod)**: HSTS 1 ano, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`. CSP nonce-based em `src/middleware.ts` — requer `export const dynamic = "force-dynamic"` em `layout.tsx`.
+- **CORS**: `CORS_ALLOW_ALL_ORIGINS = False` em prod; apenas `descubrasul.com` e subdomínios.
+
+### Rate limiting — escopos
+
 | Escopo | Limite | Aplicado em |
 |--------|--------|-------------|
 | `anon` | 60/min | Todos endpoints públicos (visitantes) |
@@ -363,6 +217,7 @@ Tokens aplicados em `src/app/globals.css` via `@theme`. Sistema MD3-inspired com
 Implementação via `core/throttles.py` + `DEFAULT_THROTTLE_CLASSES` no DRF settings. Usa Redis como backend.
 
 ### Isolamento de dados (RLS no nível da aplicação)
+
 O projeto usa Django ORM — PostgreSQL RLS com `auth.uid()` (padrão Supabase) não se aplica.
 O equivalente é obrigatório via:
 1. `IsDonoDoNegocio` em todo endpoint que manipula dados do comerciante
@@ -376,32 +231,10 @@ def get_queryset(self):
 ```
 
 ### Validação de inputs
-- Backend: DRF Serializers com `validate_*` explícitos em todo campo editável
-- Frontend: TODO — implementar Zod nos formulários do painel
-- Sanitização XSS: Django templates auto-escapam; DRF serializers sanitizam strings
-- Campos SEO passam por `core.validators_seo.validar_texto_seo_completo()` antes de salvar
 
-### Headers de segurança (configurados)
-- **Backend** (`prod.py`): `SECURE_PROXY_SSL_HEADER` (Traefik), `SECURE_SSL_REDIRECT = False` (Traefik cuida do redirect), HSTS 1 ano, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`
-- **Frontend — CSP nonce-based** (`src/middleware.ts`): gera nonce por request via `crypto.randomUUID()`, injeta CSP header com `'nonce-{nonce}'` + `'strict-dynamic'`. Passa o nonce para o App Router via header `x-nonce`.
-  - `src/app/layout.tsx` tem `export const dynamic = "force-dynamic"` obrigatório — sem isso, SSG/ISR serviriam HTML sem nonce e o browser bloquearia toda a hidratação React.
-  - `productionBrowserSourceMaps: false` — source maps desabilitados em produção
-
-### CORS
-- Dev: configurado explicitamente para `localhost:3000`
-- Prod: `CORS_ALLOW_ALL_ORIGINS = False`, apenas `descubrasul.com` e subdomínios
-
-### O que ainda falta implementar (backlog de segurança)
-| Item | Prioridade | Observação |
-|------|-----------|------------|
-| Testes de isolamento entre usuários | 🔴 Alta | Cada endpoint do painel precisa de teste `user_A != user_B` |
-| Zod no frontend (forms do painel) | 🟡 Média | Validação client-side nos forms de meu-negocio e produtos |
-| OpenAPI/Swagger (`drf-spectacular`) | 🟡 Média | Documentação automática dos endpoints |
-| Logging estruturado JSON (`structlog`) | 🟡 Média | Logs com userId, error, timestamp em JSON |
-| Sentry (frontend + backend) | 🟡 Média | Alertas de erro em produção |
-| API versionada `/api/v1/` | 🟠 Decisão | Mudança de alto impacto — requer alteração no frontend também |
-| Cursor-based pagination | 🟢 Baixa | Atualmente usa OFFSET — migrar para cursor |
-| Prometheus + Grafana | 🟢 Baixa | Métricas de infraestrutura |
+- Backend: DRF Serializers com `validate_*` explícitos em todo campo editável.
+- Campos SEO passam por `core.validators_seo.validar_texto_seo_completo()` antes de salvar.
+- Frontend: Zod pendente nos formulários do painel (backlog 🟡 Média).
 
 ### Checklist antes de criar qualquer endpoint novo
 - [ ] Separação de camadas respetada (sem lógica de negócio na view)
@@ -416,32 +249,17 @@ def get_queryset(self):
 
 ## Compliance ISO 27001:2022 e ISO 22301:2019 — Framework Obrigatório
 
-> **Regra de ouro:** Estas normas NÃO são uma revisão posterior. São um filtro aplicado ANTES de escrever código ou propor mudanças de infraestrutura. Todo agente deve consultar esta seção ao iniciar qualquer tarefa.
+> **Regra de ouro:** Estas normas NÃO são uma revisão posterior. São um filtro aplicado ANTES
+> de escrever código ou propor mudanças de infraestrutura. Todo agente deve consultar esta seção
+> ao iniciar qualquer tarefa.
+>
+> **Gaps ativos:** logging estruturado (8.15), Sentry/monitoramento (8.16) e backup diário de
+> PostgreSQL pendentes — ver detalhes em `specs/01-seguridad.md` §7.
+>
+> Mapeamento completo de controles, tabelas RTO/RPO, análise SPOF e padrão de degradação com graça:
+> ver **[docs/COMPLIANCE.md](docs/COMPLIANCE.md)**.
 
----
-
-### ISO 27001:2022 — Segurança da Informação
-
-Mapeamento dos controles ativos no projeto:
-
-| Controle ISO 27001 | O que o projeto faz | Onde está implementado |
-|--------------------|---------------------|------------------------|
-| 5.15 — Controle de acesso | Roles: visitante / comerciante / admin / superadmin | `usuarios/models.py`, `permissions.py` |
-| 5.17 — Informações de autenticação | Argon2 primário + PBKDF2 fallback; JWT access 30min + refresh 7d com blacklist | `settings/base.py` PASSWORD_HASHERS, SIMPLE_JWT |
-| 8.5 — Autenticação segura | MFA não implementado; JWT com rotação e blacklist | `core/settings/base.py` SIMPLE_JWT |
-| 8.6 — Gestão de capacidade | `CONN_MAX_AGE=60`, N+1 eliminados, cache Redis em endpoints públicos | `settings/base.py`, `negocios/views.py` |
-| 8.8 — Vulnerabilidades técnicas | Rate limiting por IP/usuário/endpoint; validação magic bytes em uploads | `core/throttles.py`, `negocios/validators.py` |
-| 8.9 — Gestão de configuração | Variáveis via `.env`; `DEBUG=False` obrigatório em produção; `CONN_MAX_AGE`, `CELERY_RESULT_BACKEND` via env | `settings/base.py`, `.env` |
-| 8.12 — Prevenção de vazamento de dados | Uploads renomeados com `uuid4()`; sem `id` sequencial em URLs públicas; CORS restrito | `models.py` gerar_caminho_seguro |
-| 8.15 — Logging | **GAP ATIVO** — logging estruturado (`structlog`) pendente | Backlog: prioridade 🟡 Média |
-| 8.16 — Monitoramento | **GAP ATIVO** — Sentry pendente; sem alertas automáticos de erro 500 | Backlog: prioridade 🟡 Média |
-| 8.24 — Criptografia | HTTPS obrigatório via Traefik + Let's Encrypt; HSTS 1 ano; cookies Secure | `settings/prod.py`, `docker-compose.prod.yml` |
-| 8.25 — Ciclo de vida de desenvolvimento seguro | Specs antes de implementar (OpenSpec); revisão via `code-reviewer` e `security` agents | `.claude/agents/` |
-| 8.28 — Codificação segura | ORM sempre (proibido `raw()` com input); validação no serializer; sanitização XSS | Convenções obrigatórias CLAUDE.md |
-| 8.29 — Testes de segurança | `qa-verifier` executa testes de isolamento entre usuários antes de aprovar qualquer endpoint | `.claude/agents/qa-verifier.md` |
-| 8.32 — Gestão de mudanças | Commits atômicos por área; specs aprovadas antes de implementar; never `--no-verify` | Convenções de commits |
-
-#### Checklist ISO 27001 — obrigatório antes de qualquer mudança de backend ou infra
+### Checklist ISO 27001 — obrigatório antes de qualquer mudança de backend ou infra
 
 - [ ] **8.9** O dado configurado está em `.env`? Nenhum segredo hardcoded?
 - [ ] **8.6** A mudança introduz pressão de memória ou CPU desproporcionais ao VPS 8GB/2vCPU?
@@ -451,30 +269,7 @@ Mapeamento dos controles ativos no projeto:
 - [ ] **8.16** A operação gera log rastreável (quem fez, quando, o quê)? Se não, é aceitável sem log?
 - [ ] **5.15** As permissões estão explícitas e mínimas (least privilege)?
 
----
-
-### ISO 22301:2019 — Continuidade do Negócio
-
-#### Objetivos de continuidade definidos (RTO/RPO)
-
-| Serviço | RTO (tempo máximo de recuperação) | RPO (perda máxima de dados aceitável) |
-|---------|-----------------------------------|---------------------------------------|
-| API pública (negocios, categorias) | 15 minutos | N/A — dados em PostgreSQL com WAL |
-| Painel do comerciante | 30 minutos | 0 — todas as escritas são síncronas em PG |
-| Celery tasks (métricas, geocodificação) | 2 horas | Tasks com `max_retries=3` — reexecutáveis |
-| Redis (cache + rate limiting + broker) | 5 minutos (restart automático via Docker) | Cache: 0 (repopula sozinho). Broker: tasks na fila são perdidas se Redis cair sem AOF |
-| PostgreSQL | 1 hora | Depende do último backup — configurar backup diário |
-
-#### Análise de Pontos Únicos de Falha (SPOF) — estado atual
-
-| Componente | SPOF? | Mitigação atual | Mitigação recomendada |
-|------------|-------|-----------------|----------------------|
-| Redis | **SIM** | `restart: unless-stopped` no Docker | AOF habilitado + `IGNORE_EXCEPTIONS: True` no cache |
-| PostgreSQL | **SIM** | Volume Docker persistente | Backup diário automatizado via cron |
-| VPS Hostinger | **SIM** | Nenhuma | Snapshot semanal do VPS |
-| Traefik | **SIM** | `restart: unless-stopped` | Healthcheck no container |
-
-#### Checklist ISO 22301 — obrigatório antes de qualquer mudança de infraestrutura
+### Checklist ISO 22301 — obrigatório antes de qualquer mudança de infraestrutura
 
 - [ ] A mudança introduz ou agrava um SPOF existente?
 - [ ] Se o componente novo falhar, o sistema degrada com gracia (graceful degradation) ou cai completamente?
@@ -483,28 +278,6 @@ Mapeamento dos controles ativos no projeto:
 - [ ] O `CELERY_RESULT_EXPIRES` está configurado para evitar crescimento infinito do backend de resultados?
 - [ ] O `restart: unless-stopped` está em todos os serviços críticos do `docker-compose.prod.yml`?
 - [ ] Após a mudança, os health checks `/health/` e `/health/ready/` continuam respondendo 200?
-
-#### Degradação com gracia — padrão obrigatório
-
-Qualquer componente externo (Redis, API Maps, API Mercado Pago, API Anthropic) deve falhar silenciosamente sem derrubar a API principal:
-
-```python
-# Padrão obrigatório para dependências externas opcionais
-from django.core.cache import cache, InvalidCacheBackendError
-
-try:
-    resultado = cache.get(chave)
-except Exception:
-    resultado = None  # cache miss silencioso — nunca propagar exceção de cache
-
-# Para APIs externas — sempre com timeout e fallback
-try:
-    resposta = requests.get(url, timeout=5)
-except requests.RequestException:
-    return None  # fallback: operação continua sem o dado externo
-```
-
----
 
 ### Fluxo de aprovação para mudanças críticas
 
@@ -615,8 +388,7 @@ npm run lint
 
 - `docker-compose.yml` — stack de desenvolvimento local
 - `docker-compose.override.yml` — overrides locais (não commitar)
-- `docker-compose.prod.yml` — stack de produção com `${IMAGE_TAG}` e `env_file: .env.prod`
-- `docker-compose.prod.yml` — stack de produção com Traefik direto: sem `networks` externas, sempre `:latest`, envs via `.env.prod`, sem `ports` expostos (Traefik roteia por nome interno)
+- `docker-compose.prod.yml` — stack de produção com Traefik: imagem `${IMAGE_TAG:-latest}`, sem `networks` externas, envs via `.env.prod`, sem `ports` expostos (Traefik roteia por nome interno)
 - `.env` — todas as variáveis (nunca commitar)
 - `backend/core/settings/` — base, dev, prod
 - `frontend/next.config.ts` — config do Next.js
@@ -656,119 +428,14 @@ deve ser revisada contra estas regras ANTES de ir para produção.
 
 ---
 
-## Roadmap Tecnológico — Ferramentas Futuras
+## Ferramentas ativas e roadmap
 
-Ferramentas identificadas para integração futura. Não implementar antes 
-do momento indicado — registradas aqui para não perder o contexto.
+**Já ativos:** OpenSpec (skills `opsx:*`) e Engram (tools `mem_*`).
 
-### OpenSpec (github.com/Fission-AI/OpenSpec) — Prioridade: ALTA
-**O que é:** Framework de desenvolvimento guiado por specs (SDD).
-Substitui prompts livres por specs estruturadas antes de escrever código.
-Gera automaticamente: proposal.md, specs/, design.md, tasks.md.
-
-**Fluxo de trabalho:**
-1. /opsx:propose {feature} — propõe a spec
-2. Revisar e aprovar
-3. /opsx:apply — Claude Code implementa com contexto estruturado
-4. /opsx:archive — arquiva a spec concluída
-
-**Quando integrar:** Imediatamente após o lançamento da Etapa 1.
-Substitui o fluxo atual de prompts longos no Claude Code.
-
-**Instalação futura:**
-npm install -g @fission-ai/openspec@latest
-openspec init  (rodar na raiz do repo)
-
-**Benefício principal:** O OpenSpec lê o CLAUDE.md automaticamente 
-como contexto base — integração nativa com a documentação existente.
+Ferramentas pendentes (Framer Motion, GSAP, Google Business Profile API, Agent Teams Lite):
+ver [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
-
-### ENGRAM — Prioridade: MÉDIA
-**O que é:** Sistema de memória persistente para agentes de IA.
-Permite que o agente lembre contexto entre sessões, decisões tomadas 
-e padrões estabelecidos no projeto.
-
-**Quando integrar:** Fase 2 — quando houver múltiplas sessões de 
-desenvolvimento simultâneas ou um time crescendo.
-
-**Benefício principal:** Elimina a necessidade de repassar contexto 
-do projeto a cada nova sessão de desenvolvimento.
-
----
-
-### Agent Teams Lite — Prioridade: BAIXA
-**O que é:** Orquestração de múltiplos agentes especializados 
-trabalhando em paralelo.
-
-**Casos de uso no DescubraSul:**
-- Agente de geração de descrições via Claude Haiku (app ia/)
-- Agente de validação SEO (core/validators_seo.py)
-- Agente de agregação de métricas (analytics/tasks.py)
-- Agente de moderação de conteúdo do comerciante
-
-**Quando integrar:** Fase 3 (mês 3+) — junto com a ativação 
-do app ia/ e Claude Haiku para planos Pro.
-
----
-
-### Framer Motion — Prioridade: ALTA
-**O que é:** Biblioteca de animações para React/Next.js.
-
-**Casos de uso no DescubraSul:**
-- HeroSearch: headline com fade-in + translateY
-- NegociosDestaque: cards com stagger ao scrollar (whileInView)
-- Navbar: fundo muda de transparente para branco ao scrollar
-- Botões: hover com whileHover={{ scale: 1.02 }}
-- Minisite /p/{slug}: galeria com crossfade entre fotos
-
-**Quando integrar:** Sprint de polish visual — antes do lançamento.
-
-**Instalação futura:**
-npm install framer-motion
-(rodar em frontend/)
-
----
-
-### GSAP + ScrollTrigger — Prioridade: MÉDIA
-**O que é:** Biblioteca de animações avançadas para scroll-triggered,
-timelines complexas e efeitos de entrada.
-
-**Quando integrar:** Se Framer Motion não cobrir casos avançados 
-de animação, especialmente na landing /para-empresas.
-
----
-
-### Google Business Profile API — Prioridade: ALTA (serviço manual agora)
-**O que é:** API do Google para gerenciar perfis no Google Maps e busca local.
-
-**Situação atual:** Não há API pública para criar perfis automaticamente.
-O onboarding GBP é feito manualmente como serviço de valor agregado nos planos.
-
-**Fluxo manual atual:**
-1. Comerciante contrata plano Básico ou superior
-2. DescubraSul cria/reivindica o perfil GBP do negócio
-3. Website do GBP = página do negócio em descubrasul.com/{slug}
-4. Backlink do domínio Google → descubrasul.com (SEO fortíssimo)
-
-**Campos a adicionar no modelo Negocio (quando formalizar):**
-- google_business_url: URLField (link do perfil GBP criado)
-- gbp_status: CharField choices pendente|configurado|verificado
-- Badge "Verificado no Google" na página pública
-
-**Quando automatizar via API:** Fase 3+ — requer aprovação do app 
-pelo Google (processo burocrático). Priorizar o serviço manual primeiro.
-
-**Estratégia de monetização GBP por plano:**
-- Gratuito: guia PDF de como configurar sozinho
-- Básico: DescubraSul configura o GBP (setup único)
-- Pro: setup + otimização + fotos + posts mensais
-- Produção: gestão completa contínua
-
----
-
-*Seção criada em junho de 2026. Revisar prioridades a cada sprint.*
-[... todo el contenido que ya tengas en CLAUDE.md ...]
 
 ## Memory Protocol
 

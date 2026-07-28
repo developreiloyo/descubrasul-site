@@ -66,4 +66,34 @@ Ya implementado con las siguientes protecciones, documentadas acá como referenc
 - Plan de continuidad/backup probado — no documentado formalmente todavía. Si se quiere aplicar rigor tipo ISO 22301 más adelante, este es el punto de partida natural.
 
 ---
-*Última actualización: 2026-07-12 (password reset marcado como implementado). Los ítems marcados como pendiente en este documento son bloqueantes reales, no aspiracionales — no lanzar comercialmente sin resolverlos.*
+
+## 7. Gaps de seguridad activos — pre-lanzamiento comercial
+
+Identificados en auditoría ISO 27001/22301 (2026-07-27). No son aspiracionales — son brechas reales en el estado actual de producción.
+
+### 7.1 Logging estructurado ausente (ISO 27001 — control 8.15)
+
+**Prioridad: 🟡 Media — resolver antes de lanzamiento comercial.**
+
+Estado actual: Django tiene logging básico, pero sin estructura JSON (sin userId, sin timestamp normalizado, sin nivel de error estandarizado). Esto hace que los incidentes en producción no sean rastreables por log.
+
+Acción: implementar `structlog` en el backend con salida JSON. Campos mínimos: `user_id`, `endpoint`, `status_code`, `error`, `timestamp`.
+
+### 7.2 Monitoreo de errores sin alertas automáticas (ISO 27001 — control 8.16)
+
+**Prioridad: 🟡 Media — gap operativo importante.**
+
+Estado actual: no hay sistema de alertas para errores 500 en producción. Si hay una excepción no capturada, solo se detecta si un comerciante avisa o si alguien revisa logs manualmente.
+
+Acción: integrar Sentry (frontend + backend). La versión gratuita cubre el volumen actual. Sin esto, el tiempo de detección de errores en producción es indefinido.
+
+### 7.3 Backup diario de PostgreSQL no automatizado (ISO 22301 — SPOF confirmado)
+
+**Prioridad: 🔴 Alta — riesgo real de pérdida de datos.**
+
+Estado actual: PostgreSQL está marcado como SPOF con mitigación solo parcial (volumen Docker persistente). No hay backup diario automatizado ni restore probado. El RPO real es indefinido — si el VPS falla, la pérdida de datos depende del último backup manual.
+
+Acción: configurar cron en el VPS que ejecute `pg_dump` diario y lo copie a almacenamiento externo (Cloudflare R2 o similar). Probar el restore al menos una vez antes del lanzamiento comercial.
+
+---
+*Última actualización: 2026-07-27. Los ítems de la sección 7 son gaps activos confirmados — no lanzar plan "Fundador" sin resolverlos.*
