@@ -29,4 +29,9 @@ app.conf.beat_schedule = {
         "task": "planos.tasks.verificar_assinaturas_vencidas",
         "schedule": crontab(hour=1, minute=0),
     },
+    # Sincroniza produtos Pro/Produção com Google Merchant Center — todo dia às 04:00h
+    "sincronizar-feed-gmc": {
+        "task": "merchant.tasks.sincronizar_feed_gmc",
+        "schedule": crontab(hour=4, minute=0),
+    },
 }

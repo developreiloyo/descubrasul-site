@@ -1,15 +1,19 @@
 # 05 — Integración con Google Merchant Center
 
-## Estado al 26/07/2026
+## Estado al 27/07/2026
 
 | Etapa | Estado |
 |---|---|
 | Configuración manual en Google (cuenta, dominio, service account, credenciales) | ✅ COMPLETA |
 | Página `/politica-devolucoes` publicada y registrada en Merchant Center | ✅ COMPLETA |
 | Campo `tipo_produto` en modelo `Produto` (migración 0011) | ✅ COMPLETA |
-| Implementación técnica: serialización, tarea Celery, MCP de desarrollo | 🔴 NO INICIADA — próximo paso |
+| Registro del proyecto GCP en Merchant Center (`registerGcp`) | ✅ COMPLETA — `tools/gmc-mcp/register_developer.py` |
+| `backend/merchant/` (models, services, tasks, category_map, migrations) | ✅ IMPLEMENTADA — pendiente migrar a endpoint correcto (ver §13) |
+| Título optimizado spec 11.2 (`gerar_titulo_feed`) | ✅ IMPLEMENTADA y probada — `backend/merchant/services.py` |
+| Primera sincronización real al GMC | ✅ EXITOSA — producto 94 (Boutique Liz Fashion, Tubarão) |
+| MCP de desarrollo (`tools/gmc-mcp/server.py`) | ⚠️ PARCIAL — URL base corregida a `products/v1`, endpoint interno pendiente actualizar a `productInputs:insert` |
 
-> **⚠️ CRÍTICO — API a usar:** La implementación técnica debe usar la **Merchant API (v1)** (`merchants.googleapis.com/v1beta/...`). La **Content API for Shopping** está **DEPRECADA** y Google la apaga el **18 de agosto de 2026**. Ningún código nuevo debe usar la Content API. Toda la documentación anterior a esta fecha que mencione `content.googleapis.com` queda obsoleta.
+> **⚠️ CRÍTICO — API a usar:** La implementación técnica debe usar la **Merchant API Products v1** (`merchantapi.googleapis.com/products/v1/...`). La `v1beta` fue **DISCONTINUADA en febrero de 2025**. La **Content API for Shopping** está **DEPRECADA** y Google la apaga el **18 de agosto de 2026**. Ver sección §13 para la estructura real de la API.
 
 ---
 
@@ -101,20 +105,24 @@ La taxonomía completa de Google está en un archivo de texto público (`google_
 
 ## 7. Sincronización (tarea Celery)
 
-**Frecuencia:** diaria (alineado con el patrón ya usado en `MetricaDiaria`/Celery Beat nocturno)
+**Frecuencia:** diaria a las 04:00h (Celery Beat — `merchant.tasks.sincronizar_feed_gmc`)
 
 **Lógica:**
-1. Query de productos `activo=True` modificados desde la última sincronización exitosa
-2. Serializar cada uno al formato JSON de la Merchant API (confirmar en Fase 3 el método/endpoint equivalente a la antigua `products.insert` — la Merchant API usa naming por `name`/`parent`, ver sección 5)
-3. Enviar en batch (la API soporta `custombatch` para múltiples productos en una sola llamada)
-4. Para productos que dejaron de estar activos o fueron eliminados: llamar `products.delete`
-5. Registrar resultado por producto: éxito, advertencia (warning de Google, ej. imagen de baja calidad) o error (rechazo, ej. campo faltante)
+1. Query de productos `disponivel=True`, `negocio.status=ativo`, `negocio.plano in {pro, producao}`
+2. Serializar cada uno al formato JSON de la Merchant API v1beta: `POST accounts/{merchant_id}/products`
+3. **No hay `customBatch` en la Merchant API v1** — la Content API lo tenía pero fue eliminado. Estrategia: llamadas individuales ejecutadas en paralelo con `ThreadPoolExecutor(max_workers=10)`, pausa de 0.1s entre batches de 10 productos para respetar rate limits
+4. Productos que pasaron a `disponivel=False` y tienen sync exitosa previa: `DELETE accounts/{merchant_id}/products/{product_name}`  
+   Donde `product_name = online~pt~BR~{offer_id}`
+5. Registrar resultado por producto en `merchant.SincronizacaoGMC` (OneToOne por produto — estado actual)
 
-**Modelo nuevo sugerido:** `SincronizacionMerchantCenter` (o extender el patrón de logging que ya usan para otras integraciones) con:
-- `producto` (FK)
-- `estado` (éxito / warning / error)
-- `mensaje_google` (texto del error/warning devuelto por la API)
-- `timestamp`
+**Implementación:** `backend/merchant/` (app Django) — ✅ IMPLEMENTADA
+- `models.py` → `SincronizacaoGMC` (OneToOneField a Produto, estado, gmc_offer_id, mensagem_google)
+- `services.py` → `inserir_produto()`, `deletar_produto()`, `serializar_produto()`, `gerar_offer_id()`, `gerar_titulo_feed()` (spec 11.2)
+- `tasks.py` → `sincronizar_feed_gmc` (shared_task, respeta `GMC_ENABLED` flag)
+- `category_map.py` → mapeo categoria DescubraSul → Google Product Category ID
+- Migration `0001_initial` aplicada
+
+> ⚠️ **Pendiente:** `services.py` aún usa el endpoint antiguo `POST /products` — debe migrarse a `productInputs:insert` con `productAttributes` (ver §13 para la estructura real).
 
 ## 8. Manejo de errores
 
@@ -132,11 +140,11 @@ La taxonomía completa de Google está en un archivo de texto público (`google_
 - [ ] Logging de errores por producto visible para debugging
 - [ ] Al menos 3 negocios piloto con productos apareciendo verificablemente en Google Shopping
 
-## 10. Preguntas abiertas
+## 10. Decisiones tomadas (antes preguntas abiertas)
 
-- ¿El comerciante debe poder ver el estado de sincronización de sus productos en su panel (Pro dashboard), o esto queda como tarea interna de DescubraSul?
-- ¿Se ofrece como feature exclusiva de los planes Pro/Produção, o está disponible desde el plan Básico?
-- ¿Se necesita GTIN real para productos de comercio local (ej. comida preparada, servicios) o se declara `identifier_exists: false` de forma permanente para esas categorías?
+- **Visibilidad para el comerciante:** el estado de sync queda como tarea interna por ahora. Pendiente evaluar en Fase 4 si agregar un indicador en el panel Pro ("Este producto está en Google Shopping ✓").
+- **Planos habilitados:** exclusivo para `pro` y `producao`. El plan `gratuito` no tiene acceso a GMC — es un beneficio diferenciador de los planes pagos.
+- **GTIN:** siempre `identifierExists: false` para todos los productos de DescubraSul. Los comercios locales (comida preparada, servicios, artesanías) no tienen GTIN, y Google acepta esta declaración explícita sin penalizar.
 
 ## 11. Optimización del feed (basado en mejores prácticas de SEO de producto)
 
@@ -151,7 +159,7 @@ Equivalente al `product_type` de Google — una clasificación más granular que
 - Ejemplo: categoría general = "Restaurantes / Comida" → `tipo_producto` = "Pizza", "Hambúrguer", "Prato executivo", etc.
 - Puede implementarse como un campo de texto libre con sugerencias (autocomplete) basadas en lo que otros negocios de la misma categoría ya cargaron, para mantener consistencia sin forzar un dropdown rígido
 
-### 11.2 Título del feed: generación automática, no editable por el comercio
+### 11.2 Título del feed: generación automática, no editable por el comercio ✅ IMPLEMENTADO
 
 El comercio sigue escribiendo el nombre que quiera para su vitrina pública (`Producto.nombre` — puede ser informal, de marca, "Combo Família", etc.). El feed hacia Google usa un **título distinto**, construido automáticamente combinando:
 
@@ -173,6 +181,9 @@ Esto aprovecha la ventaja real de DescubraSul frente a un feed genérico: la int
 - Priorizar `tipo_producto` sobre `Producto.nombre` como base del título — el nombre libre del comercio queda solo como fuente secundaria si `tipo_producto` está vacío
 - Longitud máxima 150 caracteres (límite de Google)
 
+**✅ Implementado 2026-07-27** — `backend/merchant/services.py::gerar_titulo_feed()`.
+Lógica: `{tipo_produto} {nome_qualificador} — {cidade}`, con deduplicación de prefijo y filtro de códigos internos (regex). Probado con producto 94: título generado `"Conjunto Alfaiataria Bege — Tubarão"`, confirmado en respuesta HTTP 200 del GMC.
+
 ### 11.3 Descripción: mismo criterio que el título
 
 `description` ya contempla (sección 4) la línea automática de contacto por WhatsApp. Se recomienda además incluir `tipo_producto` y cualquier atributo cargado (si en el futuro se agregan campos como color/tamaño para rubros que lo necesiten, ej. moda o artesanía) para dar más contexto a Google sin depender de que el comercio redacte una descripción extensa.
@@ -186,3 +197,146 @@ Al serializar `Producto` → JSON de la Merchant API (sección 7), incluir únic
 - Multilenguaje/multi-país en el feed (DescubraSul opera solo en portugués/BRL por ahora — no aplica la necesidad de herramientas tipo DataFeedWatch mencionadas en guías de feeds internacionales)
 - Feed complementario vía Google Sheets — esa técnica está pensada para tiendas que exportan/reimportan manualmente; como DescubraSul sincroniza automáticamente desde Django, no hace falta ese paso intermedio. Si en el futuro se quisiera iterar rápido sobre títulos sin tocar código (por ejemplo, para probar variantes de redacción), evaluar como herramienta interna de testing, no como parte del flujo de producción
 - Testing A/B de fórmulas de título — posible mejora futura una vez que haya volumen suficiente de datos de clics para comparar variantes
+
+---
+
+## 12. MCP server de desenvolvimento (tools/gmc-mcp)
+
+**Propósito:** herramienta de desarrollo local exclusivamente. Expone la Merchant API como herramientas MCP reutilizables por Claude Code y subagentes, para probar serialización y autenticación sin necesidad de deploy al VPS.
+
+> **No interviene en producción.** En producción, el sync corre via `merchant.tasks.sincronizar_feed_gmc` (Celery Beat 04:00h). El MCP es solo un banco de pruebas.
+
+**Ubicación:** `tools/gmc-mcp/server.py`  
+**Transporte:** stdio (mismo patrón que Engram)  
+**Runtime:** `uv run tools/gmc-mcp/server.py` (PEP 723 — dependencias inline en el script)  
+**Registro:** `~/.claude/settings.json` bajo `mcpServers`
+
+### Credenciales (nunca en el repo)
+
+El servidor lee de `~/.config/descubrasul/.env.gmc`:
+
+```bash
+GMC_MERCHANT_ID=5830442942
+GMC_SERVICE_ACCOUNT_JSON={"type":"service_account",...}   # JSON completo, o base64
+GMC_DATABASE_URL=postgresql://descubrasul_user:password@localhost:5432/descubrasul
+GMC_SITE_URL=https://descubrasul.com
+```
+
+Para acceso DB local: el `docker-compose.override.yml` expone el puerto 5432 — ver instrucciones en `tools/gmc-mcp/server.py`.
+
+### Herramientas disponibles
+
+| Tool | Firma | Sub-API Merchant | Descripción |
+|---|---|---|---|
+| `sync_product` | `(product_id: int) → str` | Products v1 — `POST accounts/{id}/productInputs:insert` ⚠️ pendiente actualizar | Serializa un Produto del DB local y lo envía al GMC |
+| `delete_product` | `(product_id: int) → str` | Products v1 — `DELETE accounts/{id}/productInputs/{name}` ⚠️ pendiente | Elimina un producto del feed |
+| `check_sync_status` | `(product_id: int) → str` | Products v1 — `GET accounts/{id}/products/{name}` | Consulta el estado actual en GMC (issues, disponibilidad, aprobación) |
+| `batch_sync` | `(modified_since: str \| None) → str` | Products v1 — llamadas individuales paralelas ⚠️ pendiente actualizar | Sincroniza todos los productos Pro/Produção activos |
+
+### Por qué no customBatch
+
+La Content API tenía un endpoint `products/custombatch` que agrupaba múltiples operaciones en un solo HTTP request. La Merchant API v1 **eliminó este endpoint** — no tiene equivalente directo.
+
+Estrategia de reemplazo: `ThreadPoolExecutor(max_workers=10)` — llamadas individuales en paralelo, con pausa de 0.1s entre lotes de 10 para respetar los rate limits de la API. Esto es funcionalmente equivalente para el volumen actual de DescubraSul (centenares de productos, no millones).
+
+### Registro en Claude Code
+
+```json
+// ~/.claude/settings.json — agregar bajo la clave "mcpServers"
+{
+  "mcpServers": {
+    "gmc": {
+      "command": "uv",
+      "args": ["run", "/home/reinaldo/Documentos/Desarrollos/Descubrasul/repo/tools/gmc-mcp/server.py"]
+    }
+  }
+}
+```
+
+### Ciclo de vida
+
+Este MCP se descontinúa cuando el sistema de sync en producción esté validado y la visibilidad de estado de GMC esté integrada en el panel del comerciante. Hasta entonces, es el mecanismo principal para verificar que un payload es aceptado por Google antes de que la tarea Celery lo envíe automáticamente.
+
+---
+
+## 13. Estructura real de la API descubierta (2026-07-27)
+
+> Esta sección documenta los hallazgos de la sesión de integración real contra la API. Reemplaza cualquier suposición anterior basada en documentación desactualizada.
+
+### 13.1 Versión correcta
+
+La **Merchant API Products v1** (`merchantapi.googleapis.com/products/v1`) es la versión vigente.
+- `v1beta` fue discontinuada en **febrero de 2025** — cualquier llamada devuelve HTTP 409.
+- `merchant/v1beta` (path `merchant/`) nunca existió para Products — devuelve HTTP 404.
+- La sub-API correcta es `products/v1` (no `merchant/v1`).
+
+### 13.2 Modelo de dos recursos (Input vs Processed)
+
+La API separa claramente lo que se envía de lo que Google procesa:
+
+| Recurso | Endpoint | Para qué |
+|---|---|---|
+| `productInputs` | `POST …/productInputs:insert` | **Crear/actualizar** un producto (lo que DescubraSul envía) |
+| `productInputs` | `DELETE …/productInputs/{name}` | **Eliminar** un producto del feed |
+| `products` | `GET …/products` | **Listar** productos procesados por Google |
+| `products` | `GET …/products/{name}` | **Estado** de un producto: aprobado/rechazado/issues |
+
+### 13.3 Estructura real del payload (productInputs:insert)
+
+```
+POST https://merchantapi.googleapis.com/products/v1/accounts/{merchant_id}/productInputs:insert
+?dataSource=accounts/{merchant_id}/dataSources/{datasource_id}
+```
+
+**DataSource de producción:** `accounts/5830442942/dataSources/10692143138` (display: "PRODUCTS SOURCE 1")
+
+```json
+{
+  "feedLabel": "BR",
+  "contentLanguage": "pt",
+  "offerId": "descubrasul-{slug}-{id}",
+  "productAttributes": {
+    "title": "{título generado spec 11.2}",
+    "description": "{descripcion} + línea WhatsApp",
+    "link": "https://descubrasul.com/p/{negocio_slug}/{produto_slug}",
+    "availability": "in_stock | out_of_stock",
+    "condition": "new",
+    "brand": "{negocio.nome}",
+    "identifierExists": false,
+    "imageLink": "{url_absoluta_foto}",
+    "additionalImageLinks": ["..."],
+    "price": {
+      "amountMicros": "349900000",
+      "currencyCode": "BRL"
+    },
+    "googleProductCategory": "1604"
+  }
+}
+```
+
+**Diferencias clave vs. Content API / v1beta:**
+- `channel` ya NO va en el payload — lo determina el data source
+- Todos los atributos van dentro de `productAttributes` (no en el topo del objeto)
+- `dataSource` es query param obligatorio con el ID numérico real (no "primary")
+- El nombre del productInput es `pt~BR~{offerId}`, no `online~pt~BR~{offerId}`
+
+### 13.4 Estado del producto de prueba en Merchant Center (2026-07-27)
+
+**Producto:** ID 94, "Conjunto Alfaiataria Bege", Boutique Liz Fashion, Tubarão  
+**offerId:** `descubrasul-conjunto-alfaiataria-bege-31-94`  
+**Estado:** `disapprovedCountries: ["BR"]`
+
+| Tipo | Código | Descripción | Acción |
+|---|---|---|---|
+| DISAPPROVED | `pending_initial_policy_review_free_listings` | Revisión inicial pendente (hasta 3 días hábiles) | Esperar — automático |
+| DISAPPROVED | `item_missing_required_attribute` — `image link` | Producto sin imagen | Bloqueante hasta que el comerciante suba foto |
+| DEMOTED | `missing_item_attribute_for_product_type` — `age_group` | Moda requiere grupo de edad | Agregar `"adult"` como default para categoría 1604 |
+| DEMOTED | `missing_item_attribute_for_product_type` — `color` | Moda requiere color | Pendiente campo en modelo o derivar de nome |
+| DEMOTED | `missing_item_attribute_for_product_type` — `gender` | Moda requiere género | Agregar `"unisex"` como default para categoría 1604 |
+| DEMOTED | `missing_item_attribute_for_product_type` — `size` | Moda requiere talle | Pendiente — requiere campo nuevo en modelo |
+
+### 13.5 Prerrequisitos de configuración (ya completados)
+
+- `registerGcp`: script `tools/gmc-mcp/register_developer.py` — vincula GCP project `562478645521` a la cuenta MC `5830442942`. Se ejecuta **una sola vez**. El registro es permanente.
+- APIs habilitadas en proyecto `descubrasul` (562478645521): Content API for Shopping + Merchant API
+- Service account: `merchant-center-sync@descubrasul.iam.gserviceaccount.com` — rol **Estándar** en Merchant Center (fue elevado a Administrador solo durante el `registerGcp`, luego rebajado)

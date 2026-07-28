@@ -9,3 +9,7 @@ services:
   frontend:
     ports:
       - "3000:3000"
+
+  db:
+    ports:
+      - "5433:5432"   # expõe PostgreSQL para acesso pelo MCP GMC local (tools/gmc-mcp) — 5433 evita conflito com PostgreSQL do sistema

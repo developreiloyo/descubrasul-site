@@ -44,6 +44,7 @@ LOCAL_APPS = [
     "ia",
     "categorias",
     "ofertas",
+    "merchant",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -201,6 +202,15 @@ ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
 MP_ACCESS_TOKEN = env("MP_ACCESS_TOKEN", default="")
 MP_WEBHOOK_SECRET = env("MP_WEBHOOK_SECRET", default="")
 GOOGLE_MAPS_API_KEY = env("GOOGLE_MAPS_API_KEY", default="")
+
+# ─── Google Merchant Center ────────────────────────────────────────────
+# GMC_ENABLED=True ativa a sync diária; manter False até credenciais configuradas no VPS
+GMC_ENABLED            = env.bool("GMC_ENABLED", default=False)
+GMC_MERCHANT_ID        = env("GMC_MERCHANT_ID", default="5830442942")
+# JSON completo da service account — guardar como variável de ambiente, nunca em arquivo
+GMC_SERVICE_ACCOUNT_JSON = env("GMC_SERVICE_ACCOUNT_JSON", default="")
+# URL pública do site — usada para gerar links absolutos de imagem e produto no feed
+GMC_SITE_URL           = env("GMC_SITE_URL", default="https://descubrasul.com")
 
 # ─── Email ────────────────────────────────────────────────────────────
 DEFAULT_FROM_EMAIL = "DescubraSul <noreply@descubrasul.com>"
