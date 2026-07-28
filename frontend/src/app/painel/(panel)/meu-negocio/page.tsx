@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Save } from 'lucide-react';
+import { maskPhone } from '@/lib/masks';
 import { InformacoesBasicasCard } from '@/components/merchant/meu-negocio/InformacoesBasicasCard';
+import { SobreNegocioCard } from '@/components/merchant/meu-negocio/SobreNegocioCard';
 import { EnderecoCard } from '@/components/merchant/meu-negocio/EnderecoCard';
 import { HorarioCard } from '@/components/merchant/meu-negocio/HorarioCard';
 import { RedesSociaisCard } from '@/components/merchant/meu-negocio/RedesSociaisCard';
@@ -18,11 +20,15 @@ import type { EspacoEspecialForm } from '@/components/merchant/meu-negocio/Espac
 // ─── Tipos ───────────────────────────────────────────────────────────
 interface NegocioForm {
   nome: string;
-  descricao: string;
-  historia: string;
+  categoria_slug: string;
   cidade: string;
   whatsapp: string;
+  nome_responsavel: string;
+  telefone: string;
+  email_contato: string;
   website: string;
+  descricao: string;
+  historia: string;
   seo_title: string;
   seo_description: string;
   palavras_chave: string;
@@ -44,11 +50,15 @@ interface NegocioForm {
 
 const VAZIO_FORM: NegocioForm = {
   nome: '',
-  descricao: '',
-  historia: '',
+  categoria_slug: '',
   cidade: '',
   whatsapp: '',
+  nome_responsavel: '',
+  telefone: '',
+  email_contato: '',
   website: '',
+  descricao: '',
+  historia: '',
   seo_title: '',
   seo_description: '',
   palavras_chave: '',
@@ -115,11 +125,15 @@ export default function MeuNegocioPage() {
     if (d.og_image) setCapaUrl(d.og_image);
     setForm({
       nome: d.nome ?? '',
+      categoria_slug: d.categoria?.slug ?? '',
+      cidade: d.cidade ?? '',
+      whatsapp: maskPhone(d.whatsapp ?? ''),
+      nome_responsavel: d.nome_responsavel ?? '',
+      telefone: maskPhone(d.telefone ?? ''),
+      email_contato: d.email_contato ?? '',
+      website: d.website ?? '',
       descricao: d.descricao ?? '',
       historia: d.historia ?? '',
-      cidade: d.cidade ?? '',
-      whatsapp: d.whatsapp ?? '',
-      website: d.website ?? '',
       seo_title: d.seo_title ?? '',
       seo_description: d.seo_description ?? '',
       palavras_chave: d.palavras_chave ?? '',
@@ -222,6 +236,7 @@ export default function MeuNegocioPage() {
         setErro('WhatsApp inválido — informe DDD + número (10 ou 11 dígitos).');
         return;
       }
+      const telefoneDigits = resto.telefone.replace(/\D/g, '');
 
       const normalizarHorario = (h: string | null | undefined) => (h ? h.slice(0, 5) : null);
       const horario = {
@@ -244,6 +259,7 @@ export default function MeuNegocioPage() {
       const body: Record<string, unknown> = {
         ...resto,
         whatsapp: whatsappDigits,
+        telefone: telefoneDigits,
         ...horario,
         historia,
         dias_funcionamento,
@@ -342,11 +358,18 @@ export default function MeuNegocioPage() {
         <div className="lg:col-span-8 flex flex-col gap-6">
           <InformacoesBasicasCard
             nome={form.nome}
-            descricao={form.descricao}
-            historia={form.historia}
+            categoria_slug={form.categoria_slug}
             cidade={form.cidade}
             whatsapp={form.whatsapp}
+            nome_responsavel={form.nome_responsavel}
+            telefone={form.telefone}
+            email_contato={form.email_contato}
             website={form.website}
+            onChange={set}
+          />
+          <SobreNegocioCard
+            descricao={form.descricao}
+            historia={form.historia}
             onChange={set}
           />
           <EnderecoCard

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Store } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import { Card } from '../Card';
 import { FormField, inputClass } from '../FormField';
 import { maskPhone } from '@/lib/masks';
@@ -10,115 +10,170 @@ interface Cidade {
   nome: string;
 }
 
+interface Categoria {
+  slug: string;
+  nome: string;
+}
+
 interface Props {
   nome: string;
-  descricao: string;
-  historia: string;
+  categoria_slug: string;
   cidade: string;
   whatsapp: string;
+  nome_responsavel: string;
+  telefone: string;
+  email_contato: string;
   website: string;
   onChange: (campo: string, valor: string) => void;
 }
 
 export function InformacoesBasicasCard({
   nome,
-  descricao,
-  historia,
+  categoria_slug,
   cidade,
   whatsapp,
+  nome_responsavel,
+  telefone,
+  email_contato,
   website,
   onChange,
 }: Props) {
   const [cidades, setCidades] = useState<Cidade[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
 
   useEffect(() => {
     fetch('/api/proxy/cidades/')
       .then((r) => r.json())
       .then((data) => setCidades(Array.isArray(data) ? data : []))
       .catch(() => {});
+
+    fetch('/api/proxy/categorias/?ordering=ordem&limit=100')
+      .then((r) => r.json())
+      .then((data) => setCategorias(data.results ?? data ?? []))
+      .catch(() => {});
   }, []);
 
   return (
-    <Card title="Informações básicas" icon={Store}>
-      <div className="flex flex-col gap-4">
-        <FormField label="Nome do negócio" htmlFor="nome" required>
-          <input
-            id="nome"
-            type="text"
-            value={nome}
-            onChange={(e) => onChange('nome', e.target.value)}
-            className={inputClass}
-          />
-        </FormField>
+    <Card title="Dados do negócio ou perfil profissional" icon={Building2}>
+      <div className="flex flex-col gap-5">
 
-        <FormField label="Cidade" htmlFor="cidade" required>
-          <select
-            id="cidade"
-            value={cidade}
-            onChange={(e) => onChange('cidade', e.target.value)}
-            className={inputClass}
-          >
-            <option value="">Selecione a cidade</option>
-            {cidades.map((c) => (
-              <option key={c.slug} value={c.nome}>
-                {c.nome}
-              </option>
-            ))}
-          </select>
-        </FormField>
+        {/* ── Identificação ──────────────────────────────── */}
+        <div className="flex flex-col gap-4">
+          <p className="text-xs font-semibold text-ink/40 uppercase tracking-widest">
+            Identificação
+          </p>
 
-        <FormField
-          label="Descrição curta"
-          htmlFor="descricao"
-          hint={`${descricao.length} caracteres`}
-          required
-        >
-          <textarea
-            id="descricao"
-            rows={3}
-            value={descricao}
-            onChange={(e) => onChange('descricao', e.target.value)}
-            placeholder="Frase de impacto sobre o negócio — aparece nos resultados de busca."
-            className={`${inputClass} resize-none`}
-          />
-        </FormField>
+          <FormField label="Nome do negócio" htmlFor="nome" required>
+            <input
+              id="nome"
+              type="text"
+              value={nome}
+              onChange={(e) => onChange('nome', e.target.value)}
+              placeholder="Ex.: Padaria Central, Studio Ana Lima…"
+              className={inputClass}
+            />
+          </FormField>
 
-        <FormField
-          label="História do negócio"
-          htmlFor="historia"
-          hint={`${historia.length} caracteres · Pode usar parágrafos`}
-        >
-          <textarea
-            id="historia"
-            rows={6}
-            value={historia}
-            onChange={(e) => onChange('historia', e.target.value)}
-            placeholder="Conte a história do seu negócio. Quando surgiu? O que o torna especial?"
-            className={`${inputClass} resize-none`}
-          />
-        </FormField>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField label="Categoria" htmlFor="categoria_slug" required>
+              <select
+                id="categoria_slug"
+                value={categoria_slug}
+                onChange={(e) => onChange('categoria_slug', e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Selecione a categoria</option>
+                {categorias.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.nome}
+                  </option>
+                ))}
+              </select>
+            </FormField>
 
-        <FormField label="WhatsApp" htmlFor="whatsapp" required>
-          <input
-            id="whatsapp"
-            type="tel"
-            value={whatsapp}
-            onChange={(e) => onChange('whatsapp', maskPhone(e.target.value))}
-            placeholder="+55 (48) 99999-0000"
-            className={inputClass}
-          />
-        </FormField>
+            <FormField label="Cidade" htmlFor="cidade" required>
+              <select
+                id="cidade"
+                value={cidade}
+                onChange={(e) => onChange('cidade', e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Selecione a cidade</option>
+                {cidades.map((c) => (
+                  <option key={c.slug} value={c.nome}>
+                    {c.nome}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+          </div>
+        </div>
 
-        <FormField label="Site (opcional)" htmlFor="website">
-          <input
-            id="website"
-            type="url"
-            value={website}
-            onChange={(e) => onChange('website', e.target.value)}
-            placeholder="https://..."
-            className={inputClass}
-          />
-        </FormField>
+        <hr className="border-border" />
+
+        {/* ── Contato ────────────────────────────────────── */}
+        <div className="flex flex-col gap-4">
+          <p className="text-xs font-semibold text-ink/40 uppercase tracking-widest">
+            Contato
+          </p>
+
+          <FormField label="WhatsApp" htmlFor="whatsapp" required>
+            <input
+              id="whatsapp"
+              type="tel"
+              value={whatsapp}
+              onChange={(e) => onChange('whatsapp', maskPhone(e.target.value))}
+              placeholder="(48) 99999-0000"
+              className={inputClass}
+            />
+          </FormField>
+
+          <FormField label="Nome do responsável" htmlFor="nome_responsavel" required>
+            <input
+              id="nome_responsavel"
+              type="text"
+              value={nome_responsavel}
+              onChange={(e) => onChange('nome_responsavel', e.target.value)}
+              placeholder="Nome de quem gerencia o perfil"
+              className={inputClass}
+            />
+          </FormField>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField label="Telefone (opcional)" htmlFor="telefone">
+              <input
+                id="telefone"
+                type="tel"
+                value={telefone}
+                onChange={(e) => onChange('telefone', maskPhone(e.target.value))}
+                placeholder="(48) 3333-0000"
+                className={inputClass}
+              />
+            </FormField>
+
+            <FormField label="E-mail (opcional)" htmlFor="email_contato">
+              <input
+                id="email_contato"
+                type="email"
+                value={email_contato}
+                onChange={(e) => onChange('email_contato', e.target.value)}
+                placeholder="contato@seunegocio.com.br"
+                className={inputClass}
+              />
+            </FormField>
+          </div>
+
+          <FormField label="Site (opcional)" htmlFor="website">
+            <input
+              id="website"
+              type="url"
+              value={website}
+              onChange={(e) => onChange('website', e.target.value)}
+              placeholder="https://..."
+              className={inputClass}
+            />
+          </FormField>
+        </div>
       </div>
     </Card>
   );

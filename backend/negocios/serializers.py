@@ -75,7 +75,9 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
         fields = [
             "slug", "nome", "descricao", "historia", "logo", "alt_logo",
             "categoria", "categoria_tipo", "cidade", "bairro",
-            "whatsapp", "website", "verificado", "plano",
+            "whatsapp", "website",
+            "telefone", "email_contato", "nome_responsavel",
+            "verificado", "plano",
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
             "atualizado_em",
             "seo_title", "seo_description", "og_image", "palavras_chave",
@@ -108,6 +110,7 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
         fields = [
             "slug", "nome", "descricao", "historia", "logo", "alt_logo",
             "categoria", "categoria_slug", "cidade", "bairro", "whatsapp", "website",
+            "telefone", "email_contato", "nome_responsavel",
             "plano", "status", "verificado",
             "seo_title", "seo_description", "og_image", "palavras_chave",
             "horario_abertura", "horario_fechamento", "dias_funcionamento",
@@ -117,6 +120,12 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["slug", "plano", "status", "verificado", "bairro",
                             "criado_em", "atualizado_em"]
+        extra_kwargs = {
+            "telefone":         {"required": False, "allow_blank": True},
+            "email_contato":    {"required": False, "allow_blank": True},
+            "nome_responsavel": {"required": False, "allow_blank": True},
+            "website":          {"required": False, "allow_blank": True},
+        }
 
     def validate_descricao(self, value):
         validar_texto_seo_completo(value, campo="descricao do negocio")
@@ -163,6 +172,20 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
         if len(digits) > 11:
             raise serializers.ValidationError(
                 "WhatsApp inválido — máximo 11 dígitos (com DDD)."
+            )
+        return digits
+
+    def validate_telefone(self, value):
+        if not value:
+            return value
+        digits = "".join(c for c in value if c.isdigit())
+        if len(digits) == 13 and digits.startswith("55"):
+            digits = digits[2:]
+        if len(digits) == 12 and digits.startswith("55"):
+            digits = digits[2:]
+        if digits and (len(digits) < 10 or len(digits) > 11):
+            raise serializers.ValidationError(
+                "Telefone inválido — informe DDD + número (10 ou 11 dígitos)."
             )
         return digits
 
