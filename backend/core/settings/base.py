@@ -155,6 +155,7 @@ REST_FRAMEWORK = {
         "password_reset": "5/hour", # reset de senha
         "analytics": "60/min",      # registro de cliques
         "ia": "10/day",             # geração de texto com IA (por usuário)
+        "cadastro": "3/hour",       # cadastro de comerciante (por IP)
     },
 }
 

@@ -59,6 +59,12 @@ async function chamarBackend(
     const contentType = request.headers.get("content-type");
     if (contentType) headers["Content-Type"] = contentType;
   }
+  // Forward real client IP so Django rate limiting and logging work correctly
+  const clientIp =
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown";
+  headers["X-Forwarded-For"] = clientIp;
   return fetch(url, {
     method: request.method,
     headers,

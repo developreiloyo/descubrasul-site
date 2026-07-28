@@ -2,14 +2,12 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.decorators import method_decorator
-from django_ratelimit.decorators import ratelimit
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from core.throttles import PasswordResetThrottle
+from core.throttles import PasswordResetThrottle, CadastroThrottle
 from .models import User
 from .serializers import (
     UserSerializer,
@@ -21,14 +19,15 @@ from .serializers import (
 from .tokens import password_reset_token_generator
 
 
-@method_decorator(ratelimit(key="ip", rate="3/h", method="POST", block=True), name="post")
 class CadastroCompletoView(generics.CreateAPIView):
     """
     Cadastro do comerciante: User + Negocio em uma transacao.
-    Rate limit 3/h por IP — protecao contra cadastros automatizados.
+    Rate limit 3/h por IP via DRF throttle — retorna 429 JSON em vez do 403 HTML
+    que django-ratelimit retornava (causava mensagem genérica no frontend).
     """
     serializer_class   = CadastroCompletoSerializer
     permission_classes = [AllowAny]
+    throttle_classes   = [CadastroThrottle]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

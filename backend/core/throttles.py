@@ -19,3 +19,8 @@ class AnalyticsThrottle(ScopedRateThrottle):
 class IaThrottle(ScopedRateThrottle):
     """10 gerações de texto por IA por dia (por usuário autenticado)."""
     scope = "ia"
+
+
+class CadastroThrottle(AnonRateThrottle):
+    """3 cadastros por hora por IP — proteção contra cadastros automatizados."""
+    scope = "cadastro"

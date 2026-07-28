@@ -58,8 +58,18 @@ export default function CadastroPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        if (res.status === 429) {
+          setErro("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
+          return;
+        }
         const primeiro = Object.values(data)[0];
-        setErro(Array.isArray(primeiro) ? String(primeiro[0]) : "Erro no cadastro. Verifique os dados.");
+        if (Array.isArray(primeiro)) {
+          setErro(String(primeiro[0]));
+        } else if (typeof primeiro === "string") {
+          setErro(primeiro);
+        } else {
+          setErro("Erro no cadastro. Verifique os dados.");
+        }
         return;
       }
       const login = await fetch("/api/auth/login", {
