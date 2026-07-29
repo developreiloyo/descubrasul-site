@@ -292,7 +292,7 @@ export default async function Home() {
           {CAT_PILLS.map(({ label, slug, icon: Icon, active }) => (
             <Link
               key={label}
-              href={slug ? `/marketplace?cat=${slug}` : "/"}
+              href={slug ? `/vitrina?cat=${slug}` : "/"}
               className={`shrink-0 text-sm font-medium border rounded-full px-4 py-2 flex items-center gap-1.5 transition-colors ${
                 active
                   ? "bg-primary text-white border-primary"
@@ -312,11 +312,11 @@ export default async function Home() {
           <ScrollReveal>
             <div className="flex items-end justify-between mb-5 lg:mb-8">
               <div>
-                <p className="eyebrow mb-2">Marketplace local</p>
+                <p className="eyebrow mb-2">Vitrina local</p>
                 <h2 className="font-display text-2xl lg:text-[2rem] text-ink">Produtos em destaque</h2>
                 <p className="text-sec text-sm mt-1.5">Das melhores lojas do Sul catarinense, direto para você.</p>
               </div>
-              <Link href="/marketplace" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors duration-200">
+              <Link href="/vitrina" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors duration-200">
                 Ver todos <ArrowRight className="size-4" />
               </Link>
             </div>
@@ -327,7 +327,7 @@ export default async function Home() {
             </div>
           </ScrollReveal>
           <div className="sm:hidden text-center mt-5">
-            <Link href="/marketplace" className="text-sm font-semibold text-primary flex items-center justify-center gap-1.5">
+            <Link href="/vitrina" className="text-sm font-semibold text-primary flex items-center justify-center gap-1.5">
               Ver todos os produtos <ArrowRight className="size-4" />
             </Link>
           </div>

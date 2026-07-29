@@ -24,6 +24,20 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "localhost", port: "8000" },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/marketplace",
+        destination: "/vitrina",
+        permanent: true,
+      },
+      {
+        source: "/marketplace/:path*",
+        destination: "/vitrina/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
