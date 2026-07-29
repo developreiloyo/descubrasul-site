@@ -17,21 +17,22 @@ Para diagrama de arquitetura e estado atual de produção: ver [ARQUITECTURA.md]
 
 ### categorias/
 - `Categoria`: slug auto-gerado, nome, icone, schema_tipo, ativo, ordem
-- Migrations: `0001_initial`, `0002_seed_categorias` (idempotente via `get_or_create`)
-- 10 categorias base seedadas: Restaurantes, Moda, Estetica, Academias, Pet Shop, Clinicas, Educacao, Lojas Gerais, Servicos, Alimentacao
-- `CategoriaListView` — `GET /api/categorias/` retorna apenas ativas ordenadas por `ordem`
+- Migrations: `0001_initial`, `0002_seed_categorias`, `0005_canonicalizar_categorias` (ativa 24 canônicas, idempotente)
+- 24 categorias canônicas ativas (slugs): automotivo, beleza-e-bem-estar, casa-e-construcao, comunicacao-visual-graficas-e-personalizacao, consultoria-e-servicos-empresariais, contabilidade-e-financas, educacao-e-treinamentos, engenharia-e-arquitetura, eventos-e-entretenimento, gastronomia-e-alimentacao, imobiliario, limpeza-e-conservacao, locacao-de-equipamentos-e-maquinas, manutencao-e-assistencia-tecnica, moda-costura-e-locacoes, pets, saude, seguranca-e-chaveiros, servicos-gerais, servicos-juridicos, servicos-veiculares, tecnologia-informatica-e-marketing, transporte-e-logistica, turismo-e-hospedagem
+- `CategoriaListView` — `GET /api/categorias/` retorna apenas ativas ordenadas por `ordem`; `pagination_class = None` (obrigatório — sem isso o PAGE_SIZE global trunca para 20)
 
 ### negocios/
-- `Negocio`: nome, descricao, historia, logo, categoria, cidade, bairro, whatsapp, website, plano, status, verificado, slug auto, seo_title/description, og_image, alt_logo, palavras_chave, espaco_especial JSONField, horario, dias_funcionamento, media_nota
-- `Produto`: nome, foto, descricao, descricao_longa, categoria, preco, disponivel, ordem, confirmado_em, slug auto, alt_foto, fotos (ForeignKey)
-- `FotoProduto`: máximo 3 por produto, validado no serializer
+- `Negocio`: nome, descricao, historia, logo, capa (campo capa bloqueado no Presença Sul), categoria, cidade, bairro, whatsapp, website, plano (`gratuito|pro|producao`), status, verificado, slug auto, seo_title/description, og_image, alt_logo, palavras_chave, espaco_especial JSONField, horario, dias_funcionamento, media_nota
+- `Produto`: nome, foto, descricao, descricao_longa, categoria, preco, disponivel, ordem, confirmado_em, slug auto, alt_foto, `video_youtube_url` (nullable), fotos (FK para FotoProduto)
+- `FotoProduto`: máximo 3 por produto, validado no serializer. Signal `post_delete` → `apagar_arquivo_foto_produto` remove arquivo do storage
+- `FotoNegocio`: fotos da galeria do negócio (FK para Negocio). Signal `post_delete` → `apagar_arquivo_foto_negocio` remove arquivo do storage
 - `Localizacao`: endereco, lat/lng, direccao_fmt auto-gerada, cidade, estado, cep, bairro, area_servico
 - `RedesSociais`: instagram, tiktok, facebook, youtube, x
 - `VideoDestaque`: url_original, plataforma, oembed_html (cache)
-- Signals: `normalizar_cidade_negocio`, `gerar_slug_negocio`, `gerar_slug_produto`, `preencher_direccao_fmt`, `disparar_geocodificacao` (post_save de Localizacao — dispara task async se lat/lng ausentes)
-- Permissões: `IsDonoDoNegocio`, `IsPlanoPro`, `IsPlanoBasicoOuSuperior`, `PodicionarProduto`
+- Signals: `normalizar_cidade_negocio`, `gerar_slug_negocio`, `gerar_slug_produto`, `preencher_direccao_fmt`, `disparar_geocodificacao`, `apagar_arquivo_foto_produto` (post_delete), `apagar_arquivo_foto_negocio` (post_delete)
+- Permissões: `IsDonoDoNegocio`, `IsPlanoPro` (msg: "disponível apenas nos planos Conexão Sul e Destaque Sul"), `IsPlanoBasicoOuSuperior`, `PodicionarProduto`
 - Validações: `validar_imagem` (magic bytes, 5MB max, jpg/png/webp)
-- Migration: até `0006_unaccent_normalizar_cidade`
+- Migration: até `0007_fotosegocio_post_delete` (verificar número exato via `showmigrations`)
 
 ### negocios/ — tasks e services
 - Task Celery `ocultar_produtos_vencidos` (02:00h diário) — oculta produtos sem confirmação há +30 dias
@@ -53,7 +54,7 @@ Para diagrama de arquitetura e estado atual de produção: ver [ARQUITECTURA.md]
   - Ambas com `@never_cache` — Dockerfile.prod aponta healthcheck para `/health/`
 
 ### planos/
-- `CATALOGO_PLANOS` dict — configs: basico (R$79/mês), pro (R$197/mês), producao (R$397/mês), fundador (R$599/ano)
+- `CATALOGO_PLANOS` dict — configs ativos: gratuito (Presença Sul, R$0), pro (Conexão Sul, R$197/ano), producao (Destaque Sul, R$397/ano). Slugs `basico` e `fundador` removidos do modelo e seeds.
 - `Assinatura` model — OneToOne com Negocio, status choices (pendente/ativa/pausada/cancelada/encerrada), mp_subscription_id, proximo_vencimento
 - `services.py` → `criar_subscricao_mp(negocio, plano_slug, back_url)` — cria preapproval MP; `validar_assinatura_webhook(sig, req_id, data_id)` — valida HMAC
 - Views: `listar_planos` (público), `minha_assinatura`, `assinar_plano/{slug}` → retorna `init_point`, `webhook_mp` — atualiza status
@@ -128,10 +129,14 @@ components/
 │       ├── RedesSociaisCard
 │       ├── EspacoEspecialCard # Pro+ com lock UI para planos inferiores
 │       ├── SeoCard
-│       ├── StatusCard         # "Visualizar página pública" (botão azul #2b3fd4)
-│       ├── LogoCapaCard       # Upload logo (128×128) + capa (16:9) com bg slate-100
+│       ├── StatusCard         # "Visualizar página pública" (botão azul #2b3fd4); PLANO_LABELS: gratuito→Presença Sul, pro→Conexão Sul, producao→Destaque Sul
+│       ├── LogoCapaCard       # Upload logo (128×128) + capa (16:9). Prop `plano`: gratuito→BannerDescubraSul institucional (sem upload); pro/producao→upload normal
+│       ├── BannerDescubraSul  # Banner SVG/CSS puro para Presença Sul — gradiente verde+azul, sem imagem externa, aspect-ratio 16/9
+│       ├── GaleriaFotosCard   # Galeria de fotos do negócio; botão delete permanente (não hover-only) para mobile UX
 │       ├── DicasCard
 │       └── (QRCodeCard via @/components/ui/QRCodeCard)
+├── negocios/       # continuação
+│   └── GoogleReviews          # Avaliações Google: summary card + up to 3 review cards. Avatar via <Image> com fallback inicial. Requer *.googleusercontent.com em next.config.ts remotePatterns
 ├── seo/            JsonLd (Schema.org), GoogleAnalytics
 ├── ui/             button, carousel, AdSlot, CookieBanner, QRCodeCard (react-qr-code, PNG+SVG download)
 └── blocks/         gallery4
@@ -142,11 +147,13 @@ components/
 ## Frontend — Lib e tipos
 
 - `lib/api.ts` — Axios com interceptor JWT (401 → redirect `/painel/login`)
-- `lib/fetchers.ts` — Fetchers SSR: `getNegocio`, `getProdutosDoNegocio`, `getCategorias`, `getNegociosDestaque`, `getProdutosDestaque`, `getNegocios`
+- `lib/fetchers.ts` — Fetchers SSR: `getNegocio`, `getProdutosDoNegocio`, `getCategorias` (lida com array puro E paginado `{results:[]}`), `getNegociosDestaque`, `getProdutosDestaque`, `getNegocios`
 - `lib/utils.ts` — Utilitários gerais; inclui `isAberto(abertura, fechamento, dias[])` — verifica horário de funcionamento em timezone America/Sao_Paulo, normaliza dias pt-BR (remove acentos e ponto)
 - `hooks/useTracking.ts` — `registrarClique(slug, tipo)` — registra eventos no endpoint de analytics
-- `types/index.ts` — Interfaces TypeScript: `Negocio`, `Produto`, `FotoProduto`, `RedesSociais`, `Localizacao`, `Categoria`, `VideoDestaque`, `EspacoEspecial`, `MetricaDiaria`
-  - `Negocio` inclui `palavras_chave?: string | null` (usado para chips na seção Sobre)
+- `types/index.ts` — Interfaces TypeScript: `Negocio`, `Produto`, `FotoProduto`, `RedesSociais`, `Localizacao`, `Categoria`, `VideoDestaque`, `EspacoEspecial`, `MetricaDiaria`, `GoogleReview`, `GoogleReviewData`
+  - `Negocio.plano`: `"gratuito" | "pro" | "producao"` (basico/fundador removidos)
+  - `Negocio` inclui `palavras_chave?: string | null` (chips na seção Sobre) e `google_place_id?: string`
+  - `Produto` inclui `video_youtube_url?: string | null` e `fotos: FotoProduto[]`
 
 ---
 

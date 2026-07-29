@@ -2,7 +2,7 @@ import uuid
 import unicodedata
 from django.db import models
 from django.utils.text import slugify
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
 
 
@@ -359,6 +359,20 @@ def sincronizar_bairro_negocio(sender, instance, **kwargs):
     """Keeps Negocio.bairro in sync with Localizacao.bairro."""
     if instance.bairro and instance.negocio.bairro != instance.bairro:
         Negocio.objects.filter(pk=instance.negocio_id).update(bairro=instance.bairro)
+
+
+@receiver(post_delete, sender=FotoNegocio)
+def apagar_arquivo_foto_negocio(sender, instance, **kwargs):
+    """Remove o arquivo do storage ao deletar o registro — evita arquivos órfãos."""
+    if instance.foto:
+        instance.foto.delete(save=False)
+
+
+@receiver(post_delete, sender=FotoProduto)
+def apagar_arquivo_foto_produto(sender, instance, **kwargs):
+    """Remove o arquivo do storage ao deletar o registro — evita arquivos órfãos."""
+    if instance.foto:
+        instance.foto.delete(save=False)
 
 
 @receiver(post_save, sender=Localizacao)

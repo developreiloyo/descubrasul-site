@@ -159,7 +159,6 @@ POST   /api/ofertas/webhook/                 # Webhook MP para ofertas
 | Feature                                  | App responsável | Observação                                                                 |
 |------------------------------------------|-----------------|----------------------------------------------------------------------------|
 | Checkout de upgrade de plano (frontend)  | `planos/`       | Backend MP pronto (`POST /api/planos/assinar/{slug}`). Falta UI no painel — botões apontam para `/para-empresas#planos-detalhes` |
-| Sincronização nomes de planos            | `planos/`       | Backend usa `gratuito/basico/pro/producao/fundador`; frontend mostra `Presença Sul / Conexão Sul / Destaque Sul` — falta mapeamento no painel |
 | SMTP produção                            | `.env`          | Resend configurado no VPS mas propagação DNS pendente. Sem isso, password reset não entrega emails |
 | Razão social + CNPJ legais               | —               | Texto "CNPJ em processo de registro" em `/privacidade` e `/termos` — aguarda confirmação do dono |
 | Geração de texto com IA                  | `ia/`           | Claude Haiku 4.5 — ativar somente Fase 3 (mês 3+), só plano Pro+          |
@@ -315,21 +314,18 @@ Commit + deploy
 
 ## Planos de assinatura
 
-> **Atenção — dois sistemas de nomes coexistem:**
-> - **Backend** (`Negocio.Plano`): `gratuito / basico / pro / producao / fundador` — valores no banco de dados
-> - **Frontend marketing** (`/para-empresas`, `/home`): `Presença Sul / Conexão Sul / Destaque Sul` — nomes comerciais
-> Pendente: mapear nomes comerciais no painel do comerciante.
+> **Nomes padronizados** — backend (`Negocio.Plano`) e frontend usam os mesmos nomes comerciais em todo o painel.
+> Slugs de banco ativos: `gratuito / pro / producao`. Slugs `basico` e `fundador` foram removidos do modelo.
 
 | Slug backend | Nome comercial  | Preço          | Limite produtos (público) | Limite (painel) | IA/Pro |
 |--------------|-----------------|----------------|---------------------------|-----------------|--------|
 | `gratuito`   | Presença Sul    | R$ 0           | 10                        | 5               | Não    |
-| `basico`     | —               | R$ 79/mês      | 10                        | 20              | Não    |
 | `pro`        | Conexão Sul     | R$ 197/ano     | Ilimitado                 | Ilimitado       | Sim    |
 | `producao`   | Destaque Sul    | R$ 397/ano     | Ilimitado                 | Ilimitado       | Sim    |
-| `fundador`   | Fundador        | R$ 599/ano     | Ilimitado                 | Ilimitado       | Sim (50 vagas) |
 
-> `LIMITES_PRODUTOS_PUBLICO` no `views.py` limita a exibição pública a 10 para gratuito e básico.
-> `LIMITES_PRODUTOS` no `models.py` é o limite de cadastro no painel: gratuito=5, basico=20, pro/producao/fundador=None.
+> `LIMITES_PRODUTOS_PUBLICO` no `views.py` limita a exibição pública a 10 para `gratuito`.
+> `LIMITES_PRODUTOS` no `models.py` é o limite de cadastro no painel: gratuito=5, pro/producao=None.
+> Plano `gratuito` (Presença Sul) exibe `BannerDescubraSul` institucional no lugar do campo capa — upload de capa disponível apenas em Conexão Sul e Destaque Sul.
 
 ---
 
@@ -337,7 +333,7 @@ Commit + deploy
 
 Campo `espaco_especial` (JSONField) no modelo `Negocio`, exibido na página pública pelo componente `EspacoEspecial.tsx`.
 Tipos válidos: `"texto"` | `"oferta"` | `"cupom"` | `"banner"` | `"video"`
-Configurável pelo comerciante no painel `/painel/meu-negocio` (apenas planos Pro, Produção, Fundador).
+Configurável pelo comerciante no painel `/painel/meu-negocio` (apenas Conexão Sul e Destaque Sul).
 **Importante:** é apenas vitrine — não tem fluxo de compra. Para compra, usar o sistema de Promoções Especiais (a implementar).
 
 ---
@@ -358,7 +354,7 @@ Configurável pelo comerciante no painel `/painel/meu-negocio` (apenas planos Pr
 - IA ativada somente na **Fase 3 (mês 3+)** — MVP lança sem IA
 - Campos SEO gerados automaticamente como fallback se o comerciante não preencher
 - Rate limiting de IA por comerciante (Redis): 10 descrições/dia, 50/mês
-- Limite público de produtos (gratuito/básico): 10 — não expõe todos os produtos no HTML
+- Limite público de produtos (gratuito/Presença Sul): 10 — não expõe todos os produtos no HTML
 
 ---
 
