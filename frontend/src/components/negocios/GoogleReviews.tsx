@@ -94,7 +94,9 @@ export function GoogleReviews({ data, nomeNegocio }: { data: GoogleReviewData; n
                     alt={rev.autor}
                     width={36}
                     height={36}
-                    className="rounded-full object-cover"
+                    className="rounded-full object-cover shrink-0"
+                    loading="lazy"
+                    sizes="36px"
                   />
                 ) : (
                   <span className="w-9 h-9 rounded-full bg-[#eff4ff] text-[#00602a] font-bold text-sm flex items-center justify-center shrink-0">
