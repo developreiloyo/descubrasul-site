@@ -35,7 +35,7 @@ export async function getCategorias(): Promise<Categoria[]> {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    return data.results ?? [];
+    return Array.isArray(data) ? data : (data.results ?? []);
   } catch {
     return [];
   }

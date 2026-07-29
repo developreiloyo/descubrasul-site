@@ -11,3 +11,4 @@ class CategoriaListView(generics.ListAPIView):
     queryset = Categoria.objects.filter(ativo=True).order_by("ordem")
     serializer_class = CategoriaSerializer
     permission_classes = [AllowAny]
+    pagination_class = None
