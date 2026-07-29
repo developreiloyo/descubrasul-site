@@ -88,6 +88,7 @@ export interface Produto {
   disponivel: boolean;
   atualizado_em: string;
   fotos: FotoProduto[];
+  video_youtube_url?: string | null;
   negocio: {
     slug: string;
     nome: string;

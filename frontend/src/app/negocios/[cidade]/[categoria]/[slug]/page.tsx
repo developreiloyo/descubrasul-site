@@ -123,8 +123,11 @@ export default async function PaginaNegocio({ params }: Props) {
             produtos={produtos}
             similares={similaresFiltrados}
           />
+          {/* Google Reviews — desktop only (mobile version rendered after sidebar) */}
           {googleReviews && googleReviews.total > 0 && (
-            <GoogleReviews data={googleReviews} nomeNegocio={negocio.nome} />
+            <div className="hidden md:block">
+              <GoogleReviews data={googleReviews} nomeNegocio={negocio.nome} />
+            </div>
           )}
         </div>
 
@@ -133,6 +136,13 @@ export default async function PaginaNegocio({ params }: Props) {
           <BusinessSidebar negocio={negocio} />
         </aside>
       </main>
+
+      {/* Google Reviews — mobile only (after sidebar) */}
+      {googleReviews && googleReviews.total > 0 && (
+        <div className="md:hidden max-w-[1280px] mx-auto px-4 md:px-8 py-6">
+          <GoogleReviews data={googleReviews} nomeNegocio={negocio.nome} />
+        </div>
+      )}
 
       {/* Similar businesses — full width */}
       <SimilarBusinesses negocios={similaresFiltrados} />

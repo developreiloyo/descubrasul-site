@@ -3,11 +3,12 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     NegocioListView, NegocioDetailView, ProdutoListView,
     MeuNegocioView, MeusProdutosViewSet, produtos_destaque,
-    buscar_google, reviews_google,
+    buscar_google, reviews_google, FotoNegocioViewSet,
 )
 
 router = DefaultRouter()
 router.register(r"painel/produtos", MeusProdutosViewSet, basename="meus-produtos")
+router.register(r"painel/galeria", FotoNegocioViewSet, basename="galeria")
 
 urlpatterns = [
     # Exatas primeiro

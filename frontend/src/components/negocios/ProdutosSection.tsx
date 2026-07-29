@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, MessageCircle, ArrowRight } from "lucide-react";
 import { formatarPreco, mediaUrl } from "@/lib/utils";
+import { toYoutubeEmbed } from "@/lib/youtube";
 import { CategoriaIcon } from "@/lib/categoria-icons";
 import type { Negocio, Produto } from "@/types";
 
@@ -109,6 +110,18 @@ function ProdutoModal({
           </div>
         ) : (
           <div className="w-full aspect-[4/3] bg-[#e5eeff] rounded-t-2xl flex items-center justify-center text-7xl">📦</div>
+        )}
+
+        {produto.video_youtube_url && toYoutubeEmbed(produto.video_youtube_url) && (
+          <div className="aspect-video w-full overflow-hidden">
+            <iframe
+              src={toYoutubeEmbed(produto.video_youtube_url)}
+              title={`Video de ${produto.nome}`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full"
+            />
+          </div>
         )}
 
         <div className="p-6 flex flex-col gap-4">

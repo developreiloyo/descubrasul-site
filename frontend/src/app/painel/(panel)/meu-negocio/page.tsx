@@ -12,6 +12,7 @@ import { EspacoEspecialCard } from '@/components/merchant/meu-negocio/EspacoEspe
 import { SeoCard } from '@/components/merchant/meu-negocio/SeoCard';
 import { StatusCard } from '@/components/merchant/meu-negocio/StatusCard';
 import { LogoCapaCard } from '@/components/merchant/meu-negocio/LogoCapaCard';
+import { GaleriaFotosCard } from '@/components/merchant/meu-negocio/GaleriaFotosCard';
 import { DicasCard } from '@/components/merchant/meu-negocio/DicasCard';
 import { GooglePlacesCard } from '@/components/merchant/meu-negocio/GooglePlacesCard';
 import { QRCodeCard } from '@/components/ui/QRCodeCard';
@@ -436,7 +437,8 @@ export default function MeuNegocioPage() {
             cidade={negocioMeta?.cidade}
             categoriaSlug={negocioMeta?.categoriaSlug}
           />
-          <LogoCapaCard logoUrl={logoUrl} capaUrl={capaUrl} onLogoChange={handleLogo} onCapaChange={handleCapa} plano={plano} isPro={isPro} />
+          <LogoCapaCard logoUrl={logoUrl} capaUrl={capaUrl} onLogoChange={handleLogo} onCapaChange={handleCapa} />
+          <GaleriaFotosCard plano={plano} isPro={isPro} />
           <DicasCard />
           {negocioMeta && (
             <QRCodeCard

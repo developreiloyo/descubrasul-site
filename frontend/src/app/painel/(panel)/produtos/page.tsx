@@ -27,6 +27,8 @@ interface StatusPlano {
   produtos_ativos: number;
   limite_produtos: number | null;
   pode_adicionar: boolean;
+  fotos_por_produto: number;
+  permite_video: boolean;
 }
 
 export default function ProdutosPage() {
@@ -40,6 +42,7 @@ export default function ProdutosPage() {
   const [descricao, setDescricao] = useState('');
   const [preco, setPreco] = useState('');
   const [foto, setFoto] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState('');
 
   const [sugestoesTipo, setSugestoesTipo] = useState<string[]>([]);
 
@@ -89,6 +92,8 @@ export default function ProdutosPage() {
       fd.append('descricao', descricao);
       if (preco) fd.append('preco', preco);
       if (foto) fd.append('foto', foto);
+      if (videoUrl.trim()) fd.append('video_youtube_url', videoUrl.trim());
+      else fd.append('video_youtube_url', '');
 
       const res = await fetch('/api/proxy/negocios/painel/produtos', {
         method: 'POST',
@@ -107,6 +112,7 @@ export default function ProdutosPage() {
       setDescricao('');
       setPreco('');
       setFoto(null);
+      setVideoUrl('');
       await carregar();
     } finally {
       setSalvando(false);
@@ -247,6 +253,22 @@ export default function ProdutosPage() {
             />
           </div>
 
+          {plano?.permite_video && (
+            <div className="flex flex-col gap-1">
+              <label htmlFor="prod-video" className="text-xs font-semibold text-ink/50 uppercase tracking-wide">
+                Vídeo YouTube (opcional)
+              </label>
+              <input
+                id="prod-video"
+                type="url"
+                className={inputCls}
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+              />
+            </div>
+          )}
+
           {erro && <p className="text-sm text-red-600">{erro}</p>}
 
           <button
@@ -330,10 +352,13 @@ export default function ProdutosPage() {
               </div>
             </div>
 
-            {/* Fotos extras — até 3 total */}
+            {/* Fotos extras — limite dinâmico por plano */}
             <div className="mt-3 border-t border-ink/10 pt-3">
               <p className="text-xs text-ink/50 mb-2">
-                Fotos adicionais ({p.fotos?.length || 0}/3) — aparecem no carousel da vitrina
+                Fotos adicionais ({p.fotos?.length || 0}/{plano?.fotos_por_produto ?? 3}) — aparecem no carousel da vitrina
+              </p>
+              <p className="text-[10px] text-ink/40 mb-2">
+                Seu plano permite até {plano?.fotos_por_produto ?? 3} foto(s) por produto
               </p>
               <div className="flex gap-2 flex-wrap">
                 {p.fotos?.map((f) => (
@@ -355,7 +380,7 @@ export default function ProdutosPage() {
                     </button>
                   </div>
                 ))}
-                {(p.fotos?.length || 0) < 3 && (
+                {(p.fotos?.length || 0) < (plano?.fotos_por_produto ?? 3) && (
                   <label className="size-16 rounded-lg border-2 border-dashed border-ink/20 flex flex-col items-center justify-center cursor-pointer hover:border-brand-green transition">
                     <span className="text-2xl text-ink/30 leading-none">+</span>
                     <span className="text-[10px] text-ink/30 mt-0.5">foto</span>

@@ -11,10 +11,11 @@ from django.db import models
 from django.db.models import Case, When, Value, IntegerField, Prefetch
 from django.contrib.postgres.search import SearchQuery
 import unicodedata
-from .models import Negocio, Produto
+from .models import Negocio, Produto, FotoNegocio, PLANO_CONFIG
 from .serializers import (
     NegocioPublicoSerializer, NegocioPainelSerializer,
     ProdutoPublicoSerializer, ProdutoPainelSerializer,
+    FotoNegocioSerializer,
 )
 from .permissions import IsDonoDoNegocio, IsPlanoPro, PodicionarProduto
 from .services import buscar_places_por_nome, buscar_reviews_google
@@ -70,10 +71,7 @@ class NegocioDetailView(generics.RetrieveAPIView):
         ).prefetch_related("videos")
 
 
-LIMITE_PRODUTOS_PUBLICO = {
-    "gratuito": 10,
-    "basico":   10,
-}
+LIMITE_PRODUTOS_PUBLICO = {k: v["limite_produtos_publico"] for k, v in PLANO_CONFIG.items()}
 
 class ProdutoListView(generics.ListAPIView):
     serializer_class   = ProdutoPublicoSerializer
@@ -226,6 +224,8 @@ class MeusProdutosViewSet(viewsets.ModelViewSet):
             "limite_produtos":     limite,
             "pode_adicionar":      negocio.pode_adicionar_produto,
             "aparece_em_destaque": negocio.aparece_em_destaque,
+            "fotos_por_produto":   negocio.limite_fotos_produto,
+            "permite_video":       negocio.permite_video,
         })
     
     @action(detail=False, methods=["get"], permission_classes=[AllowAny])
@@ -258,13 +258,18 @@ class MeusProdutosViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="fotos")
     def adicionar_foto(self, request, pk=None):
-        """Adiciona foto ao produto — máximo 3."""
+        """Adiciona foto ao produto — limite por plano."""
         produto = self.get_object()
-
+        limite_fotos = produto.negocio.limite_fotos_produto
         fotos_count = produto.fotos.count()
-        if fotos_count >= 3:
+        if fotos_count >= limite_fotos:
             return Response(
-                {"detail": "Máximo de 3 fotos por produto atingido."},
+                {
+                    "detail": (
+                        f"Limite de {limite_fotos} foto(s) por produto atingido "
+                        f"no plano {produto.negocio.get_plano_display()}."
+                    )
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -315,3 +320,89 @@ class MeusProdutosViewSet(viewsets.ModelViewSet):
         produto.save(update_fields=["ordem"])
 
         return Response({"ok": True})
+
+
+class FotoNegocioViewSet(viewsets.ViewSet):
+    """
+    Galeria de fotos do negócio — disponível apenas para planos Pro e Produção.
+
+    list   → GET  /api/negocios/painel/galeria/
+    create → POST /api/negocios/painel/galeria/
+    destroy→ DELETE /api/negocios/painel/galeria/{pk}/
+    """
+
+    permission_classes = [IsAuthenticated, IsDonoDoNegocio]
+
+    def _get_negocio(self, request):
+        """Retorna o negócio do comerciante autenticado."""
+        return request.user.negocio
+
+    def list(self, request):
+        negocio = self._get_negocio(request)
+        fotos   = FotoNegocio.objects.filter(negocio=negocio)
+        serializer = FotoNegocioSerializer(fotos, many=True, context={"request": request})
+        return Response({
+            "fotos":         serializer.data,
+            "limite":        negocio.limite_fotos_galeria,
+            "total":         fotos.count(),
+            "pode_adicionar": negocio.pode_adicionar_foto_galeria,
+        })
+
+    def create(self, request):
+        negocio = self._get_negocio(request)
+
+        # Plano gratuito não tem acesso à galeria
+        if negocio.limite_fotos_galeria == 0:
+            return Response(
+                {
+                    "detail": (
+                        "Galeria de fotos disponível apenas nos planos Conexão Sul e "
+                        "Destaque Sul. Faça upgrade para adicionar fotos."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Limite de fotos atingido
+        if not negocio.pode_adicionar_foto_galeria:
+            limite = negocio.limite_fotos_galeria
+            return Response(
+                {"detail": f"Limite de {limite} fotos atingido no plano atual."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        foto_arquivo = request.FILES.get("foto")
+        if not foto_arquivo:
+            return Response(
+                {"detail": "Foto obrigatória."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validação de magic bytes — rejeita arquivos com extensão falsa
+        from .validators import validar_imagem
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            validar_imagem(foto_arquivo)
+        except DjangoValidationError as exc:
+            return Response(
+                {"detail": exc.message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        alt_texto = request.data.get("alt_texto", "")[:125]
+        total_atual = FotoNegocio.objects.filter(negocio=negocio).count()
+        foto_negocio = FotoNegocio.objects.create(
+            negocio=negocio,
+            foto=foto_arquivo,
+            alt_texto=alt_texto,
+            ordem=total_atual,
+        )
+        serializer = FotoNegocioSerializer(foto_negocio, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, pk=None):
+        from django.shortcuts import get_object_or_404
+        negocio = self._get_negocio(request)
+        foto = get_object_or_404(FotoNegocio, pk=pk, negocio=negocio)
+        foto.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

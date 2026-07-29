@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
-from .models import LIMITES_PRODUTOS
+from .models import LIMITES_PRODUTOS, PLANO_CONFIG
 
 
 class IsDonoDoNegocio(BasePermission):
@@ -35,9 +35,10 @@ class PodicionarProduto(BasePermission):
     """
     Valida o limite de produtos por plano antes de criar.
 
-    Gratuito : 5 produtos
-    Básico   : 20 produtos
-    Pro+     : ilimitado
+    Limites derivados de PLANO_CONFIG (fonte única de verdade):
+      gratuito  : 5 produtos
+      pro       : 5 produtos
+      producao  : 10 produtos
     """
 
     def has_permission(self, request, view):

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Negocio, Produto, Localizacao, RedesSociais, VideoDestaque, FotoProduto
+from .models import Negocio, Produto, Localizacao, RedesSociais, VideoDestaque, FotoProduto, FotoNegocio, PLANO_CONFIG
 from .validators import validar_imagem
 from categorias.serializers import CategoriaSerializer
 from categorias.models import Categoria
@@ -59,6 +59,13 @@ class FotoProdutoSerializer(serializers.ModelSerializer):
     class Meta:
         model  = FotoProduto
         fields = ["id", "foto", "alt_texto", "ordem"]
+
+
+class FotoNegocioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = FotoNegocio
+        fields = ["id", "foto", "alt_texto", "ordem", "criado_em"]
+        read_only_fields = ["id", "criado_em"]
 
 
 # ─── Serializer publico (visitante) ───────────────────────────────────
@@ -242,14 +249,14 @@ class NegocioPainelSerializer(serializers.ModelSerializer):
 # ─── Produto publico ──────────────────────────────────────────────────
 class ProdutoPublicoSerializer(serializers.ModelSerializer):
     negocio = serializers.SerializerMethodField()
-    fotos   = FotoProdutoSerializer(many=True, read_only=True)
+    fotos   = serializers.SerializerMethodField()
 
     class Meta:
         model  = Produto
         fields = [
             "slug", "nome", "foto", "alt_foto", "descricao",
             "descricao_longa", "categoria", "tipo_produto", "preco", "disponivel",
-            "atualizado_em", "negocio", "fotos",
+            "video_youtube_url", "atualizado_em", "negocio", "fotos",
         ]
 
     def get_negocio(self, obj):
@@ -262,6 +269,11 @@ class ProdutoPublicoSerializer(serializers.ModelSerializer):
             "whatsapp":       obj.negocio.whatsapp,
         }
 
+    def get_fotos(self, obj):
+        limite = PLANO_CONFIG.get(obj.negocio.plano, PLANO_CONFIG["gratuito"])["fotos_por_produto"]
+        fotos = obj.fotos.all()[:limite]
+        return FotoProdutoSerializer(fotos, many=True, context=self.context).data
+
 
 # ─── Produto painel (comerciante) ─────────────────────────────────────
 class ProdutoPainelSerializer(serializers.ModelSerializer):
@@ -272,7 +284,7 @@ class ProdutoPainelSerializer(serializers.ModelSerializer):
         fields = [
             "id", "slug", "nome", "foto", "alt_foto", "descricao",
             "descricao_longa", "categoria", "tipo_produto", "preco", "disponivel",
-            "confirmado_em", "criado_em", "atualizado_em", "fotos",
+            "video_youtube_url", "confirmado_em", "criado_em", "atualizado_em", "fotos",
         ]
         read_only_fields = ["slug", "criado_em", "atualizado_em"]
 
@@ -289,3 +301,24 @@ class ProdutoPainelSerializer(serializers.ModelSerializer):
         if value:
             validar_texto_seo_completo(value, campo="tipo do produto")
         return value
+
+    def validate_video_youtube_url(self, value):
+        if not value:
+            return value
+        import re
+        pattern = r'^https?://(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]{11}'
+        if not re.match(pattern, value):
+            raise serializers.ValidationError(
+                "URL inválida. Use youtube.com/watch?v=ID ou youtu.be/ID."
+            )
+        return value
+
+    def validate(self, data):
+        request = self.context.get("request")
+        if request and data.get("video_youtube_url"):
+            negocio = request.user.negocio
+            if not negocio.permite_video:
+                raise serializers.ValidationError(
+                    {"video_youtube_url": "Vídeos disponíveis apenas no Plano Destaque Sul."}
+                )
+        return data

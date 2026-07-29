@@ -19,12 +19,31 @@ def gerar_caminho_seguro(instance, filename):
     return f"uploads/{pasta}/{uuid.uuid4()}.{ext}"
 
 
-# ─── Limites por plano ────────────────────────────────────────────────
-LIMITES_PRODUTOS = {
-    "gratuito": 5,
-    "pro":      None,
-    "producao": None,
+# ─── Configuração única por plano (fonte de verdade) ─────────────────
+PLANO_CONFIG = {
+    "gratuito": {
+        "limite_produtos":         5,
+        "fotos_por_produto":       1,
+        "permite_video":           False,
+        "limite_produtos_publico": 5,
+    },
+    "pro": {
+        "limite_produtos":         5,
+        "fotos_por_produto":       3,
+        "permite_video":           False,
+        "limite_produtos_publico": 5,
+    },
+    "producao": {
+        "limite_produtos":         10,
+        "fotos_por_produto":       3,
+        "permite_video":           True,
+        "limite_produtos_publico": 10,
+    },
 }
+
+# Mantidos para retrocompatibilidade com código existente
+LIMITES_PRODUTOS = {k: v["limite_produtos"] for k, v in PLANO_CONFIG.items()}
+LIMITES_FOTOS_GALERIA = {"gratuito": 0, "pro": 10, "producao": 10}
 
 
 class Negocio(models.Model):
@@ -118,8 +137,27 @@ class Negocio(models.Model):
     def pode_adicionar_produto(self):
         limite = self.limite_produtos
         if limite is None:
-            return True
+            return True  # fallback seguro para planos não mapeados
         return self.produtos.filter(disponivel=True).count() < limite
+
+    @property
+    def limite_fotos_produto(self):
+        return PLANO_CONFIG.get(self.plano, PLANO_CONFIG["gratuito"])["fotos_por_produto"]
+
+    @property
+    def permite_video(self):
+        return PLANO_CONFIG.get(self.plano, PLANO_CONFIG["gratuito"])["permite_video"]
+
+    @property
+    def limite_fotos_galeria(self):
+        return LIMITES_FOTOS_GALERIA.get(self.plano, 0)
+
+    @property
+    def pode_adicionar_foto_galeria(self):
+        limite = self.limite_fotos_galeria
+        if limite == 0:
+            return False
+        return self.fotos_galeria.count() < limite
 
     @property
     def aparece_em_destaque(self):
@@ -146,11 +184,12 @@ class Produto(models.Model):
     criado_em   = models.DateTimeField(auto_now_add=True)
     confirmado_em = models.DateTimeField(null=True, blank=True)
 
-    slug            = models.SlugField(max_length=220, blank=True)
-    alt_foto        = models.CharField(max_length=125, blank=True)
-    descricao_longa = models.TextField(blank=True)
-    tipo_produto    = models.CharField(max_length=120, blank=True, null=True)
-    atualizado_em   = models.DateTimeField(auto_now=True)
+    slug              = models.SlugField(max_length=220, blank=True)
+    alt_foto          = models.CharField(max_length=125, blank=True)
+    descricao_longa   = models.TextField(blank=True)
+    tipo_produto      = models.CharField(max_length=120, blank=True, null=True)
+    video_youtube_url = models.URLField(blank=True, default="")
+    atualizado_em     = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name        = "Produto"
@@ -181,6 +220,23 @@ class FotoProduto(models.Model):
 
     def __str__(self):
         return f"Foto de {self.produto.nome} ({self.ordem})"
+
+
+class FotoNegocio(models.Model):
+    """Galeria de fotos do negócio — disponível apenas nos planos Pro e Produção."""
+    negocio   = models.ForeignKey(Negocio, on_delete=models.CASCADE, related_name="fotos_galeria")
+    foto      = models.ImageField(upload_to=gerar_caminho_seguro)
+    alt_texto = models.CharField(max_length=125, blank=True)
+    ordem     = models.PositiveSmallIntegerField(default=0)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering            = ["ordem", "-criado_em"]
+        verbose_name        = "Foto da Galeria"
+        verbose_name_plural = "Fotos da Galeria"
+
+    def __str__(self):
+        return f"Galeria de {self.negocio.nome} ({self.ordem})"
 
 class Localizacao(models.Model):
     """Geocodificada automaticamente via Google Maps (Plano Pro) ou manualmente."""
