@@ -370,11 +370,13 @@ export default function MeuNegocioPage() {
             telefone={form.telefone}
             email_contato={form.email_contato}
             website={form.website}
+            isPro={isPro}
             onChange={set}
           />
           <SobreNegocioCard
             descricao={form.descricao}
             historia={form.historia}
+            isPro={isPro}
             onChange={set}
           />
           <EnderecoCard
@@ -399,6 +401,7 @@ export default function MeuNegocioPage() {
             tiktok_url={form.tiktok_url}
             youtube_url={form.youtube_url}
             linkedin_url={form.linkedin_url}
+            isPro={isPro}
             onChange={set}
           />
           <EspacoEspecialCard

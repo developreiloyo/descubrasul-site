@@ -98,6 +98,19 @@ class NegocioPublicoSerializer(serializers.ModelSerializer):
     def get_seo_description(self, obj):
         return obj.get_seo_description()
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        cfg = PLANO_CONFIG.get(instance.plano, PLANO_CONFIG["gratuito"])
+        if not cfg["permite_historia"]:
+            data["historia"] = ""
+        if not cfg["permite_website"]:
+            data["website"] = ""
+        if not cfg["permite_email_contato"]:
+            data["email_contato"] = ""
+        if not cfg["permite_redes_sociais"]:
+            data["redes_sociais"] = None
+        return data
+
 
 # ─── Serializer do painel (comerciante) ───────────────────────────────
 class NegocioPainelSerializer(serializers.ModelSerializer):

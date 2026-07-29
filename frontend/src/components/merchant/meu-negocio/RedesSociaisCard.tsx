@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Share2, Plus, X, ChevronDown, ExternalLink } from 'lucide-react';
 import { Card } from '../Card';
 import { inputClass } from '../FormField';
+import { UpgradeLock } from '../UpgradeLock';
 import { SocialIcon } from '@/components/ui/SocialIcon';
 import type { ComponentProps } from 'react';
 
@@ -29,6 +30,7 @@ interface Props {
   facebook_url: string;
   youtube_url: string;
   linkedin_url: string;
+  isPro: boolean;
   onChange: (campo: string, valor: string) => void;
 }
 
@@ -38,6 +40,7 @@ export function RedesSociaisCard({
   facebook_url,
   youtube_url,
   linkedin_url,
+  isPro,
   onChange,
 }: Props) {
   const values: Record<string, string> = {
@@ -91,6 +94,14 @@ export function RedesSociaisCard({
   }
 
   const redeEmEdicao = REDES.find((r) => r.key === emEdicao);
+
+  if (!isPro) {
+    return (
+      <Card title="Redes sociais" icon={Share2}>
+        <UpgradeLock mensagem="Disponível nos planos Conexão Sul e Destaque Sul." />
+      </Card>
+    );
+  }
 
   return (
     <Card title="Redes sociais" icon={Share2}>

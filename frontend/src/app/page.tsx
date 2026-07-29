@@ -6,6 +6,9 @@ import {
   MapPin, Star, BadgeCheck, ArrowRight, CheckCircle2,
   Shirt, Smartphone, Utensils, Sparkles, Home as HomeIcon,
   Car, Heart, Wrench,
+  Palette, Briefcase, Landmark, GraduationCap, Building2,
+  CalendarDays, Building, Leaf, Cog, PawPrint,
+  ShieldCheck, LayoutGrid, Scale, Truck, Globe,
 } from "lucide-react";
 import { CategoryCard } from "@/components/home/CategoryCard";
 import { CityCard } from "@/components/home/CityCard";
@@ -60,15 +63,31 @@ const CIDADES: Cidade[] = [
 ];
 
 const CAT_PILLS: { label: string; slug: string | null; icon: React.ComponentType<{ className?: string }> | null; active: boolean }[] = [
-  { label: "Tudo",        slug: null,                              icon: null,       active: true  },
-  { label: "Gastronomia", slug: "gastronomia-e-alimentacao",       icon: Utensils,   active: false },
-  { label: "Beleza",      slug: "beleza-e-bem-estar",              icon: Sparkles,   active: false },
-  { label: "Automotivo",  slug: "automotivo",                      icon: Car,        active: false },
-  { label: "Saúde",       slug: "saude",                           icon: Heart,      active: false },
-  { label: "Tecnologia",  slug: "tecnologia-informatica-e-marketing", icon: Smartphone, active: false },
-  { label: "Moda",        slug: "moda-costura-e-locacoes",         icon: Shirt,      active: false },
-  { label: "Casa",        slug: "casa-e-construcao",               icon: HomeIcon,   active: false },
-  { label: "Manutenção",  slug: "manutencao-e-assistencia-tecnica", icon: Wrench,    active: false },
+  { label: "Tudo",             slug: null,                                          icon: null,        active: true  },
+  { label: "Gastronomia",      slug: "gastronomia-e-alimentacao",                   icon: Utensils,    active: false },
+  { label: "Beleza",           slug: "beleza-e-bem-estar",                          icon: Sparkles,    active: false },
+  { label: "Automotivo",       slug: "automotivo",                                  icon: Car,         active: false },
+  { label: "Saúde",            slug: "saude",                                       icon: Heart,       active: false },
+  { label: "Tecnologia",       slug: "tecnologia-informatica-e-marketing",          icon: Smartphone,  active: false },
+  { label: "Moda",             slug: "moda-costura-e-locacoes",                     icon: Shirt,       active: false },
+  { label: "Casa",             slug: "casa-e-construcao",                           icon: HomeIcon,    active: false },
+  { label: "Manutenção",       slug: "manutencao-e-assistencia-tecnica",            icon: Wrench,      active: false },
+  { label: "Pets",             slug: "pets",                                        icon: PawPrint,    active: false },
+  { label: "Educação",         slug: "educacao-e-treinamentos",                     icon: GraduationCap, active: false },
+  { label: "Eventos",          slug: "eventos-e-entretenimento",                    icon: CalendarDays, active: false },
+  { label: "Turismo",          slug: "turismo-e-hospedagem",                        icon: MapPin,      active: false },
+  { label: "Imobiliário",      slug: "imobiliario",                                 icon: Building,    active: false },
+  { label: "Consultoria",      slug: "consultoria-e-servicos-empresariais",         icon: Briefcase,   active: false },
+  { label: "Contabilidade",    slug: "contabilidade-e-financas",                    icon: Landmark,    active: false },
+  { label: "Comunicação",      slug: "comunicacao-visual-graficas-e-personalizacao", icon: Palette,    active: false },
+  { label: "Engenharia",       slug: "engenharia-e-arquitetura",                    icon: Building2,   active: false },
+  { label: "Limpeza",          slug: "limpeza-e-conservacao",                       icon: Leaf,        active: false },
+  { label: "Locação",          slug: "locacao-de-equipamentos-e-maquinas",          icon: Cog,         active: false },
+  { label: "Segurança",        slug: "seguranca-e-chaveiros",                       icon: ShieldCheck, active: false },
+  { label: "Serv. Gerais",     slug: "servicos-gerais",                             icon: LayoutGrid,  active: false },
+  { label: "Serv. Jurídicos",  slug: "servicos-juridicos",                          icon: Scale,       active: false },
+  { label: "Serv. Veiculares", slug: "servicos-veiculares",                         icon: Truck,       active: false },
+  { label: "Transporte",       slug: "transporte-e-logistica",                      icon: Globe,       active: false },
 ];
 
 
@@ -160,11 +179,15 @@ export default async function Home() {
               <MapPin className="size-3.5" /> A vitrine digital do Sul catarinense
             </p>
             <h1 className="animate-fade-up delay-100 font-display text-white text-[2rem] sm:text-[2.6rem] lg:text-[3.6rem] leading-[1.08] tracking-tight">
-              <span className="text-gradient">Conectando</span> pessoas,{" "}
-              Fortalecendo <span className="text-gradient">negócios</span> locais.
+              A <span className="text-gradient">força</span> e o{" "}
+              <span className="text-gradient">talento</span> do{" "}
+              <span className="text-gradient">Sul</span>,{" "}
+              reunidos em um só lugar.
             </h1>
             <p className="animate-fade-up delay-200 text-white/65 text-sm lg:text-[1.1rem] mt-3 lg:mt-5 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Atualmente disponível para Içara e Criciúma. Em breve, novas cidades.
+              Descubra{" "}
+              <span className="text-gradient">empresas, MEIs, profissionais autônomos e experiências</span>{" "}
+              que movimentam a nossa região.
             </p>
 
             <div className="animate-fade-up delay-300">

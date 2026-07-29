@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Building2 } from 'lucide-react';
+import { Building2, Lock } from 'lucide-react';
 import { Card } from '../Card';
 import { FormField, inputClass } from '../FormField';
+import { UpgradeLock } from '../UpgradeLock';
 import { maskPhone } from '@/lib/masks';
 
 interface Cidade {
@@ -24,6 +25,7 @@ interface Props {
   telefone: string;
   email_contato: string;
   website: string;
+  isPro: boolean;
   onChange: (campo: string, valor: string) => void;
 }
 
@@ -36,6 +38,7 @@ export function InformacoesBasicasCard({
   telefone,
   email_contato,
   website,
+  isPro,
   onChange,
 }: Props) {
   const [cidades, setCidades] = useState<Cidade[]>([]);
@@ -139,40 +142,71 @@ export function InformacoesBasicasCard({
             />
           </FormField>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="Telefone (opcional)" htmlFor="telefone">
+          {isPro ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField label="Telefone (opcional)" htmlFor="telefone">
+                <input
+                  id="telefone"
+                  type="tel"
+                  value={telefone}
+                  onChange={(e) => onChange('telefone', maskPhone(e.target.value))}
+                  placeholder="(48) 3333-0000"
+                  className={inputClass}
+                />
+              </FormField>
+
+              <FormField label="E-mail (opcional)" htmlFor="email_contato">
+                <input
+                  id="email_contato"
+                  type="email"
+                  value={email_contato}
+                  onChange={(e) => onChange('email_contato', e.target.value)}
+                  placeholder="contato@seunegocio.com.br"
+                  className={inputClass}
+                />
+              </FormField>
+            </div>
+          ) : (
+            <>
+              <FormField label="Telefone (opcional)" htmlFor="telefone">
+                <input
+                  id="telefone"
+                  type="tel"
+                  value={telefone}
+                  onChange={(e) => onChange('telefone', maskPhone(e.target.value))}
+                  placeholder="(48) 3333-0000"
+                  className={inputClass}
+                />
+              </FormField>
+
+              <div>
+                <p className="text-sm font-medium text-ink mb-1.5 flex items-center gap-1.5">
+                  E-mail <Lock className="size-3.5 text-ink/30" />
+                </p>
+                <UpgradeLock mensagem="Disponível nos planos Conexão Sul e Destaque Sul." />
+              </div>
+            </>
+          )}
+
+          {isPro ? (
+            <FormField label="Site (opcional)" htmlFor="website">
               <input
-                id="telefone"
-                type="tel"
-                value={telefone}
-                onChange={(e) => onChange('telefone', maskPhone(e.target.value))}
-                placeholder="(48) 3333-0000"
+                id="website"
+                type="url"
+                value={website}
+                onChange={(e) => onChange('website', e.target.value)}
+                placeholder="https://..."
                 className={inputClass}
               />
             </FormField>
-
-            <FormField label="E-mail (opcional)" htmlFor="email_contato">
-              <input
-                id="email_contato"
-                type="email"
-                value={email_contato}
-                onChange={(e) => onChange('email_contato', e.target.value)}
-                placeholder="contato@seunegocio.com.br"
-                className={inputClass}
-              />
-            </FormField>
-          </div>
-
-          <FormField label="Site (opcional)" htmlFor="website">
-            <input
-              id="website"
-              type="url"
-              value={website}
-              onChange={(e) => onChange('website', e.target.value)}
-              placeholder="https://..."
-              className={inputClass}
-            />
-          </FormField>
+          ) : (
+            <div>
+              <p className="text-sm font-medium text-ink mb-1.5 flex items-center gap-1.5">
+                Site <Lock className="size-3.5 text-ink/30" />
+              </p>
+              <UpgradeLock mensagem="Disponível nos planos Conexão Sul e Destaque Sul." />
+            </div>
+          )}
         </div>
       </div>
     </Card>

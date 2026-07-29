@@ -11,7 +11,7 @@ from planos import services as mp_services
 
 logger = logging.getLogger(__name__)
 
-PLANOS_PAGOS = {"basico", "pro", "producao", "fundador"}
+PLANOS_PAGOS = {"pro", "producao"}
 
 
 # ── Público ───────────────────────────────────────────────────────────

@@ -26,18 +26,30 @@ PLANO_CONFIG = {
         "fotos_por_produto":       1,
         "permite_video":           False,
         "limite_produtos_publico": 5,
+        "permite_historia":        False,
+        "permite_website":         False,
+        "permite_email_contato":   False,
+        "permite_redes_sociais":   False,
     },
     "pro": {
         "limite_produtos":         5,
         "fotos_por_produto":       3,
         "permite_video":           False,
         "limite_produtos_publico": 5,
+        "permite_historia":        True,
+        "permite_website":         True,
+        "permite_email_contato":   True,
+        "permite_redes_sociais":   True,
     },
     "producao": {
         "limite_produtos":         10,
         "fotos_por_produto":       3,
         "permite_video":           True,
         "limite_produtos_publico": 10,
+        "permite_historia":        True,
+        "permite_website":         True,
+        "permite_email_contato":   True,
+        "permite_redes_sociais":   True,
     },
 }
 
@@ -147,6 +159,22 @@ class Negocio(models.Model):
     @property
     def permite_video(self):
         return PLANO_CONFIG.get(self.plano, PLANO_CONFIG["gratuito"])["permite_video"]
+
+    @property
+    def permite_historia(self):
+        return PLANO_CONFIG.get(self.plano, PLANO_CONFIG["gratuito"])["permite_historia"]
+
+    @property
+    def permite_website_publico(self):
+        return PLANO_CONFIG.get(self.plano, PLANO_CONFIG["gratuito"])["permite_website"]
+
+    @property
+    def permite_email_publico(self):
+        return PLANO_CONFIG.get(self.plano, PLANO_CONFIG["gratuito"])["permite_email_contato"]
+
+    @property
+    def permite_redes_sociais(self):
+        return PLANO_CONFIG.get(self.plano, PLANO_CONFIG["gratuito"])["permite_redes_sociais"]
 
     @property
     def limite_fotos_galeria(self):
