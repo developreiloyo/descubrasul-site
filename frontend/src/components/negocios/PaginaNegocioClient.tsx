@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function PaginaNegocioClient({ negocio, produtos }: Props) {
-  const isPro = ["pro", "producao", "fundador"].includes(negocio.plano);
+  const isPro = ["pro", "producao"].includes(negocio.plano);
   const cidade = negocio.cidade.charAt(0).toUpperCase() + negocio.cidade.slice(1);
 
   return (

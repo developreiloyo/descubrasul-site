@@ -90,7 +90,7 @@ const VAZIO_ESPACO: EspacoEspecialForm = {
   codigo: '',
 };
 
-const PLANOS_PRO = ['pro', 'producao', 'fundador'];
+const PLANOS_PRO = ['pro', 'producao'];
 
 // ─── Página ──────────────────────────────────────────────────────────
 export default function MeuNegocioPage() {
@@ -437,7 +437,7 @@ export default function MeuNegocioPage() {
             cidade={negocioMeta?.cidade}
             categoriaSlug={negocioMeta?.categoriaSlug}
           />
-          <LogoCapaCard logoUrl={logoUrl} capaUrl={capaUrl} onLogoChange={handleLogo} onCapaChange={handleCapa} />
+          <LogoCapaCard plano={plano} logoUrl={logoUrl} capaUrl={capaUrl} onLogoChange={handleLogo} onCapaChange={handleCapa} />
           <GaleriaFotosCard plano={plano} isPro={isPro} />
           <DicasCard />
           {negocioMeta && (

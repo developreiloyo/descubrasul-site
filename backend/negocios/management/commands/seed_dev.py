@@ -30,20 +30,20 @@ NEGOCIOS_SEED = [
     ("Cantina Nonna Rosa",    "Criciúma",        "Restaurantes", "pro",      "48991110001", "Culinária italiana artesanal desde 1998. Massas frescas e molhos da nonna."),
     ("Sports Zone",           "Içara",           "Academias",    "pro",      "48991110002", "Academia completa com musculação, spinning e personal trainer."),
     ("Boutique Liz",          "Araranguá",       "Moda",         "producao", "48991110003", "Moda feminina contemporânea com peças exclusivas e atendimento personalizado."),
-    ("TechStore SC",          "Criciúma",        "Lojas Gerais", "basico",   "48991110004", "Eletrônicos, acessórios e assistência técnica especializada."),
+    ("TechStore SC",          "Criciúma",        "Lojas Gerais", "gratuito",   "48991110004", "Eletrônicos, acessórios e assistência técnica especializada."),
     ("Studio Bella Vita",     "Tubarão",         "Estetica",     "pro",      "48991110005", "Salão de beleza completo: cabelo, unhas, estética e spa."),
-    ("Pizzaria Sabores",      "Criciúma",        "Restaurantes", "basico",   "48991110006", "As melhores pizzas artesanais do sul catarinense, assadas em forno a lenha."),
+    ("Pizzaria Sabores",      "Criciúma",        "Restaurantes", "gratuito",   "48991110006", "As melhores pizzas artesanais do sul catarinense, assadas em forno a lenha."),
     ("Papelaria Central",     "Criciúma",        "Lojas Gerais", "gratuito", "48991110007", "Material escolar, papelaria e artigos de escritório com os melhores preços."),
-    ("Nutri Sul",             "Criciúma",        "Lojas Gerais", "basico",   "48991110008", "Suplementos e nutrição esportiva com consultoria especializada."),
-    ("Casa & Lar",            "Forquilhinha",    "Lojas Gerais", "basico",   "48991110009", "Utilidades domésticas e decoração para o seu lar com qualidade e estilo."),
+    ("Nutri Sul",             "Criciúma",        "Lojas Gerais", "gratuito",   "48991110008", "Suplementos e nutrição esportiva com consultoria especializada."),
+    ("Casa & Lar",            "Forquilhinha",    "Lojas Gerais", "gratuito",   "48991110009", "Utilidades domésticas e decoração para o seu lar com qualidade e estilo."),
     ("Pet Paradise",          "Içara",           "Pet Shop",     "pro",      "48991110010", "Pet shop completo com banho, tosa, veterinário e loja de ração."),
     ("Clínica Saúde Sul",     "Tubarão",         "Clinicas",     "pro",      "48991110011", "Clínica médica com especialidades: clínico geral, cardiologia e pediatria."),
-    ("Escola de Idiomas Plus","Criciúma",        "Educacao",     "basico",   "48991110012", "Inglês, espanhol e mandarim para todas as idades. Aulas online e presenciais."),
+    ("Escola de Idiomas Plus","Criciúma",        "Educacao",     "gratuito",   "48991110012", "Inglês, espanhol e mandarim para todas as idades. Aulas online e presenciais."),
     ("Passos Certos",         "Tubarão",         "Moda",         "gratuito", "48991110013", "Calçados femininos e masculinos com conforto e estilo para o dia a dia."),
-    ("Mecânica Sul Total",    "Morro da Fumaça",   "Servicos",     "basico",   "48991110014", "Mecânica geral, funilaria e pintura. Orçamento sem compromisso."),
-    ("Sushi Zen",             "Içara",             "Restaurantes", "fundador", "48991110015", "Culinária japonesa autêntica. Rodízio de sushi e temaki fresquíssimos."),
+    ("Mecânica Sul Total",    "Morro da Fumaça",   "Servicos",     "gratuito",   "48991110014", "Mecânica geral, funilaria e pintura. Orçamento sem compromisso."),
+    ("Sushi Zen",             "Içara",             "Restaurantes", "producao", "48991110015", "Culinária japonesa autêntica. Rodízio de sushi e temaki fresquíssimos."),
     ("Pousada Mar Azul",      "Balneário Rincão",  "Servicos",     "pro",      "48991110016", "Pousada à beira-mar com quartos climatizados e café da manhã incluso."),
-    ("Quiosque do Pescador",  "Balneário Rincão",  "Restaurantes", "basico",   "48991110017", "Frutos do mar frescos, camarão na brasa e caldeirada de peixe toda sexta."),
+    ("Quiosque do Pescador",  "Balneário Rincão",  "Restaurantes", "gratuito",   "48991110017", "Frutos do mar frescos, camarão na brasa e caldeirada de peixe toda sexta."),
     ("Surf Shop Rincão",      "Balneário Rincão",  "Lojas Gerais", "gratuito", "48991110018", "Pranchas, wetsuits, acessórios e aulas de surf para todos os níveis."),
 ]
 
@@ -119,10 +119,8 @@ ENDERECOS = {
 
 REDES_POR_PLANO = {
     "gratuito": {},
-    "basico":   {"instagram_url": "https://instagram.com/exemplo"},
     "pro":      {"instagram_url": "https://instagram.com/exemplo", "facebook_url": "https://facebook.com/exemplo"},
-    "producao": {"instagram_url": "https://instagram.com/exemplo", "facebook_url": "https://facebook.com/exemplo", "tiktok_url": "https://tiktok.com/@exemplo"},
-    "fundador": {"instagram_url": "https://instagram.com/exemplo", "facebook_url": "https://facebook.com/exemplo", "tiktok_url": "https://tiktok.com/@exemplo", "youtube_url": "https://youtube.com/@exemplo"},
+    "producao": {"instagram_url": "https://instagram.com/exemplo", "facebook_url": "https://facebook.com/exemplo", "tiktok_url": "https://tiktok.com/@exemplo", "youtube_url": "https://youtube.com/@exemplo"},
 }
 
 
@@ -185,7 +183,7 @@ class Command(BaseCommand):
                     "whatsapp":  whatsapp,
                     "plano":     plano,
                     "status":    Negocio.Status.ATIVO,
-                    "verificado": plano in ("pro", "producao", "fundador"),
+                    "verificado": plano in ("pro", "producao"),
                     "horario_abertura":   "08:00:00",
                     "horario_fechamento": "18:00:00",
                     "dias_funcionamento": ["seg", "ter", "qua", "qui", "sex"],

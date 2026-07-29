@@ -1,6 +1,6 @@
 import type { Negocio } from "@/types";
 
-const PLANOS_PRO = ["pro", "producao", "fundador"] as const;
+const PLANOS_PRO = ["pro", "producao"] as const;
 
 function isSafeUrl(url?: string): boolean {
   if (!url) return false;

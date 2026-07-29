@@ -33,7 +33,7 @@ export interface Negocio {
   bairro: string;
   whatsapp: string;
   website: string | null;
-  plano: "gratuito" | "basico" | "pro" | "producao" | "fundador";
+  plano: "gratuito" | "pro" | "producao";
   status: "ativo" | "inativo" | "pendente";
   verificado: boolean;
   seo_title: string;

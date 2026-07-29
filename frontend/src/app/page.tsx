@@ -1,10 +1,11 @@
+import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import {
   MapPin, Star, BadgeCheck, ArrowRight, CheckCircle2,
   Shirt, Smartphone, Utensils, Sparkles, Home as HomeIcon,
-  Dumbbell, Baby, Car,
+  Car, Heart, Wrench,
 } from "lucide-react";
 import { CategoryCard } from "@/components/home/CategoryCard";
 import { CityCard } from "@/components/home/CityCard";
@@ -58,16 +59,16 @@ const CIDADES: Cidade[] = [
   { nome: "Morro da Fumaça",  slug: "morro-da-fumaca",  count: 0 },
 ];
 
-const CAT_PILLS = [
-  { label: "Tudo",        icon: null,          active: true  },
-  { label: "Moda",        icon: Shirt,         active: false },
-  { label: "Tecnologia",  icon: Smartphone,    active: false },
-  { label: "Alimentos",   icon: Utensils,      active: false },
-  { label: "Beleza",      icon: Sparkles,      active: false },
-  { label: "Casa",        icon: HomeIcon,      active: false },
-  { label: "Esporte",     icon: Dumbbell,      active: false },
-  { label: "Infantil",    icon: Baby,          active: false },
-  { label: "Automotivo",  icon: Car,           active: false },
+const CAT_PILLS: { label: string; slug: string | null; icon: React.ComponentType<{ className?: string }> | null; active: boolean }[] = [
+  { label: "Tudo",        slug: null,                              icon: null,       active: true  },
+  { label: "Gastronomia", slug: "gastronomia-e-alimentacao",       icon: Utensils,   active: false },
+  { label: "Beleza",      slug: "beleza-e-bem-estar",              icon: Sparkles,   active: false },
+  { label: "Automotivo",  slug: "automotivo",                      icon: Car,        active: false },
+  { label: "Saúde",       slug: "saude",                           icon: Heart,      active: false },
+  { label: "Tecnologia",  slug: "tecnologia-informatica-e-marketing", icon: Smartphone, active: false },
+  { label: "Moda",        slug: "moda-costura-e-locacoes",         icon: Shirt,      active: false },
+  { label: "Casa",        slug: "casa-e-construcao",               icon: HomeIcon,   active: false },
+  { label: "Manutenção",  slug: "manutencao-e-assistencia-tecnica", icon: Wrench,    active: false },
 ];
 
 
@@ -265,10 +266,10 @@ export default async function Home() {
       {/* ── PILLS DE CATEGORIAS ──────────────────────────── */}
       <div className="border-b border-black/5 bg-white sticky top-16 z-40">
         <div className="max-w-[1200px] mx-auto px-4 py-3 flex gap-2 overflow-x-auto no-scrollbar">
-          {CAT_PILLS.map(({ label, icon: Icon, active }) => (
+          {CAT_PILLS.map(({ label, slug, icon: Icon, active }) => (
             <Link
               key={label}
-              href={active ? "/" : `/marketplace?cat=${label.toLowerCase()}`}
+              href={slug ? `/marketplace?cat=${slug}` : "/"}
               className={`shrink-0 text-sm font-medium border rounded-full px-4 py-2 flex items-center gap-1.5 transition-colors ${
                 active
                   ? "bg-primary text-white border-primary"
@@ -549,24 +550,24 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── PROMESSA DO FUNDADOR ───────────────────────── */}
+      {/* ── PROMESSA DESCUBRASUL ───────────────────────── */}
       <section className="py-14 lg:py-20 bg-white">
         <div className="max-w-[720px] mx-auto px-4">
           <ScrollReveal>
             <div className="bg-cream rounded-3xl p-8 lg:p-10 border border-black/5 relative overflow-hidden">
               <span className="absolute -top-4 -right-4 font-display text-[8rem] text-primary/5 leading-none select-none">"</span>
-              <p className="eyebrow mb-4">Promessa do fundador</p>
+              <p className="eyebrow mb-4">Nossa missão</p>
               <p className="font-display text-ink text-xl lg:text-2xl leading-snug relative z-10">
-                "Construindo a vitrine que o Sul de SC merece. Sem comissão, sem burocracia, com WhatsApp direto. Junte-se aos primeiros negócios."
+                "Construindo a vitrine que o Sul de SC merece. Sem comissão, sem burocracia, com WhatsApp direto. Conectando negócios locais a quem realmente importa."
               </p>
               <p className="text-sec text-sm mt-3 leading-relaxed">
-                As primeiras 50 vagas do Plano Fundador garantem acesso total por R$ 599/ano — para sempre neste preço.
+                Três planos pensados para cada momento do seu negócio: comece grátis e cresça no seu ritmo.
               </p>
               <div className="flex items-center gap-3 mt-7 pt-6 border-t border-black/6">
                 <span className="w-11 h-11 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm shrink-0">DS</span>
                 <div>
                   <p className="text-sm font-semibold text-ink">DescubraSul</p>
-                  <p className="text-xs text-sec">Fundadores · Criciúma, SC · em construção</p>
+                  <p className="text-xs text-sec">Vitrina Digital · Criciúma, SC</p>
                 </div>
                 <BadgeCheck className="size-5 text-primary ml-auto shrink-0" />
               </div>

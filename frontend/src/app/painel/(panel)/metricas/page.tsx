@@ -90,7 +90,7 @@ export default function MetricasPage() {
             Descubra como seu negócio está performando
           </h2>
           <p className="mt-2 text-ink/60 max-w-md mx-auto">
-            Com o Plano Pro você vê quantas pessoas visitaram sua página,
+            Com o Conexão Sul ou Destaque Sul você vê quantas pessoas visitaram sua página,
             de onde vieram, quantas entraram em contato e muito mais.
           </p>
           <div className="mt-6 grid grid-cols-3 gap-4 max-w-sm mx-auto opacity-40 select-none">

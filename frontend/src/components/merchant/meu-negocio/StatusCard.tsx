@@ -11,11 +11,9 @@ interface Props {
 }
 
 const PLANO_LABELS: Record<string, string> = {
-  gratuito: 'Plano Gratuito',
-  basico: 'Plano Básico',
-  pro: 'Plano Pro',
-  producao: 'Plano Produção',
-  fundador: 'Plano Fundador',
+  gratuito: 'Presença Sul',
+  pro:      'Conexão Sul',
+  producao: 'Destaque Sul',
 };
 
 export function StatusCard({ status, plano, slug, cidade, categoriaSlug }: Props) {

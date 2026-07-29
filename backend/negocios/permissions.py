@@ -12,9 +12,9 @@ class IsDonoDoNegocio(BasePermission):
 
 
 class IsPlanoPro(BasePermission):
-    """Restringe acesso a features do Plano Pro (IA, Maps, métricas, vídeos)."""
+    """Restringe acesso a features dos planos Conexão Sul e Destaque Sul."""
 
-    message = "Este recurso está disponível apenas no Plano Pro."
+    message = "Este recurso está disponível apenas nos planos Conexão Sul e Destaque Sul."
 
     def has_permission(self, request, view):
         negocio = getattr(request.user, "negocio", None)
@@ -22,7 +22,7 @@ class IsPlanoPro(BasePermission):
 
 
 class IsPlanoBasicoOuSuperior(BasePermission):
-    """Restringe acesso a planos pagos (Básico, Pro, Produção, Fundador)."""
+    """Restringe acesso a planos pagos (Conexão Sul ou Destaque Sul)."""
 
     message = "Este recurso está disponível apenas em planos pagos."
 

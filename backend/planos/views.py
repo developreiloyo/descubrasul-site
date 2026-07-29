@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 _PLANOS_PUBLICOS = [
     {
         "slug":     "gratuito",
-        "nome":     "Gratuito",
+        "nome":     "Presença Sul",
         "valor":    "0.00",
         "periodo":  "para sempre",
-        "descricao": "Vitrina básica com até 5 produtos",
+        "descricao": "Vitrina gratuita com até 5 produtos",
     },
 ] + [
     {

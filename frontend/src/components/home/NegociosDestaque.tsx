@@ -13,10 +13,8 @@ function slugify(str: string) {
 }
 
 const PLAN_BADGE: Record<string, { label: string; cls: string }> = {
-  fundador:  { label: "Fundador",  cls: "bg-amber-500 text-white" },
-  producao:  { label: "Produção",  cls: "bg-primary text-white" },
-  pro:       { label: "Pro",       cls: "bg-primary/80 text-white" },
-  basico:    { label: "Básico",    cls: "bg-ink/20 text-ink" },
+  producao: { label: "Destaque Sul", cls: "bg-primary text-white" },
+  pro:      { label: "Conexão Sul",  cls: "bg-primary/80 text-white" },
 };
 
 export function NegociosDestaque({ negocios }: { negocios: Negocio[] }) {

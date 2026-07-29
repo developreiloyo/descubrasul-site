@@ -44,11 +44,11 @@ export function EspacoEspecialCard({ isPro, plano, espaco, onChange }: Props) {
         </div>
         {isPro ? (
           <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">
-            {plano.charAt(0).toUpperCase() + plano.slice(1)}
+            {plano === 'producao' ? 'Destaque Sul' : 'Conexão Sul'}
           </span>
         ) : (
           <span className="shrink-0 rounded-full bg-ink/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-ink/40">
-            Pro+
+            Conexão Sul+
           </span>
         )}
       </div>
@@ -57,12 +57,12 @@ export function EspacoEspecialCard({ isPro, plano, espaco, onChange }: Props) {
         Seção em destaque visual na sua página pública — ideal para ofertas, cupons ou destaques.
       </p>
 
-      {/* Bloqueio para planos gratuito/básico */}
+      {/* Bloqueio para o Plano Presença Sul */}
       {!isPro ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-ink/20 bg-ink/[0.02] px-6 py-8 text-center">
           <Lock className="size-8 text-ink/20" />
           <p className="text-sm font-medium text-ink/50">
-            Disponível nos planos Pro, Produção e Fundador.
+            Disponível nos planos Conexão Sul e Destaque Sul.
           </p>
           <a
             href="/para-empresas#planos-detalhes"

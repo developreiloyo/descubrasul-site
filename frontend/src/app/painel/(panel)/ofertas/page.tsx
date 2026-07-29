@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Tag, Clock, CheckCircle2, XCircle, AlertCircle, Plus, ExternalLink } from "lucide-react";
 import type { Oferta } from "@/types";
 
-const PLANOS_PAGOS = ["basico", "pro", "producao", "fundador"];
+const PLANOS_PAGOS = ["pro", "producao"];
 
 interface MinhaOferta {
   id: number;
@@ -148,7 +148,7 @@ export default function OfertasPainelPage() {
           <div>
             <p className="font-semibold text-amber-900 mb-1">Recurso exclusivo para planos pagos</p>
             <p className="text-sm text-amber-800">
-              Ofertas da Semana estão disponíveis a partir do Plano Básico. Faça o upgrade para publicar sua oferta na página inicial e alcançar mais clientes.
+              Ofertas da Semana estão disponíveis nos planos Conexão Sul e Destaque Sul. Faça o upgrade para publicar sua oferta na página inicial e alcançar mais clientes.
             </p>
             <a href="/para-empresas#planos-detalhes" className="inline-flex items-center gap-1 text-sm font-semibold text-[#1a7a3c] mt-3 hover:underline">
               Ver planos <ExternalLink className="size-3.5" />

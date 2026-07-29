@@ -219,35 +219,36 @@ export function GaleriaFotosCard({ isPro }: Props) {
                 className="w-full h-full object-cover"
               />
 
-              {/* Overlay de deletar — inline confirmation */}
+              {/* Overlay de confirmação */}
               {confirmandoId === foto.id ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/70 p-2">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/75 p-2">
                   <p className="text-white text-xs font-medium text-center leading-tight">
                     Remover esta foto?
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleDeletar(foto.id)}
-                      className="rounded-md bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 transition"
+                      className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition"
                     >
                       Remover
                     </button>
                     <button
                       onClick={() => setConfirmandoId(null)}
-                      className="rounded-md bg-white/20 px-3 py-1 text-xs font-semibold text-white hover:bg-white/30 transition"
+                      className="rounded-md bg-white/20 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/30 transition"
                     >
                       Cancelar
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="absolute inset-0 flex items-start justify-end p-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                /* Botão de lixeira — sempre visível (desktop hover + mobile touch) */
+                <div className="absolute top-1.5 right-1.5">
                   <button
                     onClick={() => setConfirmandoId(foto.id)}
                     title="Remover foto"
-                    className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-600 text-white hover:bg-red-700 transition shadow-md"
+                    className="flex items-center justify-center w-7 h-7 rounded-lg bg-black/50 text-white hover:bg-red-600 transition shadow-md opacity-60 hover:opacity-100 group-hover:opacity-100"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}

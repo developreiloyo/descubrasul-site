@@ -40,7 +40,7 @@ SHOWCASE = [
     },
     {
         "email":   "showcase_basico@descubrasul.dev",
-        "plano":   "basico",
+        "plano":   "gratuito",
         "google_place_id": "",
         "nome":    "Pizzaria Bella Vista",
         "descricao": "As melhores pizzas artesanais do sul catarinense, assadas em forno a lenha com ingredientes selecionados. Delivery e salão.",
@@ -135,7 +135,7 @@ SHOWCASE = [
     },
     {
         "email":   "showcase_fundador@descubrasul.dev",
-        "plano":   "fundador",
+        "plano":   "producao",
         "google_place_id": "showcase_fundador_place_id",
         "nome":    "Cantina Nonna Rosa",
         "descricao": "Culinária italiana artesanal desde 1998. Massas frescas feitas diariamente, molhos da nonna e ambiente acolhedor no coração de Criciúma.",
