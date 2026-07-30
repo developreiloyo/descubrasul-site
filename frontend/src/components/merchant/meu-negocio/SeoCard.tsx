@@ -18,9 +18,9 @@ export function SeoCard({
   onChange,
 }: Props) {
   return (
-    <Card title="Como você aparece no Google" icon={Search}>
+    <Card title="Ajude sua empresa a aparecer no Google" icon={Search}>
       <p className="text-sm text-ink-subtle mb-4">
-        Opcional — se deixar em branco, geramos automaticamente.
+        Informe um título e uma descrição para que sua página tenha mais chances de ser encontrada no Google. Se deixar em branco, o DescubraSul usará as informações da sua empresa para criar esses textos automaticamente.
       </p>
       <div className="flex flex-col gap-4">
         <FormField
