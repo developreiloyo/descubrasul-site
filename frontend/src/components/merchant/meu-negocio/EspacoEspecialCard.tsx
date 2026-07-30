@@ -40,7 +40,7 @@ export function EspacoEspecialCard({ isPro, plano, espaco, onChange }: Props) {
       <div className="flex items-center justify-between -mt-5 mb-5">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-brand-green" strokeWidth={2} />
-          <h2 className="text-lg font-semibold text-ink">Espaço especial</h2>
+          <h2 className="text-lg font-semibold text-ink">Vitrine em Destaque</h2>
         </div>
         {isPro ? (
           <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">

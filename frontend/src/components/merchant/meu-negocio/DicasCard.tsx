@@ -5,7 +5,7 @@ const DICAS = [
   <>Adicione fotos reais para ter até <strong>2x mais visualizações</strong>.</>,
   <>Mantenha seu <strong>WhatsApp</strong> atualizado para receber pedidos.</>,
   <>Complete sua <strong>descrição</strong> com palavras-chave do seu setor.</>,
-  <>Use o <strong>Espaço Especial</strong> Pro+ para destacar ofertas e cupons.</>,
+  <>Use a <strong>Vitrine em Destaque</strong> Pro+ para destacar ofertas e cupons.</>,
 ];
 
 export function DicasCard() {
