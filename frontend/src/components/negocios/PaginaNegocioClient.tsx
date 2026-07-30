@@ -25,7 +25,7 @@ export function PaginaNegocioClient({ negocio, produtos }: Props) {
             className="text-2xl font-semibold mb-6 flex items-center gap-3"
             style={{ color: "#0b1c30" }}
           >
-            Sobre {negocio.nome}
+            Apresentação
           </h2>
           <div
             className="bg-white rounded-xl p-6 shadow-sm border"

@@ -21,7 +21,7 @@ export function HistoriaSection({ nome, historia, logo, altLogo }: Props) {
   return (
     <section>
       <h2 className="text-2xl font-semibold mb-6" style={{ color: "#0b1c30" }}>
-        Nossa história
+        Sobre a empresa
       </h2>
       <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#becabc" }}>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
